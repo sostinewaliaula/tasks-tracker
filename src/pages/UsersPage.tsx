@@ -1,0 +1,224 @@
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { UsersIcon, FilterIcon, SearchIcon } from 'lucide-react';
+// Mock data for users
+const mockUsers = [{
+  id: '1',
+  name: 'Alex Johnson',
+  role: 'employee',
+  department: 'Marketing',
+  email: 'employee@caava.com',
+  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+  tasksCompleted: 24,
+  tasksInProgress: 3
+}, {
+  id: '2',
+  name: 'Sam Williams',
+  role: 'manager',
+  department: 'Marketing',
+  email: 'manager@caava.com',
+  avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+  tasksCompleted: 18,
+  tasksInProgress: 2
+}, {
+  id: '3',
+  name: 'Taylor Reed',
+  role: 'employee',
+  department: 'Sales',
+  email: 'taylor@caava.com',
+  avatar: 'https://randomuser.me/api/portraits/women/17.jpg',
+  tasksCompleted: 31,
+  tasksInProgress: 5
+}, {
+  id: '4',
+  name: 'Jordan Smith',
+  role: 'manager',
+  department: 'Sales',
+  email: 'jordan@caava.com',
+  avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
+  tasksCompleted: 27,
+  tasksInProgress: 0
+}, {
+  id: '5',
+  name: 'Casey Brown',
+  role: 'employee',
+  department: 'Development',
+  email: 'casey@caava.com',
+  avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
+  tasksCompleted: 42,
+  tasksInProgress: 7
+}, {
+  id: '6',
+  name: 'Morgan Lee',
+  role: 'manager',
+  department: 'Development',
+  email: 'morgan@caava.com',
+  avatar: 'https://randomuser.me/api/portraits/men/75.jpg',
+  tasksCompleted: 35,
+  tasksInProgress: 4
+}];
+export function UsersPage() {
+  const {
+    currentUser
+  } = useAuth();
+  const [filters, setFilters] = useState({
+    role: 'all',
+    department: 'all',
+    search: ''
+  });
+  // Filter users based on current filters
+  const filteredUsers = mockUsers.filter(user => {
+    // Apply role filter
+    if (filters.role !== 'all' && user.role !== filters.role) return false;
+    // Apply department filter
+    if (filters.department !== 'all' && user.department !== filters.department) return false;
+    // Apply search filter
+    if (filters.search && !user.name.toLowerCase().includes(filters.search.toLowerCase()) && !user.email.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
+  // Get unique departments for filter dropdown
+  const departments = Array.from(new Set(mockUsers.map(user => user.department)));
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters(prev => ({
+      ...prev,
+      search: e.target.value
+    }));
+  };
+  const handleRoleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters(prev => ({
+      ...prev,
+      role: e.target.value
+    }));
+  };
+  const handleDepartmentFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters(prev => ({
+      ...prev,
+      department: e.target.value
+    }));
+  };
+  return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="md:flex md:items-center md:justify-between mb-6">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate flex items-center">
+            <UsersIcon className="h-8 w-8 mr-3 text-[#2e9d74]" />
+            Users
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage and view all users in your organization
+          </p>
+        </div>
+      </div>
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+              <FilterIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
+              Filter Users
+            </h3>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-4">
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+                Search
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <SearchIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input type="text" name="search" id="search" className="focus:ring-[#2e9d74] focus:border-[#2e9d74] block w-full pl-10 sm:text-sm border-gray-300 rounded-md" placeholder="Search by name or email" value={filters.search} onChange={handleSearchChange} />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                Role
+              </label>
+              <select id="role" name="role" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md" value={filters.role} onChange={handleRoleFilterChange}>
+                <option value="all">All Roles</option>
+                <option value="employee">Employee</option>
+                <option value="manager">Manager</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                Department
+              </label>
+              <select id="department" name="department" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md" value={filters.department} onChange={handleDepartmentFilterChange}>
+                <option value="all">All Departments</option>
+                {departments.map(dept => <option key={dept} value={dept}>
+                    {dept}
+                  </option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Department
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tasks
+                </th>
+                <th scope="col" className="relative px-6 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredUsers.map(user => <tr key={user.id} className={user.id === currentUser?.id ? 'bg-[#e8f5f0]' : ''}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <img className="h-10 w-10 rounded-full" src={user.avatar} alt="" />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {user.email}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'manager' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                      {user.role === 'manager' ? 'Manager' : 'Employee'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.department}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {user.tasksCompleted} completed
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {user.tasksInProgress} in progress
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="#" className="text-[#2e9d74] hover:text-[#228a63]">
+                      View
+                    </a>
+                  </td>
+                </tr>)}
+            </tbody>
+          </table>
+        </div>
+        {filteredUsers.length === 0 && <div className="px-6 py-10 text-center text-gray-500">
+            No users match your current filters.
+          </div>}
+      </div>
+    </div>;
+}
