@@ -26,12 +26,12 @@ export function TasksPage() {
 
   // Filter tasks based on user role and filters
   const filteredTasks = tasks.filter(task => {
-    // Filter by department for managers or by user for employees
+    // Visibility rules
     if (currentUser?.role === 'manager') {
       if (task.department !== currentUser.department) return false;
-    } else {
+    } else if (currentUser?.role === 'employee') {
       if (task.createdBy !== currentUser?.id) return false;
-    }
+    } // superadmin sees all
 
     // Apply status filter
     if (filters.status !== 'all' && task.status !== filters.status) return false;

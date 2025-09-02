@@ -24,6 +24,7 @@ export function DepartmentsPage() {
   } = useTask();
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
   const department = useMemo(() => selectedDepartment ? mockDepartments.find(d => d.id === selectedDepartment) : null, [selectedDepartment]);
+  const deptStats = department ? getTasksCountByStatus(department.name) : null;
   return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
@@ -124,10 +125,16 @@ export function DepartmentsPage() {
                   <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500 flex items-center">
                       <ChartBarIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
-                      Annual Budget
+                      Active Tasks by Status
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {department.budget}
+                      {deptStats ? (
+                        <div className="flex items-center space-x-4">
+                          <span className="inline-flex items-center text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">To Do: {deptStats['todo']}</span>
+                          <span className="inline-flex items-center text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">In Progress: {deptStats['in-progress']}</span>
+                          <span className="inline-flex items-center text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Completed: {deptStats['completed']}</span>
+                        </div>
+                      ) : '—'}
                     </dd>
                   </div>
                   <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

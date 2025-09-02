@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { ShieldIcon, SettingsIcon, KeyIcon, ServerIcon, SaveIcon } from 'lucide-react';
 
 type LdapSettings = {
@@ -18,6 +19,7 @@ type RolePermissions = {
 };
 
 export function SystemSettingsPage() {
+  const { currentUser } = useAuth();
   const [ldap, setLdap] = useState<LdapSettings>({
     host: 'ldap://localhost',
     port: 389,
@@ -64,7 +66,7 @@ export function SystemSettingsPage() {
           <p className="mt-1 text-sm text-gray-500">Configure LDAP integration and role permissions.</p>
         </div>
         <div className="mt-4 flex md:mt-0 md:ml-4">
-          <button onClick={handleSave} className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
+          <button onClick={handleSave} disabled={currentUser?.role !== 'superadmin'} className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${currentUser?.role === 'superadmin' ? 'bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]`}>
             <SaveIcon className="h-5 w-5 mr-2" />
             Save Changes
           </button>
@@ -72,7 +74,7 @@ export function SystemSettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* LDAP Settings */}
+        {/* LDAP Settings (viewable to all; editable only by super admin) */}
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex items-center">
             <ServerIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
@@ -81,43 +83,43 @@ export function SystemSettingsPage() {
           <div className="px-4 py-5 sm:p-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Host</label>
-              <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" value={ldap.host} onChange={e => setLdap({ ...ldap, host: e.target.value })} />
+              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.host} onChange={e => setLdap({ ...ldap, host: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Port</label>
-                <input type="number" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" value={ldap.port} onChange={e => setLdap({ ...ldap, port: Number(e.target.value) })} />
+                <input disabled={currentUser?.role !== 'superadmin'} type="number" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.port} onChange={e => setLdap({ ...ldap, port: Number(e.target.value) })} />
               </div>
               <div className="flex items-end">
                 <label className="inline-flex items-center text-sm text-gray-700">
-                  <input type="checkbox" className="mr-2" checked={ldap.useSSL} onChange={e => setLdap({ ...ldap, useSSL: e.target.checked })} />
+                  <input disabled={currentUser?.role !== 'superadmin'} type="checkbox" className="mr-2" checked={ldap.useSSL} onChange={e => setLdap({ ...ldap, useSSL: e.target.checked })} />
                   Use SSL
                 </label>
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Base DN</label>
-              <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" value={ldap.baseDN} onChange={e => setLdap({ ...ldap, baseDN: e.target.value })} />
+              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.baseDN} onChange={e => setLdap({ ...ldap, baseDN: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Bind DN</label>
-                <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" value={ldap.bindDN} onChange={e => setLdap({ ...ldap, bindDN: e.target.value })} />
+                <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.bindDN} onChange={e => setLdap({ ...ldap, bindDN: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Bind Password</label>
-                <input type="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" value={ldap.bindPassword} onChange={e => setLdap({ ...ldap, bindPassword: e.target.value })} />
+                <input disabled={currentUser?.role !== 'superadmin'} type="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.bindPassword} onChange={e => setLdap({ ...ldap, bindPassword: e.target.value })} />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">User Filter</label>
-              <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" value={ldap.userFilter} onChange={e => setLdap({ ...ldap, userFilter: e.target.value })} />
+              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.userFilter} onChange={e => setLdap({ ...ldap, userFilter: e.target.value })} />
               <p className="text-xs text-gray-500 mt-1">Use {'{{email}}'} placeholder for login input.</p>
             </div>
           </div>
         </div>
 
-        {/* Role Permissions */}
+        {/* Role Permissions (viewable; editable only by super admin) */}
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex items-center">
             <ShieldIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
@@ -140,7 +142,7 @@ export function SystemSettingsPage() {
                       <td className="px-4 py-2 text-sm text-gray-700">{perm}</td>
                       {(['superadmin', 'manager', 'employee'] as const).map(role => (
                         <td key={role} className="px-4 py-2 text-center">
-                          <input type="checkbox" checked={permissions[role].includes(perm)} onChange={() => handlePermToggle(role, perm)} />
+                          <input disabled={currentUser?.role !== 'superadmin'} type="checkbox" checked={permissions[role].includes(perm)} onChange={() => handlePermToggle(role, perm)} />
                         </td>
                       ))}
                     </tr>
@@ -152,7 +154,7 @@ export function SystemSettingsPage() {
             {/* Add new permission */}
             <div className="flex items-center space-x-2">
               <KeyIcon className="h-4 w-4 text-gray-500" />
-              <input placeholder="Add permission key (e.g., manage_system)" className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm" onKeyDown={e => {
+              <input disabled={currentUser?.role !== 'superadmin'} placeholder="Add permission key (e.g., manage_system)" className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" onKeyDown={e => {
                 if (e.key === 'Enter') {
                   const val = (e.target as HTMLInputElement).value.trim();
                   if (!val) return;

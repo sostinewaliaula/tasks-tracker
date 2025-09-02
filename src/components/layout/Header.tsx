@@ -45,9 +45,9 @@ export function Header({
               {userRole !== 'employee' && <a href="#" onClick={() => { onNavigate('departments'); setIsNotificationsOpen(false); }} className={`${currentPage === 'departments' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                   Departments
                 </a>}
-              {userRole === 'superadmin' && <a href="#" onClick={() => { onNavigate('settings'); setIsNotificationsOpen(false); }} className={`${currentPage === 'settings' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+              <a href="#" onClick={() => { onNavigate('settings'); setIsNotificationsOpen(false); }} className={`${currentPage === 'settings' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                 Settings
-              </a>}
+              </a>
               <a href="#" onClick={() => { onNavigate('notifications'); setIsNotificationsOpen(false); }} className={`${currentPage === 'notifications' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                 Notifications
               </a>
