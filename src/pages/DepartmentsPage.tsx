@@ -1,54 +1,20 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
 import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon } from 'lucide-react';
-// Mock data for departments
-const mockDepartments = [{
-  id: '1',
-  name: 'Marketing',
-  description: 'Responsible for promoting the company and its products',
-  managerName: 'Sam Williams',
-  memberCount: 8,
-  taskCompletion: 78,
-  budget: '$125,000',
-  projects: 12
-}, {
-  id: '2',
-  name: 'Sales',
-  description: 'Responsible for selling company products and services',
-  managerName: 'Jordan Smith',
-  memberCount: 12,
-  taskCompletion: 85,
-  budget: '$180,000',
-  projects: 8
-}, {
-  id: '3',
-  name: 'Development',
-  description: 'Responsible for building and maintaining software products',
-  managerName: 'Morgan Lee',
-  memberCount: 15,
-  taskCompletion: 92,
-  budget: '$250,000',
-  projects: 6
-}, {
-  id: '4',
-  name: 'Human Resources',
-  description: 'Responsible for recruiting and managing employee relations',
-  managerName: 'Riley Chen',
-  memberCount: 5,
-  taskCompletion: 80,
-  budget: '$90,000',
-  projects: 4
-}, {
-  id: '5',
-  name: 'Finance',
-  description: 'Responsible for managing company finances and budgets',
-  managerName: 'Jamie Wilson',
-  memberCount: 7,
-  taskCompletion: 88,
-  budget: '$110,000',
-  projects: 5
-}];
+import { DEPARTMENTS } from '../constants/departments';
+
+// Derive mock departments from constants
+const mockDepartments = DEPARTMENTS.map((name, idx) => ({
+  id: String(idx + 1),
+  name,
+  description: `${name} department description`,
+  managerName: `${name} Manager`,
+  memberCount: 10 + ((idx * 3) % 6),
+  taskCompletion: 75 + ((idx * 2) % 20),
+  budget: `$${100 + idx * 20},000`,
+  projects: 6 + (idx % 6)
+}));
 export function DepartmentsPage() {
   const {
     currentUser
@@ -57,7 +23,7 @@ export function DepartmentsPage() {
     getTasksCountByStatus
   } = useTask();
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
-  const department = selectedDepartment ? mockDepartments.find(d => d.id === selectedDepartment) : null;
+  const department = useMemo(() => selectedDepartment ? mockDepartments.find(d => d.id === selectedDepartment) : null, [selectedDepartment]);
   return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">

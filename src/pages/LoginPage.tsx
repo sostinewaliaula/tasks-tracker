@@ -20,7 +20,8 @@ export function LoginPage({
     setError('');
     try {
       await login(email, password);
-      onLogin(email.includes('manager') ? 'manager' : 'employee');
+      const role = email.includes('admin') ? 'superadmin' : email.includes('manager') ? 'manager' : 'employee';
+      onLogin(role);
     } catch (err) {
       setError('Invalid email or password');
     }

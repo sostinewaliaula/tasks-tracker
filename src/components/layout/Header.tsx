@@ -7,8 +7,8 @@ import logo from '../../assets/logo.png';
 type HeaderProps = {
   userRole: string;
   onLogout: () => void;
-  currentPage: 'dashboard' | 'tasks' | 'reports' | 'notifications' | 'users' | 'departments';
-  onNavigate: (page: 'dashboard' | 'tasks' | 'reports' | 'notifications' | 'users' | 'departments') => void;
+  currentPage: 'dashboard' | 'tasks' | 'reports' | 'notifications' | 'users' | 'departments' | 'settings';
+  onNavigate: (page: 'dashboard' | 'tasks' | 'reports' | 'notifications' | 'users' | 'departments' | 'settings') => void;
 };
 
 export function Header({
@@ -36,15 +36,18 @@ export function Header({
               <a href="#" onClick={() => { onNavigate('tasks'); setIsNotificationsOpen(false); }} className={`${currentPage === 'tasks' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                 Tasks
               </a>
-              {userRole === 'manager' && <a href="#" onClick={() => { onNavigate('reports'); setIsNotificationsOpen(false); }} className={`${currentPage === 'reports' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+              {userRole !== 'employee' && <a href="#" onClick={() => { onNavigate('reports'); setIsNotificationsOpen(false); }} className={`${currentPage === 'reports' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                   Reports
                 </a>}
               <a href="#" onClick={() => { onNavigate('users'); setIsNotificationsOpen(false); }} className={`${currentPage === 'users' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                 Users
               </a>
-              {userRole === 'manager' && <a href="#" onClick={() => { onNavigate('departments'); setIsNotificationsOpen(false); }} className={`${currentPage === 'departments' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+              {userRole !== 'employee' && <a href="#" onClick={() => { onNavigate('departments'); setIsNotificationsOpen(false); }} className={`${currentPage === 'departments' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                   Departments
                 </a>}
+              {userRole === 'superadmin' && <a href="#" onClick={() => { onNavigate('settings'); setIsNotificationsOpen(false); }} className={`${currentPage === 'settings' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+                Settings
+              </a>}
               <a href="#" onClick={() => { onNavigate('notifications'); setIsNotificationsOpen(false); }} className={`${currentPage === 'notifications' ? 'border-[#2e9d74] text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                 Notifications
               </a>

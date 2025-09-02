@@ -2,7 +2,7 @@ import React, { useState, createContext, useContext } from 'react';
 type User = {
   id: string;
   name: string;
-  role: 'employee' | 'manager';
+  role: 'employee' | 'manager' | 'superadmin';
   department: string;
   email: string;
 };
@@ -20,29 +20,39 @@ export function AuthProvider({
 }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const login = async (email: string, password: string) => {
-    // In a real app, this would be an API call
-    // For demo purposes, we'll simulate authentication
-    const mockUsers = {
+    // Mock users to simulate authentication until LDAP is configured
+    const mockUsers: Record<string, User & { password: string }> = {
+      'admin@caava.com': {
+        id: '0',
+        name: 'Super Admin',
+        role: 'superadmin',
+        department: 'All',
+        email: 'admin@caava.com',
+        password: 'password'
+      },
       'employee@caava.com': {
         id: '1',
         name: 'Alex Johnson',
-        role: 'employee' as const,
+        role: 'employee',
         department: 'Marketing',
-        email: 'employee@caava.com'
+        email: 'employee@caava.com',
+        password: 'password'
       },
       'manager@caava.com': {
         id: '2',
         name: 'Sam Williams',
-        role: 'manager' as const,
+        role: 'manager',
         department: 'Marketing',
-        email: 'manager@caava.com'
+        email: 'manager@caava.com',
+        password: 'password'
       }
     };
-    if (email in mockUsers && password === 'password') {
-      setCurrentUser(mockUsers[email as keyof typeof mockUsers]);
-    } else {
+    const user = mockUsers[email];
+    if (!user || user.password !== password) {
       throw new Error('Invalid credentials');
     }
+    const { password: _omit, ...sanitized } = user;
+    setCurrentUser(sanitized);
   };
   const logout = () => {
     setCurrentUser(null);

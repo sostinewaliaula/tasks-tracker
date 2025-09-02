@@ -1,4 +1,5 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
+import { MOCK_USERS } from '../constants/mockUsers';
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskStatus = 'todo' | 'in-progress' | 'completed';
 export type Task = {
@@ -32,47 +33,35 @@ type TaskContextType = {
   getTasksCountByPriority: (department?: string) => Record<TaskPriority, number>;
 };
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
-const mockTasks: Task[] = [{
-  id: '1',
-  title: 'Complete Q3 Marketing Report',
-  description: 'Analyze marketing performance for Q3 and prepare a comprehensive report',
-  deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-  priority: 'high',
-  status: 'in-progress',
-  createdBy: '1',
-  department: 'Marketing',
-  createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
-}, {
-  id: '2',
-  title: 'Social Media Content Calendar',
-  description: "Create content calendar for next month's social media posts",
-  deadline: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-  priority: 'medium',
-  status: 'todo',
-  createdBy: '1',
-  department: 'Marketing',
-  createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // 1 day ago
-}, {
-  id: '3',
-  title: 'Client Presentation',
-  description: 'Prepare presentation for upcoming client meeting',
-  deadline: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-  priority: 'high',
-  status: 'todo',
-  createdBy: '1',
-  department: 'Marketing',
-  createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
-}, {
-  id: '4',
-  title: 'Website Update',
-  description: 'Update company website with new product information',
-  deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-  priority: 'low',
-  status: 'completed',
-  createdBy: '1',
-  department: 'Marketing',
-  createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
-}];
+// Generate 20 tasks per user across the current week
+const startOfWeek = (() => { const d = new Date(); const day = d.getDay(); const s = new Date(d); s.setDate(d.getDate() - day); s.setHours(0,0,0,0); return s; })();
+const addDays = (date: Date, days: number) => { const d = new Date(date); d.setDate(d.getDate() + days); return d; };
+const priorities: TaskPriority[] = ['high', 'medium', 'low'];
+const statuses: TaskStatus[] = ['todo', 'in-progress', 'completed'];
+
+const mockTasks: Task[] = MOCK_USERS.flatMap((user, uIdx) => {
+  const tasks: Task[] = [];
+  for (let i = 0; i < 20; i++) {
+    const dayOffset = (i % 5); // Mon-Fri
+    const createdOffset = Math.max(0, dayOffset - 2);
+    const deadline = addDays(startOfWeek, 1 + dayOffset); // ensure within week Tue-Sat-ish
+    const createdAt = addDays(startOfWeek, createdOffset);
+    const status = statuses[(uIdx + i) % statuses.length];
+    const priority = priorities[(uIdx + i) % priorities.length];
+    tasks.push({
+      id: `${uIdx + 1}-${i + 1}`,
+      title: `${user.department} Task ${i + 1}`,
+      description: `Auto-generated task ${i + 1} for ${user.name}`,
+      deadline,
+      priority,
+      status,
+      createdBy: user.id,
+      department: user.department,
+      createdAt
+    });
+  }
+  return tasks;
+});
 const mockNotifications: Notification[] = [{
   id: '1',
   message: "New task 'Client Presentation' has been created",

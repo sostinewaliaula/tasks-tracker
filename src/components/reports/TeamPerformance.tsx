@@ -1,36 +1,43 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { useTask } from '../../context/TaskContext';
+
 type TeamPerformanceProps = {
-  department: string;
+  department?: string; // undefined => all departments
   timeframe: 'week' | 'month' | 'quarter';
 };
-export function TeamPerformance({
-  department,
-  timeframe
-}: TeamPerformanceProps) {
-  // Mock data for team performance
-  const mockEmployees = [{
-    id: '1',
-    name: 'Alex Johnson'
-  }, {
-    id: '2',
-    name: 'Jamie Smith'
-  }, {
-    id: '3',
-    name: 'Taylor Wilson'
-  }, {
-    id: '4',
-    name: 'Jordan Brown'
-  }];
-  const mockPerformanceData = mockEmployees.map(employee => ({
-    name: employee.name,
-    completed: Math.floor(Math.random() * 15) + 5,
-    onTime: Math.floor(Math.random() * 100),
-    efficiency: Math.floor(Math.random() * 40) + 60
+
+export function TeamPerformance({ department, timeframe }: TeamPerformanceProps) {
+  const { tasks } = useTask();
+
+  const filtered = useMemo(() => {
+    return tasks.filter(t => (department ? t.department === department : true));
+  }, [tasks, department]);
+
+  // Group by user (createdBy)
+  const perUser = useMemo(() => {
+    const map = new Map<string, { name: string; completed: number }>();
+    filtered.forEach(t => {
+      const key = t.createdBy;
+      if (!map.has(key)) map.set(key, { name: `User ${key}`, completed: 0 });
+      if (t.status === 'completed') {
+        map.get(key)!.completed += 1;
+      }
+    });
+    return Array.from(map.values());
+  }, [filtered]);
+
+  // Build chart rows: completed is real; onTime/efficiency are placeholders until backend tracks completion dates/SLAs
+  const performanceData = perUser.map(u => ({
+    name: u.name,
+    completed: u.completed,
+    onTime: Math.min(100, 60 + Math.round(Math.random() * 40)),
+    efficiency: Math.min(100, 60 + Math.round(Math.random() * 40))
   }));
-  // Mock data for time trends
+
+  // Simple trend mock per day; later replace with real creation/completion counts per day
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-  const mockTrendData = days.map(day => ({
+  const trendData = days.map(day => ({
     name: day,
     completed: Math.floor(Math.random() * 8) + 2,
     created: Math.floor(Math.random() * 10) + 1
@@ -44,7 +51,7 @@ export function TeamPerformance({
           <div className="px-4 py-5 sm:p-6">
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockPerformanceData} margin={{
+                <BarChart data={performanceData} margin={{
                 top: 20,
                 right: 30,
                 left: 20,
@@ -70,7 +77,7 @@ export function TeamPerformance({
             </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockPerformanceData} margin={{
+                <BarChart data={performanceData} margin={{
                 top: 20,
                 right: 30,
                 left: 20,
@@ -93,7 +100,7 @@ export function TeamPerformance({
             </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockTrendData} margin={{
+                <LineChart data={trendData} margin={{
                 top: 20,
                 right: 30,
                 left: 20,
@@ -138,7 +145,7 @@ export function TeamPerformance({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {mockPerformanceData.map((employee, index) => <tr key={index}>
+                {performanceData.map((employee, index) => <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {employee.name}
                     </td>

@@ -1,62 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { UsersIcon, FilterIcon, SearchIcon } from 'lucide-react';
-// Mock data for users
-const mockUsers = [{
-  id: '1',
-  name: 'Alex Johnson',
-  role: 'employee',
-  department: 'Marketing',
-  email: 'employee@caava.com',
-  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-  tasksCompleted: 24,
-  tasksInProgress: 3
-}, {
-  id: '2',
-  name: 'Sam Williams',
-  role: 'manager',
-  department: 'Marketing',
-  email: 'manager@caava.com',
-  avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-  tasksCompleted: 18,
-  tasksInProgress: 2
-}, {
-  id: '3',
-  name: 'Taylor Reed',
-  role: 'employee',
-  department: 'Sales',
-  email: 'taylor@caava.com',
-  avatar: 'https://randomuser.me/api/portraits/women/17.jpg',
-  tasksCompleted: 31,
-  tasksInProgress: 5
-}, {
-  id: '4',
-  name: 'Jordan Smith',
-  role: 'manager',
-  department: 'Sales',
-  email: 'jordan@caava.com',
-  avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-  tasksCompleted: 27,
-  tasksInProgress: 0
-}, {
-  id: '5',
-  name: 'Casey Brown',
-  role: 'employee',
-  department: 'Development',
-  email: 'casey@caava.com',
-  avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-  tasksCompleted: 42,
-  tasksInProgress: 7
-}, {
-  id: '6',
-  name: 'Morgan Lee',
-  role: 'manager',
-  department: 'Development',
-  email: 'morgan@caava.com',
-  avatar: 'https://randomuser.me/api/portraits/men/75.jpg',
-  tasksCompleted: 35,
-  tasksInProgress: 4
-}];
+import { DEPARTMENTS } from '../constants/departments';
+import { MOCK_USERS } from '../constants/mockUsers';
+// Extend MOCK_USERS with task stats for Users table only (cosmetic)
+const mockUsers = MOCK_USERS.map((u, idx) => ({
+  ...u,
+  tasksCompleted: 10 + (idx % 40),
+  tasksInProgress: idx % 5
+}));
 export function UsersPage() {
   const {
     currentUser
@@ -78,8 +30,8 @@ export function UsersPage() {
     }
     return true;
   });
-  // Get unique departments for filter dropdown
-  const departments = Array.from(new Set(mockUsers.map(user => user.department)));
+  // Departments list
+  const departments = DEPARTMENTS;
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({
       ...prev,
