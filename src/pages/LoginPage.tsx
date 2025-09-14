@@ -2,28 +2,41 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { UserIcon, LockIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import logo from '../assets/logo.png';
-type LoginPageProps = {
-  onLogin: (role: string) => void;
-};
-export function LoginPage({
-  onLogin
-}: LoginPageProps) {
-  const [email, setEmail] = useState('');
+import { useNavigate } from 'react-router-dom';
+
+export function LoginPage() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const {
-    login
-  } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
+    
     try {
-      await login(email, password);
-      const role = email.includes('admin') ? 'superadmin' : email.includes('manager') ? 'manager' : 'employee';
-      onLogin(role);
+      const result = await login(username, password);
+      
+      // Navigate based on user role from the login result
+      switch(result?.role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'manager':
+          navigate('/manager/dashboard');
+          break;
+        default:
+          navigate('/dashboard');
+      }
     } catch (err) {
-      setError('Invalid email or password');
+      setError('Invalid username or password');
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -56,25 +69,25 @@ export function LoginPage({
 
           {/* Login Form */}
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Email Field */}
+            {/* Username Field */}
             <div className="space-y-2">
-              <label htmlFor="email-address" className="text-sm font-medium text-gray-700">
-                Email Address
+              <label htmlFor="username" className="text-sm font-medium text-gray-700">
+                Username
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <UserIcon className="h-5 w-5 text-gray-400 group-focus-within:text-[#2e9d74] transition-colors" />
                 </div>
                 <input 
-                  id="email-address" 
-                  name="email" 
-                  type="email" 
-                  autoComplete="email" 
+                  id="username" 
+                  name="username" 
+                  type="text" 
+                  autoComplete="username" 
                   required 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
+                  value={username} 
+                  onChange={e => setUsername(e.target.value)} 
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white" 
-                  placeholder="Enter your email" 
+                  placeholder="Enter your LDAP username" 
                 />
               </div>
             </div>
@@ -129,18 +142,16 @@ export function LoginPage({
             </button>
           </form>
 
-          {/* Demo Credentials */}
+          {/* LDAP Information */}
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <p className="text-xs font-medium text-gray-700 text-center">Demo Credentials</p>
+            <p className="text-xs font-medium text-gray-700 text-center">LDAP Authentication</p>
             <div className="text-xs text-gray-600 space-y-1">
-              <div className="flex justify-between">
-                <span className="font-medium">Employee:</span>
-                <span>employee@caava.com / password</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Manager:</span>
-                <span>manager@caava.com / password</span>
-              </div>
+              <p className="text-center">
+                Use your LDAP credentials to sign in.
+              </p>
+              <p className="text-center text-gray-500">
+                Contact your IT administrator if you need assistance.
+              </p>
             </div>
           </div>
         </div>

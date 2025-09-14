@@ -1,71 +1,99 @@
 import React, { useState, createContext, useContext } from 'react';
+
 type User = {
   id: string;
   name: string;
-  role: 'employee' | 'manager' | 'superadmin';
-  department: string;
+  role: 'admin' | 'manager' | 'employee';
+  department_id: string;
   email: string;
+  ldap_uid: string;
 };
+
 type AuthContextType = {
   currentUser: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   isAuthenticated: boolean;
 };
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 export function AuthProvider({
   children
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const login = async (email: string, password: string) => {
-    // Mock users to simulate authentication until LDAP is configured
-    const mockUsers: Record<string, User & { password: string }> = {
-      'admin@caava.com': {
-        id: '0',
-        name: 'Super Admin',
-        role: 'superadmin',
-        department: 'All',
-        email: 'admin@caava.com',
-        password: 'password'
-      },
-      'employee@caava.com': {
-        id: '1',
-        name: 'Alex Johnson',
-        role: 'employee',
-        department: 'Marketing',
-        email: 'employee@caava.com',
-        password: 'password'
-      },
-      'manager@caava.com': {
-        id: '2',
-        name: 'Sam Williams',
-        role: 'manager',
-        department: 'Marketing',
-        email: 'manager@caava.com',
-        password: 'password'
+  const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
+
+  const login = async (username: string, password: string): Promise<User> => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Authentication failed');
       }
-    };
-    const user = mockUsers[email];
-    if (!user || user.password !== password) {
-      throw new Error('Invalid credentials');
+
+      const { user, token } = await response.json();
+      setCurrentUser(user);
+      setToken(token);
+      localStorage.setItem('auth_token', token);
+      return user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new Error('Authentication failed');
     }
-    const { password: _omit, ...sanitized } = user;
-    setCurrentUser(sanitized);
   };
+
   const logout = () => {
-    setCurrentUser(null);
-  };
-  return <AuthContext.Provider value={{
-    currentUser,
-    login,
-    logout,
-    isAuthenticated: !!currentUser
-  }}>
-      {children}
-    </AuthContext.Provider>;
+      setCurrentUser(null);
+      setToken(null);
+      localStorage.removeItem('auth_token');
+    };
+
+    // Effect to check token validity on mount and set up interceptor
+    React.useEffect(() => {
+      if (token) {
+        // Verify token and fetch user data
+        fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.user) {
+              setCurrentUser(data.user);
+            } else {
+              logout();
+            }
+          })
+          .catch(() => {
+            logout();
+          });
+      }
+    }, [token]);
+
+    return (
+      <AuthContext.Provider
+        value={{
+          currentUser,
+          login,
+          logout,
+          isAuthenticated: !!currentUser
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
 }
+
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

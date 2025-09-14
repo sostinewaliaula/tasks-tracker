@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { TaskProvider } from './context/TaskContext';
 import { AuthProvider } from './context/AuthContext';
 import { EmployeeDashboard } from './pages/EmployeeDashboard';
@@ -10,38 +11,109 @@ import { UsersPage } from './pages/UsersPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { LoginPage } from './pages/LoginPage';
 import { SystemSettingsPage } from './pages/SystemSettingsPage';
+import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { Header } from './components/layout/Header';
+import { RBAC } from './components/auth/RBAC';
+import { useAuth } from './context/AuthContext';
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+  
+  return (
+    <div className="flex flex-col min-h-screen bg-[#e8f5f0]">
+      {isAuthenticated && <Header />}
+      <main className="flex-1">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+          {/* Protected Routes */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Employee Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <RBAC allowedRoles={['employee', 'manager', 'admin']}>
+                <EmployeeDashboard />
+              </RBAC>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <RBAC allowedRoles={['employee', 'manager', 'admin']}>
+                <TasksPage />
+              </RBAC>
+            }
+          />
+          
+          {/* Manager Routes */}
+          <Route
+            path="/manager/dashboard"
+            element={
+              <RBAC allowedRoles={['manager', 'admin']}>
+                <ManagerDashboard />
+              </RBAC>
+            }
+          />
+          <Route
+            path="/departments"
+            element={
+              <RBAC allowedRoles={['manager', 'admin']}>
+                <DepartmentsPage />
+              </RBAC>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <RBAC allowedRoles={['manager', 'admin']}>
+                <ReportsPage />
+              </RBAC>
+            }
+          />
+          
+          {/* Admin Routes */}
+          <Route
+            path="/settings"
+            element={
+              <RBAC allowedRoles={['admin']}>
+                <SystemSettingsPage />
+              </RBAC>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <RBAC allowedRoles={['admin']}>
+                <UsersPage />
+              </RBAC>
+            }
+          />
+
+          {/* Notifications - Available to all authenticated users */}
+          <Route
+            path="/notifications"
+            element={
+              <RBAC allowedRoles={['employee', 'manager', 'admin']}>
+                <NotificationsPage />
+              </RBAC>
+            }
+          />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
 export function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState('');
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'tasks' | 'reports' | 'notifications' | 'users' | 'departments' | 'settings'>('dashboard');
-  const handleLogin = (role: string) => {
-    setIsLoggedIn(true);
-    setUserRole(role);
-  };
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole('');
-    setCurrentPage('dashboard');
-  };
-  const handleNavigation = (page: 'dashboard' | 'tasks' | 'reports' | 'notifications' | 'users' | 'departments' | 'settings') => {
-    setCurrentPage(page);
-  };
-  return <AuthProvider>
+  return (
+    <AuthProvider>
       <TaskProvider>
-        <div className="flex flex-col min-h-screen bg-[#e8f5f0]">
-          {isLoggedIn && <Header userRole={userRole} onLogout={handleLogout} currentPage={currentPage} onNavigate={handleNavigation} />}
-          <main className="flex-1">
-            {!isLoggedIn ? <LoginPage onLogin={handleLogin} /> :
-            currentPage === 'dashboard' ? (userRole === 'employee' ? <EmployeeDashboard /> : <ManagerDashboard />) :
-            currentPage === 'tasks' ? <TasksPage /> :
-            currentPage === 'reports' ? <ReportsPage /> :
-            currentPage === 'notifications' ? <NotificationsPage /> :
-            currentPage === 'users' ? <UsersPage /> :
-            currentPage === 'departments' ? <DepartmentsPage /> :
-            <SystemSettingsPage />}
-          </main>
-        </div>
+        <AppContent />
       </TaskProvider>
-    </AuthProvider>;
+    </AuthProvider>
+  );
 }
