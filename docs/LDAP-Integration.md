@@ -15,10 +15,10 @@ This document outlines the LDAP integration implemented in the Caava Group Task 
 - JWT token management implemented
 - Role-based access control (RBAC) middleware added
 
-### Database Changes
-- Added LDAP support through migrations
-- User table extended to support LDAP attributes
-- Role management tables implemented
+### Database and Roles
+- LDAP is used only for identity (login/password verification).
+- Roles are managed in the application database (MariaDB) via Prisma.
+- New users default to `employee`; admins can promote to `manager` or `admin`.
 
 ### Frontend Implementation
 - Authentication context with LDAP support
@@ -33,9 +33,9 @@ This document outlines the LDAP integration implemented in the Caava Group Task 
 3. Test authentication flow with LDAP credentials
 
 ### For Developers
-1. Run latest database migrations
-2. Update environment variables with LDAP configuration
-3. Test authentication flow in development environment
+1. Set `DATABASE_URL` and `JWT_SECRET` in `server/.env`.
+2. Run database migrations (`npx prisma migrate dev`).
+3. Test authentication flow (LDAP bind → DB upsert → JWT with DB role).
 
 ### For End Users
 1. Use domain credentials for authentication

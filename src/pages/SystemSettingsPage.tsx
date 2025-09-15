@@ -20,6 +20,8 @@ type RolePermissions = {
 
 export function SystemSettingsPage() {
   const { currentUser } = useAuth();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [ldap, setLdap] = useState<LdapSettings>({
     host: 'ldap://localhost',
     port: 389,
@@ -43,6 +45,37 @@ export function SystemSettingsPage() {
     // eslint-disable-next-line no-console
     console.log('Saving Role permissions', permissions);
     alert('Settings saved (mock). Backend integration pending.');
+  };
+
+  const handleLdapSync = async () => {
+    try {
+      setIsSyncing(true);
+      setSyncMessage(null);
+      const token = localStorage.getItem('auth_token');
+      const res = await fetch('/api/auth/sync-ldap-users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+      const contentType = res.headers.get('content-type') || '';
+      const bodyText = await res.text();
+      let data: any = null;
+      if (contentType.includes('application/json')) {
+        try { data = JSON.parse(bodyText); } catch {}
+      }
+      if (!res.ok) {
+        const errMsg = (data && data.error) ? data.error : (bodyText || 'Sync failed');
+        throw new Error(errMsg);
+      }
+      const synced = data?.synced ?? 0;
+      setSyncMessage(`Synced ${synced} users from LDAP.`);
+    } catch (e: any) {
+      setSyncMessage(e?.message || 'Sync failed');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handlePermToggle = (role: keyof RolePermissions, perm: string) => {
@@ -116,6 +149,21 @@ export function SystemSettingsPage() {
               <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.userFilter} onChange={e => setLdap({ ...ldap, userFilter: e.target.value })} />
               <p className="text-xs text-gray-500 mt-1">Use {'{{email}}'} placeholder for login input.</p>
             </div>
+            <div className="flex items-center justify-between pt-2">
+              <div className="text-xs text-gray-500">
+                Values can be linked to server .env (admin-only backend integration).
+              </div>
+              <button
+                onClick={handleLdapSync}
+                disabled={isSyncing || (currentUser?.role !== 'admin')}
+                className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium border ${isSyncing || (currentUser?.role !== 'admin') ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'border-transparent text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90'}`}
+              >
+                {isSyncing ? 'Syncing…' : 'Sync Users from LDAP'}
+              </button>
+            </div>
+            {syncMessage && (
+              <div className="text-sm mt-2 text-gray-700">{syncMessage}</div>
+            )}
           </div>
         </div>
 

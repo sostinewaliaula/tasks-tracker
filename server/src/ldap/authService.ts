@@ -1,18 +1,18 @@
 import jwt from 'jsonwebtoken';
 import { ldapService, LDAPUser } from './ldapService';
-import { supabase } from '../lib/supabaseClient';
+import { prisma } from '../lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Make sure to set this in your environment variables
 const TOKEN_EXPIRY = '24h';
 
 export interface AuthResponse {
     user: {
-        id: string;
+        id: number;
         ldap_uid: string;
         name: string;
-        email: string;
-        role: string;
-        department_id: string;
+        email: string | null;
+        role: 'admin' | 'manager' | 'employee';
+        department_id: number | null;
     };
     token: string;
 }
@@ -46,68 +46,33 @@ class AuthService {
     }
 
     private async findOrCreateUser(ldapUser: LDAPUser) {
-        // First try to find the user by LDAP UID
-        const { data: existingUser, error: searchError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('ldap_uid', ldapUser.uid)
-            .single();
+        const existing = await prisma.user.findUnique({ where: { ldapUid: ldapUser.uid } });
+        const defaultEmailDomain = process.env.LDAP_DEFAULT_EMAIL_DOMAIN || 'turnkeyafrica.com';
+        const resolvedEmail = ldapUser.email ?? `${ldapUser.uid}@${defaultEmailDomain}`;
 
-        if (searchError && searchError.code !== 'PGRST116') { // PGRST116 is "not found" error
-            console.error('Error searching for user:', searchError);
-            return null;
+        if (existing) {
+            return prisma.user.update({
+                where: { id: existing.id },
+                data: {
+                    name: ldapUser.name ?? ldapUser.uid,
+                    email: resolvedEmail,
+                },
+            });
         }
 
-        if (existingUser) {
-            // Update existing user if needed
-            const { data: updatedUser, error: updateError } = await supabase
-                .from('users')
-                .update({
-                    name: ldapUser.name,
-                    email: ldapUser.email,
-                    role: ldapUser.role,
-                    // department_id will be handled separately if needed
-                })
-                .eq('id', existingUser.id)
-                .select()
-                .single();
-
-            if (updateError) {
-                console.error('Error updating user:', updateError);
-                return null;
-            }
-
-            return updatedUser;
-        } else {
-            // Create new user
-            const { data: newUser, error: createError } = await supabase
-                .from('users')
-                .insert({
-                    ldap_uid: ldapUser.uid,
-                    name: ldapUser.name,
-                    email: ldapUser.email,
-                    role: ldapUser.role,
-                    // department_id will need to be mapped from LDAP department
-                })
-                .select()
-                .single();
-
-            if (createError) {
-                console.error('Error creating user:', createError);
-                return null;
-            }
-
-            return newUser;
-        }
+        return prisma.user.create({
+            data: {
+                ldapUid: ldapUser.uid,
+                name: ldapUser.name ?? ldapUser.uid,
+                email: resolvedEmail,
+                role: 'employee',
+            },
+        });
     }
 
     private generateToken(user: any): string {
         return jwt.sign(
-            {
-                id: user.id,
-                role: user.role,
-                ldap_uid: user.ldap_uid,
-            },
+            { id: user.id, role: user.role, ldap_uid: user.ldapUid },
             JWT_SECRET,
             { expiresIn: TOKEN_EXPIRY }
         );
