@@ -11,6 +11,7 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth';
+import departmentsRouter from './routes/departments';
 import { authMiddleware } from './middleware/auth';
 
 const app = express();
@@ -24,6 +25,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/departments', departmentsRouter);
 
 app.get('/api/auth/me', authMiddleware, (req, res) => {
     res.json({ user: (req as any).user });
