@@ -14,6 +14,7 @@ type AuthContextType = {
   login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   isAuthenticated: boolean;
+  token?: string | null;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,7 +87,8 @@ export function AuthProvider({
           currentUser,
           login,
           logout,
-          isAuthenticated: !!currentUser
+          isAuthenticated: !!currentUser,
+          token
         }}
       >
         {children}

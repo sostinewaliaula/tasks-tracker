@@ -1,0 +1,161 @@
+import React from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { BuildingIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
+
+type DepartmentNode = {
+  id: number;
+  name: string;
+  parentId: number | null;
+  children?: DepartmentNode[];
+};
+
+export function AdminDepartmentPanel() {
+  const { currentUser, token } = useAuth() as any;
+  const [departments, setDepartments] = React.useState<DepartmentNode[]>([]);
+  const [selectedId, setSelectedId] = React.useState<number | null>(null);
+  const [newPrimaryName, setNewPrimaryName] = React.useState('');
+  const [newSubName, setNewSubName] = React.useState('');
+  const [editName, setEditName] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  const fetchDepartments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`${API_URL}/api/departments`, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
+      });
+      if (!res.ok) throw new Error('Failed to load departments');
+      const json = await res.json();
+      setDepartments(json.data || []);
+    } catch (e: any) {
+      setError(e.message || 'Failed to load departments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (currentUser?.role === 'admin') fetchDepartments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.role]);
+
+  const createPrimary = async () => {
+    if (!newPrimaryName.trim()) return;
+    const res = await fetch(`${API_URL}/api/departments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+      body: JSON.stringify({ name: newPrimaryName.trim() })
+    });
+    if (res.ok) { setNewPrimaryName(''); fetchDepartments(); }
+    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to create department'); }
+  };
+
+  const createSub = async () => {
+    if (!newSubName.trim() || !selectedId) return;
+    const res = await fetch(`${API_URL}/api/departments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+      body: JSON.stringify({ name: newSubName.trim(), parentId: selectedId })
+    });
+    if (res.ok) { setNewSubName(''); fetchDepartments(); }
+    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to create sub-department'); }
+  };
+
+  const updateDept = async () => {
+    if (!editName.trim() || !selectedId) return;
+    const res = await fetch(`${API_URL}/api/departments/${selectedId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+      body: JSON.stringify({ name: editName.trim() })
+    });
+    if (res.ok) { setEditName(''); fetchDepartments(); }
+    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to update department'); }
+  };
+
+  const deleteDept = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this department?')) return;
+    const res = await fetch(`${API_URL}/api/departments/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: token ? `Bearer ${token}` : '' },
+    });
+    if (res.status === 204) { if (selectedId === id) setSelectedId(null); fetchDepartments(); }
+    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to delete department'); }
+  };
+
+  const renderTree = (nodes: DepartmentNode[]) => (
+    <ul className="divide-y divide-gray-200">
+      {nodes.map((dept) => (
+        <li key={dept.id} className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${selectedId === dept.id ? 'bg-[#e8f5f0]' : ''}`} onClick={() => setSelectedId(dept.id)}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <BuildingIcon className="h-5 w-5 text-[#2e9d74] mr-3" />
+              <p className="text-sm font-medium text-gray-900">{dept.name}</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button onClick={(e) => { e.stopPropagation(); setSelectedId(dept.id); setEditName(dept.name); }} className="text-gray-500 hover:text-gray-700" title="Edit">
+                <PencilIcon className="h-4 w-4" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} className="text-red-500 hover:text-red-600" title="Delete">
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {dept.children && dept.children.length ? (
+            <div className="ml-6 mt-2">
+              {renderTree(dept.children)}
+            </div>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+
+  if (currentUser?.role !== 'admin') return null;
+
+  return (
+    <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Add Primary Department</label>
+          <div className="flex">
+            <input value={newPrimaryName} onChange={(e) => setNewPrimaryName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm" placeholder="e.g., Turnkey" />
+            <button onClick={createPrimary} className="bg-[#2e9d74] text-white px-3 rounded-r flex items-center text-sm"><PlusIcon className="h-4 w-4 mr-1"/>Add</button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Add Sub-Department</label>
+          <div className="flex">
+            <input value={newSubName} onChange={(e) => setNewSubName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm" placeholder="e.g., Platform" />
+            <button onClick={createSub} disabled={!selectedId} className="bg-[#2e9d74] text-white px-3 rounded-r flex items-center text-sm disabled:opacity-50"><PlusIcon className="h-4 w-4 mr-1"/>Add</button>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Selected parent: {selectedId || 'None'}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Rename Department</label>
+          <div className="flex">
+            <input value={editName} onChange={(e) => setEditName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm" placeholder="New name" />
+            <button onClick={updateDept} disabled={!selectedId || !editName.trim()} className="bg-[#2e9d74] text-white px-3 rounded-r text-sm disabled:opacity-50">Save</button>
+          </div>
+        </div>
+      </div>
+      {error ? <p className="text-sm text-red-600 mt-2">{error}</p> : null}
+
+      <div className="mt-6">
+        <div className="px-4 py-3 border-b border-gray-200 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Departments</h3>
+        </div>
+        {loading ? (
+          <div className="p-4 text-sm text-gray-500">Loading...</div>
+        ) : (
+          departments.length ? renderTree(departments) : <div className="p-4 text-sm text-gray-500">No departments yet.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+

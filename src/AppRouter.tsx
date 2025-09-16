@@ -10,6 +10,7 @@ import { UsersPage } from "./pages/UsersPage";
 import { DepartmentsPage } from "./pages/DepartmentsPage";
 import { TasksPage } from "./pages/TasksPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import { AdminDashboard } from "./pages/AdminDashboard";
 
 export function AppRouter() {
   return (
@@ -72,6 +73,14 @@ export function AppRouter() {
           element={
             <RBAC allowedRoles={['admin']}>
               <SystemSettingsPage />
+            </RBAC>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <RBAC allowedRoles={['admin']}>
+              <AdminDashboard />
             </RBAC>
           }
         />
