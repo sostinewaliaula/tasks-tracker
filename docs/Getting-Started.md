@@ -40,8 +40,17 @@ npm install
 
 ### 3. Database Setup
 ```bash
-npx prisma generate --schema server/prisma/schema.prisma
-npx prisma migrate deploy --schema server/prisma/schema.prisma
+# From project root
+cd server
+
+# Create and apply migrations
+npx prisma migrate dev --name init --schema prisma/schema.prisma
+
+# Apply new Task model migration if needed
+npx prisma migrate dev --name add_task_model --schema prisma/schema.prisma
+
+# Generate Prisma client (outputs to server/src/generated/prisma2)
+npx prisma generate --schema prisma/schema.prisma
 ```
 
 ### 4. Running the Application
@@ -64,7 +73,7 @@ npm run dev
 ### Backend Development
 1. Server code is in `server/src`
 2. Env loading handled in `server/src/index.ts` (ESM-safe `import.meta.url`)
-3. Prisma schema at `server/prisma/schema.prisma` → client outputs to `server/src/generated/prisma`
+3. Prisma schema at `server/prisma/schema.prisma` → client outputs to `server/src/generated/prisma2`
 4. Use the LDAP authentication service
 5. Implement proper error handling
 

@@ -13,25 +13,40 @@ export function TaskForm({
   const {
     currentUser
   } = useAuth();
-  const {
-    addTask
-  } = useTask();
+  const { addTask, addSubtask } = useTask();
+  const [showSubtasksModal, setShowSubtasksModal] = useState(false);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+  const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [subtaskDraft, setSubtaskDraft] = useState('');
+  const [subtasks, setSubtasks] = useState<string[]>([]);
   const [deadline, setDeadline] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('medium');
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
-    addTask({
+    const id = await addTask({
       title,
-      description,
+      description: '',
       deadline: new Date(deadline),
       priority,
       status: 'todo',
       createdBy: currentUser.id,
       department: currentUser.department
     });
+    setCreatedTaskId(id);
+    // Create all subtasks entered inline
+    for (const st of subtasks) {
+      await addSubtask(id, {
+        title: st,
+        description: '',
+        deadline: new Date(deadline),
+        priority,
+        status: 'todo',
+        createdBy: currentUser.id,
+        department: currentUser.department
+      });
+    }
     onTaskAdded();
   };
   // Get min and max date for the current week (Monday to Friday)
@@ -74,10 +89,36 @@ export function TaskForm({
               <input type="text" name="title" id="title" required className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={title} onChange={e => setTitle(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Description
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Subtasks
               </label>
-              <textarea id="description" name="description" rows={3} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={description} onChange={e => setDescription(e.target.value)} />
+              <div className="mt-1 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a subtask title"
+                  className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  value={subtaskDraft}
+                  onChange={e => setSubtaskDraft(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => { if (subtaskDraft.trim()) { setSubtasks(prev => [...prev, subtaskDraft.trim()]); setSubtaskDraft(''); } }}
+                  className="px-3 py-2 bg-[#2e9d74] text-white rounded-md"
+                >
+                  Add
+                </button>
+              </div>
+              {subtasks.length > 0 && (
+                <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
+                  {subtasks.map((st, idx) => (
+                    <li key={`${st}-${idx}`} className="py-1 flex items-center justify-between">
+                      <span className="text-sm text-gray-800 dark:text-gray-200">{st}</span>
+                      <button type="button" className="text-xs text-red-600" onClick={() => setSubtasks(prev => prev.filter((_, i) => i !== idx))}>Remove</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">You can add more subtasks later from the task details.</p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -111,5 +152,6 @@ export function TaskForm({
           </div>
         </form>
       </div>
+      {/* Removed separate subtasks modal: subtasks are now inline within main modal */}
     </div>;
 }

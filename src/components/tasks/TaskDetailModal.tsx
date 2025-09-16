@@ -1,6 +1,6 @@
 import React from 'react';
-import { useTask, TaskStatus } from '../../context/TaskContext';
-import { XIcon, ClockIcon, CalendarIcon, UserIcon, CheckIcon } from 'lucide-react';
+import { useTask, TaskStatus, TaskPriority } from '../../context/TaskContext';
+import { XIcon, ClockIcon, CalendarIcon, UserIcon, CheckIcon, PlusIcon } from 'lucide-react';
 type TaskDetailModalProps = {
   taskId: string;
   onClose: () => void;
@@ -11,12 +11,33 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   const {
     tasks,
-    updateTaskStatus
+    updateTaskStatus,
+    addSubtask
   } = useTask();
   const task = tasks.find(t => t.id === taskId);
+  const [showAddSubtask, setShowAddSubtask] = React.useState(false);
+  const [subtaskTitle, setSubtaskTitle] = React.useState('');
+  const [subtaskDescription, setSubtaskDescription] = React.useState('');
+  const [subtaskPriority, setSubtaskPriority] = React.useState<TaskPriority>('medium');
   if (!task) return null;
   const handleStatusChange = (newStatus: TaskStatus) => {
     updateTaskStatus(taskId, newStatus);
+  };
+  const handleCreateSubtask = async () => {
+    if (!subtaskTitle.trim()) return;
+    await addSubtask(task.id, {
+      title: subtaskTitle.trim(),
+      description: subtaskDescription,
+      deadline: task.deadline,
+      priority: subtaskPriority,
+      status: 'todo',
+      createdBy: task.createdBy,
+      department: task.department
+    });
+    setSubtaskTitle('');
+    setSubtaskDescription('');
+    setSubtaskPriority('medium');
+    setShowAddSubtask(false);
   };
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -135,6 +156,34 @@ export function TaskDetailModal({
                           </div>}
                       </div>
                     </div>
+
+                    {/* Subtasks section */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100">Subtasks</h4>
+                        <button onClick={() => setShowAddSubtask(true)} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-[#2e9d74] hover:opacity-90">
+                          <PlusIcon className="h-4 w-4 mr-1" />
+                          Add Subtask
+                        </button>
+                      </div>
+                      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {task.subtasks && task.subtasks.length > 0 ? (
+                          task.subtasks.map(st => (
+                            <li key={st.id} className="py-2 flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{st.title}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-300">Due {formatDate(st.deadline)}</p>
+                              </div>
+                              <div>
+                                {getStatusBadge(st.status)}
+                              </div>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="py-2 text-sm text-gray-500 dark:text-gray-300">No subtasks yet.</li>
+                        )}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -147,5 +196,37 @@ export function TaskDetailModal({
           </div>
         </div>
       </div>
+
+      {showAddSubtask && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-md shadow-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100">New Subtask for "{task.title}"</h4>
+              <button onClick={() => setShowAddSubtask(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Title</label>
+                <input value={subtaskTitle} onChange={e => setSubtaskTitle(e.target.value)} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Description</label>
+                <textarea value={subtaskDescription} onChange={e => setSubtaskDescription(e.target.value)} rows={3} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Priority</label>
+                <select value={subtaskPriority} onChange={e => setSubtaskPriority(e.target.value as TaskPriority)} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+              <div className="text-right">
+                <button onClick={handleCreateSubtask} className="px-4 py-2 rounded-md border border-transparent bg-[#2e9d74] text-white">Create Subtask</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>;
 }

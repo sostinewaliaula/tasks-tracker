@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma2"
+  provider   = "prisma-client-js"
+  output     = "../src/generated/prisma2"
+  engineType = "binary"
 }
 
 datasource db {
@@ -75,4 +76,7 @@ model Task {
   createdBy    User        @relation(fields: [createdById], references: [id])
   departmentId Int?
   department   Department? @relation(fields: [departmentId], references: [id])
+  parentId     Int?
+  parent       Task?       @relation("TaskSubtasks", fields: [parentId], references: [id])
+  subtasks     Task[]      @relation("TaskSubtasks")
 }

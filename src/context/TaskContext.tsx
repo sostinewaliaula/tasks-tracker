@@ -1,5 +1,5 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import { MOCK_USERS } from '../constants/mockUsers';
+import { useAuth } from './AuthContext';
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskStatus = 'todo' | 'in-progress' | 'completed';
 export type Task = {
@@ -12,6 +12,8 @@ export type Task = {
   createdBy: string;
   department: string;
   createdAt: Date;
+  parentId?: string | null;
+  subtasks?: Task[];
 };
 type Notification = {
   id: string;
@@ -22,7 +24,8 @@ type Notification = {
 };
 type TaskContextType = {
   tasks: Task[];
-  addTask: (task: Omit<Task, 'id' | 'createdAt'>) => void;
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>) => Promise<string>;
+  addSubtask: (parentId: string, task: Omit<Task, 'id' | 'createdAt' | 'parentId' | 'subtasks'>) => Promise<void>;
   updateTaskStatus: (id: string, status: TaskStatus) => void;
   notifications: Notification[];
   markNotificationAsRead: (id: string) => void;
@@ -36,81 +39,69 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 // Generate 20 tasks per user across the current week
 const startOfWeek = (() => { const d = new Date(); const day = d.getDay(); const s = new Date(d); s.setDate(d.getDate() - day); s.setHours(0,0,0,0); return s; })();
 const addDays = (date: Date, days: number) => { const d = new Date(date); d.setDate(d.getDate() + days); return d; };
-const priorities: TaskPriority[] = ['high', 'medium', 'low'];
-const statuses: TaskStatus[] = ['todo', 'in-progress', 'completed'];
-
-const mockTasks: Task[] = MOCK_USERS.flatMap((user, uIdx) => {
-  const tasks: Task[] = [];
-  for (let i = 0; i < 20; i++) {
-    const dayOffset = (i % 5); // Mon-Fri
-    const createdOffset = Math.max(0, dayOffset - 2);
-    const deadline = addDays(startOfWeek, 1 + dayOffset); // ensure within week Tue-Sat-ish
-    const createdAt = addDays(startOfWeek, createdOffset);
-    const status = statuses[(uIdx + i) % statuses.length];
-    const priority = priorities[(uIdx + i) % priorities.length];
-    tasks.push({
-      id: `${uIdx + 1}-${i + 1}`,
-      title: `${user.department} Task ${i + 1}`,
-      description: `Auto-generated task ${i + 1} for ${user.name}`,
-      deadline,
-      priority,
-      status,
-      createdBy: user.id,
-      department: user.department,
-      createdAt
-    });
-  }
-  return tasks;
-});
-const mockNotifications: Notification[] = [{
-  id: '1',
-  message: "New task 'Client Presentation' has been created",
-  read: false,
-  createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-  relatedTaskId: '3'
-}, {
-  id: '2',
-  message: "Task 'Website Update' has been completed",
-  read: true,
-  createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-  relatedTaskId: '4'
-}, {
-  id: '3',
-  message: "Reminder: 'Client Presentation' is due tomorrow",
-  read: false,
-  createdAt: new Date(Date.now() - 0.5 * 24 * 60 * 60 * 1000),
-  relatedTaskId: '3'
-}];
+const mockNotifications: Notification[] = [];
 export function TaskProvider({
   children
 }: {
   children: ReactNode;
 }) {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
+  const { token } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
-  const addTask = (task: Omit<Task, 'id' | 'createdAt'>) => {
-    const newTask: Task = {
-      ...task,
-      id: Date.now().toString(),
-      createdAt: new Date()
-    };
-    setTasks(prev => [...prev, newTask]);
-    // Add notification for task creation
-    const newNotification: Notification = {
-      id: Date.now().toString(),
-      message: `New task '${newTask.title}' has been created`,
-      read: false,
-      createdAt: new Date(),
-      relatedTaskId: newTask.id
-    };
-    setNotifications(prev => [...prev, newNotification]);
+  const addTask = async (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>) => {
+    const resp = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        deadline: task.deadline,
+        priority: task.priority,
+        status: task.status,
+        departmentId: task.department ? undefined : undefined,
+        createdById: Number.isNaN(Number(task.createdBy)) ? undefined : Number(task.createdBy),
+        parentId: task.parentId ?? null
+      })
+    });
+    if (!resp.ok) throw new Error('Failed to create task');
+    const data = await resp.json();
+    const newId = String(data?.data?.id ?? '');
+    await reloadTasks();
+    return newId;
   };
-  const updateTaskStatus = (id: string, status: TaskStatus) => {
-    setTasks(prev => prev.map(task => task.id === id ? {
-      ...task,
-      status
-    } : task));
-    // If task is completed, add notification
+  const addSubtask = async (parentId: string, task: Omit<Task, 'id' | 'createdAt' | 'parentId' | 'subtasks'>) => {
+    const resp = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        deadline: task.deadline,
+        priority: task.priority,
+        status: task.status,
+        parentId: Number(parentId)
+      })
+    });
+    if (!resp.ok) throw new Error('Failed to create subtask');
+    await reloadTasks();
+  };
+  const updateTaskStatus = async (id: string, status: TaskStatus) => {
+    const resp = await fetch(`/api/tasks/${id}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ status })
+    });
+    if (!resp.ok) throw new Error('Failed to update status');
+    await reloadTasks();
     if (status === 'completed') {
       const task = tasks.find(t => t.id === id);
       if (task) {
@@ -166,6 +157,42 @@ export function TaskProvider({
       low: filteredTasks.filter(task => task.priority === 'low').length
     };
   };
+  // Fetch tasks from API
+  const reloadTasks = async () => {
+    const resp = await fetch('/api/tasks?parentId=null', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const apiTasks = (data?.data ?? []) as any[];
+    const mapTask = (t: any): Task => ({
+      id: String(t.id),
+      title: t.title,
+      description: t.description,
+      deadline: new Date(t.deadline),
+      priority: t.priority,
+      status: String(t.status).replace('_', '-') as TaskStatus,
+      createdBy: String(t.createdById ?? t.createdBy?.id ?? ''),
+      department: t.department?.name ?? '',
+      createdAt: new Date(t.createdAt),
+      parentId: t.parentId ? String(t.parentId) : null,
+      subtasks: Array.isArray(t.subtasks) ? t.subtasks.map(mapTask) : []
+    });
+    const mapped: Task[] = apiTasks.map(mapTask);
+    setTasks(mapped);
+  };
+
+  useEffect(() => {
+    if (token) {
+      reloadTasks();
+    } else {
+      setTasks([]);
+    }
+  }, [token]);
+
   // Add deadline reminder notifications
   useEffect(() => {
     const checkForDeadlines = () => {
@@ -179,7 +206,6 @@ export function TaskProvider({
           const taskDeadline = new Date(task.deadline);
           taskDeadline.setHours(0, 0, 0, 0);
           if (taskDeadline.getTime() === tomorrow.getTime()) {
-            // Check if we already have a notification for this task deadline
             const hasNotification = notifications.some(n => n.relatedTaskId === task.id && n.message.includes('due tomorrow'));
             if (!hasNotification) {
               const newNotification: Notification = {
@@ -195,20 +221,19 @@ export function TaskProvider({
         }
       });
     };
-    // Check once when component mounts
     checkForDeadlines();
-    // Then check every day at 9 AM
     const interval = setInterval(() => {
       const now = new Date();
       if (now.getHours() === 9 && now.getMinutes() === 0) {
         checkForDeadlines();
       }
-    }, 60000); // Check every minute
+    }, 60000);
     return () => clearInterval(interval);
   }, [tasks, notifications]);
   return <TaskContext.Provider value={{
     tasks,
     addTask,
+    addSubtask,
     updateTaskStatus,
     notifications,
     markNotificationAsRead,

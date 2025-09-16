@@ -11,7 +11,7 @@ router.use(authMiddleware);
 router.get('/', async (req, res) => {
   try {
     const user = (req as any).user as { id: number; role: 'admin' | 'manager' | 'employee' }; 
-    const { status, priority, q, departmentId, createdById } = req.query as Record<string, string>;
+    const { status, priority, q, departmentId, createdById, parentId } = req.query as Record<string, string>;
 
     const where: any = {};
     if (status) where.status = status.replace('-', '_');
@@ -19,21 +19,24 @@ router.get('/', async (req, res) => {
     if (q) where.OR = [{ title: { contains: q } }, { description: { contains: q } }];
     if (departmentId) where.departmentId = Number(departmentId);
     if (createdById) where.createdById = Number(createdById);
+    if (parentId !== undefined) where.parentId = parentId === 'null' ? null : Number(parentId);
 
     // Visibility rules
     if (user.role === 'manager') {
-      // Managers see tasks in their department only
       const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
       where.departmentId = dbUser?.departmentId ?? -1;
     } else if (user.role === 'employee') {
-      // Employees see only their tasks
       where.createdById = user.id;
     }
 
     const tasks = await prisma.task.findMany({
       where,
       orderBy: { deadline: 'asc' },
-      include: { createdBy: { select: { id: true, name: true } }, department: { select: { id: true, name: true } } },
+      include: {
+        createdBy: { select: { id: true, name: true } },
+        department: { select: { id: true, name: true } },
+        subtasks: true,
+      },
       take: 500,
     });
     res.json({ data: tasks });
@@ -43,27 +46,25 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/tasks - create task (manager/admin). Employees can create own tasks optionally.
+// POST /api/tasks - create task or subtask
 router.post('/', async (req, res) => {
   try {
     const user = (req as any).user as { id: number; role: 'admin' | 'manager' | 'employee' };
-    const { title, description, deadline, priority, status, departmentId, createdById } = req.body || {};
+    const { title, description, deadline, priority, status, departmentId, createdById, parentId } = req.body || {};
 
-    if (!title || !description || !deadline || !priority) {
-      return res.status(400).json({ error: 'title, description, deadline, priority are required' });
+    if (!title || !deadline || !priority) {
+      return res.status(400).json({ error: 'title, deadline, priority are required' });
     }
 
-    // Determine creator and allowed department
     let resolvedCreatedById = Number(createdById) || user.id;
     let resolvedDepartmentId = departmentId === undefined ? undefined : Number(departmentId);
+    let resolvedParentId = parentId === undefined || parentId === null ? null : Number(parentId);
 
     if (user.role === 'employee') {
-      // Employees can only create tasks for themselves
       resolvedCreatedById = user.id;
     }
 
     if (user.role === 'manager') {
-      // Managers limited to their own department
       const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
       resolvedDepartmentId = dbUser?.departmentId ?? null;
     }
@@ -71,18 +72,52 @@ router.post('/', async (req, res) => {
     const created = await prisma.task.create({
       data: {
         title: String(title),
-        description: String(description),
+        description: String(description ?? ''),
         deadline: new Date(deadline),
         priority: String(priority) as any,
         status: (status ? String(status).replace('-', '_') : 'todo') as any,
         createdById: resolvedCreatedById,
         departmentId: resolvedDepartmentId ?? null,
+        parentId: resolvedParentId,
       },
     });
     res.status(201).json({ data: created });
   } catch (e) {
     console.error('Task create error:', e);
     res.status(500).json({ error: 'Failed to create task' });
+  }
+});
+
+// PATCH /api/tasks/:id - general update (title, description, deadline, priority, status)
+router.patch('/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid id' });
+    const user = (req as any).user as { id: number; role: 'admin' | 'manager' | 'employee' };
+
+    const existing = await prisma.task.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Task not found' });
+    if (user.role === 'employee' && existing.createdById !== user.id) {
+      return res.status(403).json({ error: 'Cannot modify others\' tasks' });
+    }
+
+    const { title, description, deadline, priority, status } = req.body || {};
+
+    const updated = await prisma.task.update({
+      where: { id },
+      data: {
+        title: typeof title === 'string' ? title : undefined,
+        description: typeof description === 'string' ? description : undefined,
+        deadline: deadline ? new Date(deadline) : undefined,
+        priority: priority ? String(priority) as any : undefined,
+        status: status ? (String(status).replace('-', '_') as any) : undefined,
+      },
+    });
+
+    res.json({ data: updated });
+  } catch (e) {
+    console.error('Task update error:', e);
+    res.status(500).json({ error: 'Failed to update task' });
   }
 });
 
@@ -95,7 +130,6 @@ router.patch('/:id/status', async (req, res) => {
     if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid id' });
     if (!status) return res.status(400).json({ error: 'status is required' });
 
-    // Check ownership or managerial/admin rights
     const existing = await prisma.task.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: 'Task not found' });
     if (user.role === 'employee' && existing.createdById !== user.id) {
