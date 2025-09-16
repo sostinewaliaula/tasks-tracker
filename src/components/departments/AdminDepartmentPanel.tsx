@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { BuildingIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { DepartmentModal } from './DepartmentModal';
 
 type DepartmentNode = {
   id: number;
@@ -13,11 +14,11 @@ export function AdminDepartmentPanel() {
   const { currentUser, token } = useAuth() as any;
   const [departments, setDepartments] = React.useState<DepartmentNode[]>([]);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
-  const [newPrimaryName, setNewPrimaryName] = React.useState('');
-  const [newSubName, setNewSubName] = React.useState('');
   const [editName, setEditName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [modalParent, setModalParent] = React.useState<{ id: number | null, name?: string } | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -114,26 +115,67 @@ export function AdminDepartmentPanel() {
     </ul>
   );
 
+  const handleAddDepartment = () => {
+    setModalParent(null);
+    setModalOpen(true);
+  };
+  const handleAddSubDepartment = () => {
+    if (!selectedId) return;
+    const parent = findDepartmentById(departments, selectedId);
+    setModalParent({ id: selectedId, name: parent?.name });
+    setModalOpen(true);
+  };
+  const handleModalSubmit = async (name: string, parentId?: number | null) => {
+    if (!name.trim()) return;
+    const body: any = { name: name.trim() };
+    if (parentId) body.parentId = parentId;
+    const res = await fetch(`${API_URL}/api/departments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) { fetchDepartments(); }
+    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to create department'); }
+  };
+  function findDepartmentById(nodes: DepartmentNode[], id: number): DepartmentNode | undefined {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.children) {
+        const found = findDepartmentById(node.children, id);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  }
+
   if (currentUser?.role !== 'admin') return null;
 
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <button
+          onClick={handleAddDepartment}
+          className="bg-[#2e9d74] text-white px-4 py-2 rounded flex items-center text-sm w-full md:w-auto justify-center"
+        >
+          <PlusIcon className="h-4 w-4 mr-1" /> Add Department
+        </button>
+        <button
+          onClick={handleAddSubDepartment}
+          disabled={!selectedId}
+          className="bg-[#2e9d74] text-white px-4 py-2 rounded flex items-center text-sm w-full md:w-auto justify-center disabled:opacity-50"
+        >
+          <PlusIcon className="h-4 w-4 mr-1" /> Add Sub-Department
+        </button>
+      </div>
+      <DepartmentModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleModalSubmit}
+        parentId={modalParent?.id ?? undefined}
+        parentName={modalParent?.name}
+      />
+      {/* Rename and error UI remains unchanged */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Add Primary Department</label>
-          <div className="flex">
-            <input value={newPrimaryName} onChange={(e) => setNewPrimaryName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm" placeholder="e.g., Turnkey" />
-            <button onClick={createPrimary} className="bg-[#2e9d74] text-white px-3 rounded-r flex items-center text-sm"><PlusIcon className="h-4 w-4 mr-1"/>Add</button>
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Add Sub-Department</label>
-          <div className="flex">
-            <input value={newSubName} onChange={(e) => setNewSubName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm" placeholder="e.g., Platform" />
-            <button onClick={createSub} disabled={!selectedId} className="bg-[#2e9d74] text-white px-3 rounded-r flex items-center text-sm disabled:opacity-50"><PlusIcon className="h-4 w-4 mr-1"/>Add</button>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Selected parent: {selectedId || 'None'}</p>
-        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Rename Department</label>
           <div className="flex">
@@ -143,7 +185,6 @@ export function AdminDepartmentPanel() {
         </div>
       </div>
       {error ? <p className="text-sm text-red-600 mt-2">{error}</p> : null}
-
       <div className="mt-6">
         <div className="px-4 py-3 border-b border-gray-200 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">Departments</h3>
