@@ -22,6 +22,9 @@ export function DepartmentsPage() {
   const [newSubName, setNewSubName] = useState('');
   const [editName, setEditName] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+  const [assignUser, setAssignUser] = useState('');
+  const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string }[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
@@ -44,6 +47,17 @@ export function DepartmentsPage() {
     if (currentUser?.role === 'admin') fetchDepartments();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      if (currentUser?.role !== 'admin') return;
+      const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+      if (!res.ok) return;
+      const j = await res.json();
+      setUsers(j.data || []);
+    };
+    loadUsers();
+  }, [API_URL, currentUser?.role, token]);
 
   const allDepartments: DepartmentNode[] = useMemo(() => {
     const result: DepartmentNode[] = [];
@@ -222,6 +236,46 @@ export function DepartmentsPage() {
                   </div>
                 </dl>
               </div>
+              {currentUser?.role === 'admin' ? (
+                <div className="px-4 py-5 sm:px-6 border-t border-gray-200">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-3">Add User to Department</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} className="border rounded px-3 py-2 text-sm">
+                      <option value="">Select user…</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.id}>{u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}</option>
+                      ))}
+                    </select>
+                    <input value={assignUser} onChange={(e) => setAssignUser(e.target.value)} placeholder="Enter userId, LDAP UID or email" className="border rounded px-3 py-2 text-sm" />
+                    <button
+                      onClick={async () => {
+                        if ((!assignUser.trim() && selectedUserId === '') || !selectedDept) return;
+                        const body: any = {};
+                        if (selectedUserId !== '') body.userId = Number(selectedUserId);
+                        else if (/^\d+$/.test(assignUser.trim())) body.userId = Number(assignUser.trim());
+                        else if (assignUser.includes('@')) body.email = assignUser.trim();
+                        else body.ldapUid = assignUser.trim();
+                        const res = await fetch(`${API_URL}/api/departments/${selectedDept.id}/users`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+                          body: JSON.stringify(body)
+                        });
+                        if (res.ok) {
+                          setAssignUser(''); setSelectedUserId('');
+                          alert('User assigned to department');
+                        } else {
+                          const j = await res.json().catch(() => ({}));
+                          alert(j.error || 'Failed to assign user');
+                        }
+                      }}
+                      className="bg-[#2e9d74] text-white px-4 py-2 rounded text-sm"
+                    >
+                      Add User
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Tip: provide numeric user ID, LDAP UID, or email.</p>
+                </div>
+              ) : null}
             </div> : <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:px-6 text-center">
                 <BuildingIcon className="h-12 w-12 text-[#2e9d74] mx-auto mb-4" />

@@ -98,6 +98,43 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// Assign a user to a department by id, ldapUid or email
+router.post('/:id/users', async (req, res) => {
+    const departmentId = Number(req.params.id);
+    const { userId, ldapUid, email } = req.body || {};
+    if (!Number.isFinite(departmentId)) {
+        return res.status(400).json({ error: 'Invalid department id' });
+    }
+    if (!userId && !ldapUid && !email) {
+        return res.status(400).json({ error: 'Provide userId, ldapUid or email' });
+    }
+    try {
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    userId ? { id: Number(userId) || -1 } : undefined,
+                    ldapUid ? { ldapUid: String(ldapUid) } : undefined,
+                    email ? { email: String(email) } : undefined,
+                ].filter(Boolean) as any,
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const updated = await prisma.user.update({
+            where: { id: user.id },
+            data: { departmentId },
+        });
+
+        res.status(200).json({ data: updated });
+    } catch (e) {
+        console.error('Assign user to department error:', e);
+        res.status(500).json({ error: 'Failed to assign user to department' });
+    }
+});
+
 export default router;
 
 
