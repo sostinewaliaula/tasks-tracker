@@ -53,31 +53,28 @@ export function WeeklyCalendar({
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
   };
   return <div>
-      <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">
+      <div className="bg-white dark:bg-gray-900 px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
+        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
           Weekly Calendar
         </h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
           Tasks scheduled for this week
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-gray-200">
-        {tasksByDay.map(({
-        date,
-        tasks
-      }) => <div key={date.toISOString()} className="min-h-[200px]">
-            <div className={`px-4 py-2 text-center font-medium ${isToday(date) ? 'bg-[#e8f5f0] text-[#2e9d74]' : 'bg-gray-50'}`}>
-              {formatDate(date)}
-              {isToday(date) && <span className="ml-2 text-xs font-bold">(Today)</span>}
-            </div>
-            <div className="divide-y divide-gray-200">
-              {tasks.length > 0 ? tasks.map(task => <div key={task.id} className="p-2">
-                    <TaskCard task={task} />
-                  </div>) : <div className="p-4 text-center text-sm text-gray-500">
-                  No tasks scheduled
-                </div>}
-            </div>
-          </div>)}
+      <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700">
+        {tasksByDay.map(({ date, tasks }) => <div key={date.toISOString()} className="min-h-[200px]">
+              <div className={`px-4 py-2 text-center font-medium ${isToday(date) ? 'bg-[#e8f5f0] dark:bg-[#22332c] text-[#2e9d74] dark:text-[#2e9d74]' : 'bg-gray-50 dark:bg-gray-800 dark:text-gray-100'}`}> 
+                {formatDate(date)}
+                {isToday(date) && <span className="ml-2 text-xs font-bold">(Today)</span>}
+              </div>
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {tasks.length > 0 ? tasks.map(task => <div key={task.id} className="p-2">
+                      <TaskCard task={task} />
+                    </div>) : <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                    No tasks scheduled
+                  </div>}
+              </div>
+            </div>)}
       </div>
     </div>;
 }

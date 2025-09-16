@@ -15,6 +15,7 @@ import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { Header } from './components/layout/Header';
 import { RBAC } from './components/auth/RBAC';
 import { useAuth } from './context/AuthContext';
+import { DarkModeProvider } from './context/DarkModeContext';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -110,10 +111,12 @@ function AppContent() {
 
 export function App() {
   return (
-    <AuthProvider>
-      <TaskProvider>
-        <AppContent />
-      </TaskProvider>
-    </AuthProvider>
+    <DarkModeProvider>
+      <AuthProvider>
+        <TaskProvider>
+          <AppContent />
+        </TaskProvider>
+      </AuthProvider>
+    </DarkModeProvider>
   );
 }

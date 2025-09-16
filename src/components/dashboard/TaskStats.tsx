@@ -47,15 +47,15 @@ export function TaskStats({
   const timeframeLabel = timeframe === 'week' ? 'This Week' : timeframe === 'month' ? 'This Month' : 'This Quarter';
   return <div className="space-y-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-900 overflow-hidden shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
               Task Status Overview
             </h3>
-            <div className="mt-1 text-3xl font-semibold text-gray-900">
+            <div className="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">
               {totalTasks} Tasks
             </div>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-300">
               {completionRate}% completion rate for{' '}
               {timeframeLabel.toLowerCase()}
             </p>
@@ -80,15 +80,15 @@ export function TaskStats({
             </div>
           </div>
         </div>
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-900 overflow-hidden shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
               Task Priority Distribution
             </h3>
-            <div className="mt-1 text-3xl font-semibold text-gray-900">
+            <div className="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">
               {priorityCounts.high} High Priority
             </div>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-300">
               {totalTasks > 0 ? Math.round(priorityCounts.high / totalTasks * 100) : 0}
               % of all tasks
             </p>
@@ -109,34 +109,34 @@ export function TaskStats({
           </div>
         </div>
       </div>
-      <div className="bg-white overflow-hidden shadow rounded-lg">
+      <div className="bg-white dark:bg-gray-900 overflow-hidden shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
             {timeframeLabel} Summary
           </h3>
-          <div className="mt-5 border-t border-gray-200 pt-5">
+          <div className="mt-5 border-t border-gray-200 dark:border-gray-700 pt-5">
             <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-3">
               <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">
                   Tasks Created
                 </dt>
-                <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">
                   {totalTasks}
                 </dd>
               </div>
               <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">
                   Tasks Completed
                 </dt>
-                <dd className="mt-1 text-3xl font-semibold text-green-600">
+                <dd className="mt-1 text-3xl font-semibold text-green-600 dark:text-green-400">
                   {statusCounts.completed}
                 </dd>
               </div>
               <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">
                   Completion Rate
                 </dt>
-                <dd className="mt-1 text-3xl font-semibold text-[#2e9d74]">
+                <dd className="mt-1 text-3xl font-semibold text-[#2e9d74] dark:text-[#2e9d74]">
                   {completionRate}%
                 </dd>
               </div>

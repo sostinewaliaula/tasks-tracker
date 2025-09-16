@@ -115,10 +115,10 @@ export function TasksPage() {
   return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+          <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:truncate">
             Tasks Management
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
             View, filter, and manage all your tasks in one place
           </p>
         </div>
@@ -140,10 +140,10 @@ export function TasksPage() {
         </div>
       )}
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-        <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+      <div className="bg-white dark:bg-gray-900 shadow overflow-hidden sm:rounded-lg mb-6">
+        <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 flex items-center">
               <FilterIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
               Filters & Sorting
             </h3>
@@ -151,7 +151,7 @@ export function TasksPage() {
 
           <div className="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-6 sm:gap-x-4">
             <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Search
               </label>
               <input
@@ -159,20 +159,20 @@ export function TasksPage() {
                 name="search"
                 id="search"
                 placeholder="Search tasks..."
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.search}
                 onChange={handleSearchChange}
               />
             </div>
 
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Status
               </label>
               <select
                 id="status"
                 name="status"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.status}
                 onChange={handleStatusFilterChange}
               >
@@ -184,13 +184,13 @@ export function TasksPage() {
             </div>
 
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Priority
               </label>
               <select
                 id="priority"
                 name="priority"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.priority}
                 onChange={handlePriorityFilterChange}
               >
@@ -202,42 +202,42 @@ export function TasksPage() {
             </div>
 
             <div>
-              <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 From Date
               </label>
               <input
                 type="date"
                 id="dateFrom"
                 name="dateFrom"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.dateFrom}
                 onChange={handleDateFromChange}
               />
             </div>
 
             <div>
-              <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 To Date
               </label>
               <input
                 type="date"
                 id="dateTo"
                 name="dateTo"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.dateTo}
                 onChange={handleDateToChange}
               />
             </div>
 
             <div>
-              <label htmlFor="sort" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="sort" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Sort By
               </label>
               <div className="mt-1 flex rounded-md shadow-sm">
                 <select
                   id="sort"
                   name="sort"
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-l-md"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-l-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   value={sortBy}
                   onChange={e => handleSort(e.target.value as any)}
                 >
@@ -248,7 +248,7 @@ export function TasksPage() {
                 <button
                   type="button"
                   onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                  className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm rounded-r-md hover:bg-gray-100"
+                  className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-300 sm:text-sm rounded-r-md hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <SortAscIcon className={`h-4 w-4 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 </button>
@@ -256,7 +256,6 @@ export function TasksPage() {
             </div>
           </div>
         </div>
-
         <TaskList tasks={sortedTasks} onTaskClick={handleTaskClick} />
       </div>
 

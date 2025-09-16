@@ -3,3 +3,36 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
+
+:root {
+  --color-bg-dark: #181F2A;
+  --color-bg-card: #232B3E;
+  --color-text-light: #F3F6FA;
+  --color-accent-green: #2e9d74;
+  --color-accent-purple: #8c52ff;
+}
+
+html, body {
+  @apply text-gray-900;
+  background-color: #e8f5f0;
+}
+
+.dark html, .dark body {
+  background-color: var(--color-bg-dark) !important;
+  color: var(--color-text-light) !important;
+}
+
+.dark .card, .dark .section-card {
+  background-color: var(--color-bg-card) !important;
+  color: var(--color-text-light) !important;
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.12);
+}
+
+.dark .accent-green {
+  color: var(--color-accent-green) !important;
+}
+
+.dark .accent-purple {
+  color: var(--color-accent-purple) !important;
+}
