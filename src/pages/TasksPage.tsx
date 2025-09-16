@@ -140,7 +140,7 @@ export function TasksPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-900 shadow overflow-hidden sm:rounded-lg mb-6">
+      <div className="card mb-6">
         <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 flex items-center">

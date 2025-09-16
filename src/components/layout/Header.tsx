@@ -35,8 +35,8 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname.includes('dashboard')
-                    ? 'border-[#2e9d74] text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
                 } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
               >
                 Dashboard
@@ -50,8 +50,8 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname === '/tasks'
-                    ? 'border-[#2e9d74] text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
                 } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
               >
                 Tasks
@@ -66,8 +66,8 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/reports'
-                      ? 'border-[#2e9d74] text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
                   } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Reports
@@ -83,8 +83,8 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/users'
-                      ? 'border-[#2e9d74] text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
                   } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Users
@@ -100,8 +100,8 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/departments'
-                      ? 'border-[#2e9d74] text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
                   } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Departments
@@ -117,8 +117,8 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/settings'
-                      ? 'border-[#2e9d74] text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
                   } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Settings
@@ -132,9 +132,9 @@ export function Header() {
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="p-2 rounded-full hover:bg-gray-100 relative"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 relative"
               >
-                <BellIcon className="h-6 w-6 text-gray-500" />
+                <BellIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     {unreadCount}
@@ -167,17 +167,17 @@ export function Header() {
             {/* Profile/Logout */}
             <div className="flex items-center space-x-3">
               <div className="text-sm">
-                <p className="font-medium text-gray-700">{currentUser?.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{currentUser?.role}</p>
+                <p className="font-medium text-gray-700 dark:text-gray-200">{currentUser?.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{currentUser?.role}</p>
               </div>
               <button
                 onClick={() => {
                   logout();
                   navigate('/login');
                 }}
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <LogOutIcon className="h-5 w-5 text-gray-500" />
+                <LogOutIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               </button>
             </div>
           </div>

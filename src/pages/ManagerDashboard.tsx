@@ -44,7 +44,7 @@ export function ManagerDashboard() {
           </div>
         </div>
       </div>
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      <div className="card">
         {viewMode === 'list' && <TaskList tasks={departmentTasks} />}
         {viewMode === 'calendar' && <WeeklyCalendar tasks={weeklyTasks} />}
         {viewMode === 'stats' && <TaskStats department={currentUser?.department} />}

@@ -16,26 +16,26 @@ export function ReportsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
-  if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'superadmin')) {
+  if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
     return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white dark:bg-gray-900 shadow overflow-hidden sm:rounded-lg">
+        <div className="card">
           <div className="px-4 py-5 sm:p-6 text-center">
             <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
               Access Restricted
             </h3>
             <div className="mt-2 max-w-xl text-sm text-gray-500 dark:text-gray-300 mx-auto">
-              <p>Only managers and super admins can access the reports page.</p>
+              <p>Only managers and admins can access the reports page.</p>
             </div>
           </div>
         </div>
       </div>;
   }
-  const isSuperAdmin = currentUser.role === 'superadmin';
+  const isAdmin = currentUser.role === 'admin';
   const departments = useMemo(() => DEPARTMENTS, []);
 
   // Build trend data based on timeframe and department filter
   const trendData = useMemo(() => {
-    const scopeDept = isSuperAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department;
+    const scopeDept = isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department;
     const filtered = tasks.filter(t => (scopeDept ? t.department === scopeDept : true));
 
     const now = new Date();
@@ -124,22 +124,22 @@ export function ReportsPage() {
       months.push({ name, created, completed });
     }
     return months;
-  }, [tasks, timeframe, selectedDepartment, isSuperAdmin, currentUser.department, dateFrom, dateTo]);
+  }, [tasks, timeframe, selectedDepartment, isAdmin, currentUser.department, dateFrom, dateTo]);
   return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:truncate">
-            {isSuperAdmin ? 'Company Reports' : 'Department Reports'}
+            {isAdmin ? 'Company Reports' : 'Department Reports'}
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-            {isSuperAdmin ? 'Organization-wide analytics and insights' : <>Comprehensive analytics and insights for {currentUser.department} department</>}
+            {isAdmin ? 'Organization-wide analytics and insights' : <>Comprehensive analytics and insights for {currentUser.department} department</>}
           </p>
         </div>
         <div className="mt-4 flex md:mt-0 md:ml-4">
           <ExportOptions />
         </div>
       </div>
-      <div className="bg-white dark:bg-gray-900 shadow overflow-hidden sm:rounded-lg mb-6">
+      <div className="card mb-6">
         <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
@@ -158,7 +158,7 @@ export function ReportsPage() {
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Used for exports and future filters.</p>
             </div>
-            {isSuperAdmin && (
+            {isAdmin && (
               <div>
                 <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Department</label>
                 <select id="department" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)}>
@@ -191,11 +191,11 @@ export function ReportsPage() {
           </div>
         </div>
         <div className="px-4 py-5 sm:p-6">
-          {reportType === 'overview' && <TaskStats department={isSuperAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
-          {reportType === 'team' && <TeamPerformance department={isSuperAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
+          {reportType === 'overview' && <TaskStats department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
+          {reportType === 'team' && <TeamPerformance department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
           {reportType === 'trends' && (
             <div className="space-y-8">
-              <div className="bg-white dark:bg-gray-900 overflow-hidden shadow rounded-lg">
+              <div className="card">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4">Created vs Completed</h3>
                   <div className="h-80">
@@ -214,7 +214,7 @@ export function ReportsPage() {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div className="bg-white dark:bg-gray-900 overflow-hidden shadow rounded-lg">
+                <div className="card">
                   <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4">Created Tasks</h3>
                     <div className="h-64">
@@ -231,7 +231,7 @@ export function ReportsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-900 overflow-hidden shadow rounded-lg">
+                <div className="card">
                   <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4">Completed Tasks</h3>
                     <div className="h-64">

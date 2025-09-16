@@ -17,6 +17,14 @@ html, body {
   background-color: #e8f5f0;
 }
 
+/* Light mode cards */
+.card, .section-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.06);
+}
+
 .dark html, .dark body {
   background-color: var(--color-bg-dark) !important;
   color: var(--color-text-light) !important;

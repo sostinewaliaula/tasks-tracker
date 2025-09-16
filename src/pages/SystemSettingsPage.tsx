@@ -108,7 +108,7 @@ export function SystemSettingsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* LDAP Settings (viewable to all; editable only by super admin) */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="card">
           <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex items-center">
             <ServerIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
             <h3 className="text-lg leading-6 font-medium text-gray-900">LDAP Integration</h3>
@@ -168,7 +168,7 @@ export function SystemSettingsPage() {
         </div>
 
         {/* Role Permissions (viewable; editable only by super admin) */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="card">
           <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex items-center">
             <ShieldIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
             <h3 className="text-lg leading-6 font-medium text-gray-900">Role Permissions</h3>

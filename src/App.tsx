@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { TaskProvider } from './context/TaskContext';
 import { AuthProvider } from './context/AuthContext';
 import { EmployeeDashboard } from './pages/EmployeeDashboard';
@@ -19,10 +19,11 @@ import { DarkModeProvider } from './context/DarkModeContext';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
   
   return (
-    <div className="flex flex-col min-h-screen bg-[#e8f5f0]">
-      {isAuthenticated && <Header />}
+    <div className="flex flex-col min-h-screen bg-[#e8f5f0] dark:bg-[var(--color-bg-dark)]">
+      {isAuthenticated && location.pathname !== '/login' && <Header />}
       <main className="flex-1">
         <Routes>
           {/* Public Routes */}
