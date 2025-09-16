@@ -9,6 +9,8 @@ type DepartmentNode = {
   name: string;
   parentId: number | null;
   children?: DepartmentNode[];
+  managerId?: number | null;
+  description?: string;
 };
 
 function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boolean; onCancel: () => void; onConfirm: () => void; deptName: string }) {
@@ -22,6 +24,56 @@ function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boo
           <button onClick={onCancel} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Cancel</button>
           <button onClick={onConfirm} className="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function EditDepartmentModal({ open, onClose, department, users, onSave, loading }: {
+  open: boolean;
+  onClose: () => void;
+  department: DepartmentNode | null;
+  users: { id: number; name: string; email: string | null; ldapUid: string }[];
+  onSave: (data: { name: string; managerId: number | null; description?: string }) => void;
+  loading: boolean;
+}) {
+  const [name, setName] = useState(department?.name || '');
+  const [managerId, setManagerId] = useState<number | ''>(department?.managerId || '');
+  const [description, setDescription] = useState(department?.description || '');
+  useEffect(() => {
+    setName(department?.name || '');
+    setManagerId(department?.managerId || '');
+    setDescription(department?.description || '');
+  }, [department, open]);
+  if (!open || !department) return null;
+  const deptUsers = users.filter(u => u.primaryDepartment === department.name || u.department === department.name);
+  return (
+    <div className="fixed z-30 inset-0 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Edit Department</h2>
+        <form onSubmit={e => { e.preventDefault(); onSave({ name, managerId: managerId ? Number(managerId) : null, description }); }}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Department Name</label>
+            <input value={name} onChange={e => setName(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager</label>
+            <select value={managerId} onChange={e => setManagerId(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+              <option value="">No manager</option>
+              {deptUsers.map(u => (
+                <option key={u.id} value={u.id}>{u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Cancel</button>
+            <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-[var(--color-accent-green)] text-white">{loading ? 'Saving...' : 'Save'}</button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -48,10 +100,12 @@ function DepartmentsPageContent() {
   const [editName, setEditName] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [assignUser, setAssignUser] = useState('');
-  const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string }[]>([]);
+  const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalParent, setModalParent] = useState<{ id: number | null, name?: string } | null>(null);
+  const [editModal, setEditModal] = useState<{ open: boolean; dept: DepartmentNode | null }>({ open: false, dept: null });
+  const [editLoading, setEditLoading] = useState(false);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
@@ -180,6 +234,35 @@ function DepartmentsPageContent() {
     }
   };
 
+  const handleEditSave = async (data: { name: string; managerId: number | null; description?: string }) => {
+    if (!editModal.dept) return;
+    setEditLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/departments/${editModal.dept.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+        body: JSON.stringify({ name: data.name, managerId: data.managerId, description: data.description })
+      });
+      if (res.ok) {
+        fetchDepartments();
+        showToast('Department updated', 'success');
+        setEditModal({ open: false, dept: null });
+      } else {
+        const j = await res.json().catch(() => ({}));
+        showToast(j.error || 'Failed to update department', 'error');
+      }
+    } catch (e) {
+      showToast('Failed to update department', 'error');
+    }
+    setEditLoading(false);
+  };
+
+  // Helper to get member count for a department
+  function getDepartmentMemberCount(dept: DepartmentNode, users: { id: number; name: string; email: string | null; ldapUid: string; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]) {
+    // Count users whose primaryDepartment or department matches
+    return users.filter(u => u.primaryDepartment === dept.name || u.department === dept.name).length;
+  }
+
   const renderTree = (nodes: DepartmentNode[]) => (
     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
       {nodes.map((dept) => (
@@ -211,11 +294,15 @@ function DepartmentsPageContent() {
               <button onClick={() => setSelectedId(dept.id)} className="flex items-center">
                 <BuildingIcon className="h-5 w-5 text-[#2e9d74] mr-3" />
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 text-left">{dept.name}</p>
+                <span className="ml-2 text-xs text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">{getDepartmentMemberCount(dept, users)} members</span>
               </button>
             </div>
             {currentUser?.role === 'admin' ? (
               <div className="flex items-center space-x-2">
                 <button onClick={(e) => { e.stopPropagation(); setSelectedId(dept.id); setEditName(dept.name); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
                   <PencilIcon className="h-4 w-4" />
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} className="text-red-500 hover:text-red-600" title="Delete">
@@ -307,6 +394,7 @@ function DepartmentsPageContent() {
                 <div className="px-4 py-5 sm:px-6">
                   <h3 className="text-lg leading-6 font-medium accent-green">{selectedDept.name} Department</h3>
                   <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-300">Department details</p>
+                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">Members: <span className="font-semibold">{getDepartmentMemberCount(selectedDept, users)}</span></p>
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-700">
                   <dl>
@@ -394,6 +482,7 @@ function DepartmentsPageContent() {
         </div>
       </div>
       <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
+      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} users={users} onSave={handleEditSave} loading={editLoading} />
     </div>
   </ToastProvider>;
 }
