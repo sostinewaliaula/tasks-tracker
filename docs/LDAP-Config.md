@@ -7,7 +7,7 @@
 - **Search Base**: ou=people,dc=turnkeyafrica,dc=com
 
 ## Configuration Files
-The LDAP configuration is split between two environment files:
+The LDAP configuration is split between two environment files. The server loads `server/.env` automatically at startup, and also falls back to root `.env` if needed.
 
 ### Frontend (.env)
 ```env
@@ -23,6 +23,13 @@ LDAP_BIND_DN=uid=admin,ou=people,dc=turnkeyafrica,dc=com
 LDAP_BIND_PASSWORD=turnkey4ever
 LDAP_BASE_DN=dc=turnkeyafrica,dc=com
 LDAP_SEARCH_BASE=ou=people,dc=turnkeyafrica,dc=com
+LDAP_DEFAULT_EMAIL_DOMAIN=turnkeyafrica.com
+
+# Required for Prisma/MySQL
+DATABASE_URL=mysql://root:password@localhost:3306/tasks_tracker
+
+# JWT for issuing auth tokens
+JWT_SECRET=change-me
 ```
 
 ## Security Notes
@@ -37,7 +44,7 @@ ldapsearch -x -H ldap://10.176.18.143:389 -D "uid=admin,ou=people,dc=turnkeyafri
 ```
 
 ## Required Actions
-1. Verify the .env files are properly configured
+1. Verify the .env files are properly configured (especially `DATABASE_URL` and `JWT_SECRET` in `server/.env`)
 2. Test LDAP connection using the provided command
 3. Ensure proper error handling for LDAP authentication failures
 4. Monitor LDAP connection stability
