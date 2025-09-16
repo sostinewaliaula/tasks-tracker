@@ -41,11 +41,21 @@ export function AuthProvider({
         throw new Error('Authentication failed');
       }
 
-      const { user, token } = await response.json();
-      setCurrentUser(user);
+      const { token } = await response.json();
       setToken(token);
       localStorage.setItem('auth_token', token);
-      return user;
+
+      // Immediately fetch user profile/role from DB-backed endpoint
+      const meRes = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!meRes.ok) {
+        throw new Error('Failed to load user profile');
+      }
+      const me = await meRes.json();
+      const fetchedUser: User = me.user;
+      setCurrentUser(fetchedUser);
+      return fetchedUser;
     } catch (error) {
       console.error('Login error:', error);
       throw new Error('Authentication failed');
