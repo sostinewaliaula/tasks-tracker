@@ -17,6 +17,7 @@ import { RBAC } from './components/auth/RBAC';
 import { useAuth } from './context/AuthContext';
 import { DarkModeProvider } from './context/DarkModeContext';
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
+import { ToastProvider } from './components/departments/DepartmentModal';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -117,7 +118,9 @@ export function App() {
     <DarkModeProvider>
       <AuthProvider>
         <TaskProvider>
-          <AppContent />
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
         </TaskProvider>
       </AuthProvider>
     </DarkModeProvider>

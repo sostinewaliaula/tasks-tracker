@@ -1,12 +1,14 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTask, TaskStatus, TaskPriority } from '../context/TaskContext';
+import { useToast } from '../components/departments/DepartmentModal';
 import { XIcon, ClockIcon, CalendarIcon, UserIcon, CheckIcon, PlusIcon, ArrowLeft } from 'lucide-react';
 
 export function TaskDetailsPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
   const { tasks, updateTaskStatus, addSubtask, carryOverTask } = useTask();
+  const { showToast } = useToast();
   const task = tasks.find(t => t.id === taskId);
   const [showAddSubtask, setShowAddSubtask] = React.useState(false);
   const [subtaskTitle, setSubtaskTitle] = React.useState('');
@@ -94,10 +96,15 @@ export function TaskDetailsPage() {
   const isOverdue = new Date(task.deadline).getTime() < new Date().getTime() && task.status !== 'completed';
   const handleCarryOver = async () => {
     if (!carryDate || !carryReason.trim()) return;
-    await carryOverTask(task.id, new Date(carryDate), carryReason.trim());
-    setShowCarryOver(false);
-    setCarryReason('');
-    setCarryDate('');
+    try {
+      await carryOverTask(task.id, new Date(carryDate), carryReason.trim());
+      showToast('Task carried over successfully', 'success');
+      setShowCarryOver(false);
+      setCarryReason('');
+      setCarryDate('');
+    } catch (e: any) {
+      showToast(e?.message || 'Failed to carry over task', 'error');
+    }
   };
 
   return (
