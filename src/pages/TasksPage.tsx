@@ -30,7 +30,7 @@ export function TasksPage() {
     if (currentUser?.role === 'manager') {
       if (task.department !== currentUser.department) return false;
     } else if (currentUser?.role === 'employee') {
-      if (task.createdBy !== currentUser?.id) return false;
+      if (String(task.createdBy) !== String(currentUser?.id)) return false;
     } // superadmin sees all
 
     // Apply status filter
@@ -272,7 +272,13 @@ export function TasksPage() {
             </div>
           </div>
         </div>
-        <TaskList tasks={sortedTasks} onTaskClick={handleTaskClick} />
+        {sortedTasks.length === 0 ? (
+          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+            <p className="text-lg">You have no tasks yet.</p>
+          </div>
+        ) : (
+          <TaskList tasks={sortedTasks} onTaskClick={handleTaskClick} />
+        )}
       </div>
 
       {selectedTask && (
