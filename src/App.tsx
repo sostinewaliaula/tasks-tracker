@@ -17,6 +17,7 @@ import { RBAC } from './components/auth/RBAC';
 import { useAuth } from './context/AuthContext';
 import { DarkModeProvider } from './context/DarkModeContext';
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
+import { UserReportsPage } from './pages/UserReportsPage';
 import { ToastProvider } from './components/departments/DepartmentModal';
 
 function AppContent() {
@@ -53,6 +54,7 @@ function AppContent() {
             }
           />
           <Route path="/tasks/:taskId" element={<RBAC allowedRoles={['employee', 'manager', 'admin']}><TaskDetailsPage /></RBAC>} />
+          <Route path="/my-reports" element={<RBAC allowedRoles={['employee', 'manager', 'admin']}><UserReportsPage /></RBAC>} />
           
           {/* Manager Routes */}
           <Route

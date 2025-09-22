@@ -72,6 +72,21 @@ export function Header() {
                 Tasks
               </button>
 
+              {/* My Reports - available to all */}
+              <button
+                onClick={() => {
+                  setIsNotificationsOpen(false);
+                  navigate('/my-reports');
+                }}
+                className={`${
+                  location.pathname === '/my-reports'
+                    ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                My Reports
+              </button>
+
               {/* Reports - managers and admins only */}
               {(isManager || isAdmin) && (
                 <button
