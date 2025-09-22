@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Task, TaskStatus, useTask } from '../../context/TaskContext';
 import { ClockIcon, CheckCircleIcon, CircleIcon, CheckIcon } from 'lucide-react';
 type TaskCardProps = {
@@ -10,6 +10,37 @@ export function TaskCard({
   const {
     updateTaskStatus
   } = useTask();
+  // Live timer state
+  const [timeLeft, setTimeLeft] = useState<string | null>(null);
+  const [timerColor, setTimerColor] = useState<string>('');
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const deadlineDate = new Date(task.deadline);
+      const diff = deadlineDate.getTime() - now.getTime();
+      if (diff > 0 && diff < 24 * 60 * 60 * 1000) {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes
+          .toString()
+          .padStart(2, '0')}:${seconds.toString().padStart(2, '0')} left`);
+        if (diff < 60 * 60 * 1000) {
+          setTimerColor('text-red-600 font-bold');
+        } else if (diff < 6 * 60 * 60 * 1000) {
+          setTimerColor('text-yellow-600 font-semibold');
+        } else {
+          setTimerColor('text-green-600 font-semibold');
+        }
+      } else {
+        setTimeLeft(null);
+        setTimerColor('');
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [task.deadline]);
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
       case 'todo':
@@ -81,8 +112,8 @@ export function TaskCard({
           </span>
         </div>
         <div className="flex items-center">
-          <span className={`text-sm ${getDeadlineColor(task.deadline)} dark:text-gray-300`}>
-            {getDeadlineText(task.deadline)}
+          <span className={`text-sm ${timeLeft ? timerColor : getDeadlineColor(task.deadline)} dark:text-gray-300`}>
+            {timeLeft ? timeLeft : getDeadlineText(task.deadline)}
           </span>
         </div>
       </div>
