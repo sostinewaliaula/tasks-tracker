@@ -6,13 +6,16 @@ import { XIcon, ClockIcon, CalendarIcon, UserIcon, CheckIcon, PlusIcon, ArrowLef
 export function TaskDetailsPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
-  const { tasks, updateTaskStatus, addSubtask } = useTask();
+  const { tasks, updateTaskStatus, addSubtask, carryOverTask } = useTask();
   const task = tasks.find(t => t.id === taskId);
   const [showAddSubtask, setShowAddSubtask] = React.useState(false);
   const [subtaskTitle, setSubtaskTitle] = React.useState('');
   const [subtaskDescription, setSubtaskDescription] = React.useState('');
   const [subtaskPriority, setSubtaskPriority] = React.useState<TaskPriority>('medium');
   const [warning, setWarning] = React.useState<string | null>(null);
+  const [showCarryOver, setShowCarryOver] = React.useState(false);
+  const [carryReason, setCarryReason] = React.useState('');
+  const [carryDate, setCarryDate] = React.useState<string>('');
   if (!task) return <div className="max-w-4xl mx-auto py-12 text-center text-gray-500 dark:text-gray-400">Task not found.</div>;
 
   const completedSubtasks = task.subtasks ? task.subtasks.filter(st => st.status === 'completed').length : 0;
@@ -88,6 +91,14 @@ export function TaskDetailsPage() {
         return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Completed</span>;
     }
   };
+  const isOverdue = new Date(task.deadline).getTime() < new Date().getTime() && task.status !== 'completed';
+  const handleCarryOver = async () => {
+    if (!carryDate || !carryReason.trim()) return;
+    await carryOverTask(task.id, new Date(carryDate), carryReason.trim());
+    setShowCarryOver(false);
+    setCarryReason('');
+    setCarryDate('');
+  };
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -104,16 +115,26 @@ export function TaskDetailsPage() {
             <div className="flex items-center space-x-2 mb-2">
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(task.priority)}`}>{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
               {getStatusBadge(computedStatus)}
+              {isOverdue && (
+                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Overdue</span>
+              )}
               {totalSubtasks > 0 && computedStatus !== 'completed' && (
                 <span className="ml-2 text-xs text-gray-600 dark:text-gray-300">{progress}%</span>
               )}
             </div>
             <p className="text-gray-500 dark:text-gray-300 mb-2">{task.description}</p>
             <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-300">
-              <span className="flex items-center"><CalendarIcon className="h-4 w-4 mr-1" /> Deadline: <span className="ml-1 font-medium">{formatDate(task.deadline)}</span></span>
+              <span className="flex items-center"><CalendarIcon className="h-4 w-4 mr-1" /> Deadline: <span className="ml-1 font-medium">{formatDate(task.deadline)}</span>{isOverdue && <span className="ml-2 text-red-600 dark:text-red-300 font-semibold">Overdue</span>}</span>
               <span className="flex items-center"><ClockIcon className="h-4 w-4 mr-1" /> Created: <span className="ml-1 font-medium">{formatDate(task.createdAt)}</span></span>
               <span className="flex items-center"><UserIcon className="h-4 w-4 mr-1" /> Department: <span className="ml-1 font-medium">{task.department}</span></span>
             </div>
+          </div>
+          <div className="mt-3 md:mt-0">
+            {isOverdue && (
+              <button onClick={() => setShowCarryOver(true)} className="inline-flex items-center px-3 py-2 rounded-md bg-[#2e9d74] text-white text-sm hover:opacity-90">
+                Carry over
+              </button>
+            )}
           </div>
           {/* Remove manual status change for main task */}
         </div>
@@ -185,6 +206,35 @@ export function TaskDetailsPage() {
               </div>
               <div className="text-right">
                 <button onClick={handleCreateSubtask} className="px-4 py-2 rounded-md border border-transparent bg-[#2e9d74] text-white">Create Subtask</button>
+              </div>
+            </div>
+        </div>
+        </div>
+      )}
+      {isOverdue && showCarryOver && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-md shadow-lg p-6 border border-red-300 dark:border-red-800">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-red-600 dark:text-red-300 font-semibold text-xl">This task is overdue</div>
+              <button onClick={() => setShowCarryOver(false)} className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700">Close</button>
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">New deadline</label>
+                <input
+                  type="date"
+                  value={carryDate}
+                  min={new Date(Date.now() + 24*60*60*1000).toISOString().slice(0,10)}
+                  max={new Date(Date.now() + 7*24*60*60*1000).toISOString().slice(0,10)}
+                  onChange={e => setCarryDate(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Reason</label>
+                <input value={carryReason} onChange={e => setCarryReason(e.target.value)} placeholder="Explain the unavoidable circumstances" className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+              </div>
+              <div className="md:col-span-3 text-right">
+                <button disabled={!carryDate || !carryReason.trim()} onClick={handleCarryOver} className="inline-flex items-center px-4 py-2 rounded bg-[#2e9d74] text-white text-sm hover:opacity-90 disabled:opacity-50">Save carryover</button>
               </div>
             </div>
           </div>

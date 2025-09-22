@@ -82,4 +82,10 @@ model Task {
   parentId     Int?
   parent       Task?       @relation("TaskSubtasks", fields: [parentId], references: [id])
   subtasks     Task[]      @relation("TaskSubtasks")
+
+  // Carryover fields
+  isCarriedOver           Boolean    @default(false)
+  carryOverReason         String?
+  carriedOverFromDeadline DateTime?
+  carriedOverAt           DateTime?
 }

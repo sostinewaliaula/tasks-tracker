@@ -176,6 +176,51 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
+// POST /api/tasks/:id/carryover - carry over an overdue task to a new deadline with a reason
+router.post('/:id/carryover', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { newDeadline, reason } = req.body || {};
+    const user = (req as any).user as { id: number; role: 'admin' | 'manager' | 'employee' };
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid id' });
+    if (!newDeadline) return res.status(400).json({ error: 'newDeadline is required' });
+    if (typeof reason !== 'string' || reason.trim().length === 0) {
+      return res.status(400).json({ error: 'reason is required' });
+    }
+
+    const existing = await prisma.task.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Task not found' });
+    if (user.role === 'employee' && existing.createdById !== user.id) {
+      return res.status(403).json({ error: 'Cannot modify others\' tasks' });
+    }
+
+    const now = new Date();
+    const nd = new Date(newDeadline);
+    const max = new Date(now);
+    max.setDate(max.getDate() + 7);
+    if (nd.getTime() <= now.getTime()) {
+      return res.status(400).json({ error: 'newDeadline must be in the future' });
+    }
+    if (nd.getTime() > max.getTime()) {
+      return res.status(400).json({ error: 'newDeadline must be within the next 7 days' });
+    }
+    const updated = await prisma.task.update({
+      where: { id },
+      data: {
+        deadline: nd,
+        isCarriedOver: true,
+        carryOverReason: reason,
+        carriedOverFromDeadline: existing.deadline,
+        carriedOverAt: now,
+      }
+    });
+    res.json({ data: updated });
+  } catch (e) {
+    console.error('Task carryover error:', e);
+    res.status(500).json({ error: 'Failed to carry over task' });
+  }
+});
+
 export default router;
 
 

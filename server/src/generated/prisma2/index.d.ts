@@ -3402,6 +3402,10 @@ export namespace Prisma {
     createdById: number | null
     departmentId: number | null
     parentId: number | null
+    isCarriedOver: boolean | null
+    carryOverReason: string | null
+    carriedOverFromDeadline: Date | null
+    carriedOverAt: Date | null
   }
 
   export type TaskMaxAggregateOutputType = {
@@ -3416,6 +3420,10 @@ export namespace Prisma {
     createdById: number | null
     departmentId: number | null
     parentId: number | null
+    isCarriedOver: boolean | null
+    carryOverReason: string | null
+    carriedOverFromDeadline: Date | null
+    carriedOverAt: Date | null
   }
 
   export type TaskCountAggregateOutputType = {
@@ -3430,6 +3438,10 @@ export namespace Prisma {
     createdById: number
     departmentId: number
     parentId: number
+    isCarriedOver: number
+    carryOverReason: number
+    carriedOverFromDeadline: number
+    carriedOverAt: number
     _all: number
   }
 
@@ -3460,6 +3472,10 @@ export namespace Prisma {
     createdById?: true
     departmentId?: true
     parentId?: true
+    isCarriedOver?: true
+    carryOverReason?: true
+    carriedOverFromDeadline?: true
+    carriedOverAt?: true
   }
 
   export type TaskMaxAggregateInputType = {
@@ -3474,6 +3490,10 @@ export namespace Prisma {
     createdById?: true
     departmentId?: true
     parentId?: true
+    isCarriedOver?: true
+    carryOverReason?: true
+    carriedOverFromDeadline?: true
+    carriedOverAt?: true
   }
 
   export type TaskCountAggregateInputType = {
@@ -3488,6 +3508,10 @@ export namespace Prisma {
     createdById?: true
     departmentId?: true
     parentId?: true
+    isCarriedOver?: true
+    carryOverReason?: true
+    carriedOverFromDeadline?: true
+    carriedOverAt?: true
     _all?: true
   }
 
@@ -3589,6 +3613,10 @@ export namespace Prisma {
     createdById: number
     departmentId: number | null
     parentId: number | null
+    isCarriedOver: boolean
+    carryOverReason: string | null
+    carriedOverFromDeadline: Date | null
+    carriedOverAt: Date | null
     _count: TaskCountAggregateOutputType | null
     _avg: TaskAvgAggregateOutputType | null
     _sum: TaskSumAggregateOutputType | null
@@ -3622,6 +3650,10 @@ export namespace Prisma {
     createdById?: boolean
     departmentId?: boolean
     parentId?: boolean
+    isCarriedOver?: boolean
+    carryOverReason?: boolean
+    carriedOverFromDeadline?: boolean
+    carriedOverAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     department?: boolean | Task$departmentArgs<ExtArgs>
     parent?: boolean | Task$parentArgs<ExtArgs>
@@ -3643,9 +3675,13 @@ export namespace Prisma {
     createdById?: boolean
     departmentId?: boolean
     parentId?: boolean
+    isCarriedOver?: boolean
+    carryOverReason?: boolean
+    carriedOverFromDeadline?: boolean
+    carriedOverAt?: boolean
   }
 
-  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "deadline" | "priority" | "status" | "createdAt" | "updatedAt" | "createdById" | "departmentId" | "parentId", ExtArgs["result"]["task"]>
+  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "deadline" | "priority" | "status" | "createdAt" | "updatedAt" | "createdById" | "departmentId" | "parentId" | "isCarriedOver" | "carryOverReason" | "carriedOverFromDeadline" | "carriedOverAt", ExtArgs["result"]["task"]>
   export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     department?: boolean | Task$departmentArgs<ExtArgs>
@@ -3674,6 +3710,10 @@ export namespace Prisma {
       createdById: number
       departmentId: number | null
       parentId: number | null
+      isCarriedOver: boolean
+      carryOverReason: string | null
+      carriedOverFromDeadline: Date | null
+      carriedOverAt: Date | null
     }, ExtArgs["result"]["task"]>
     composites: {}
   }
@@ -4058,6 +4098,10 @@ export namespace Prisma {
     readonly createdById: FieldRef<"Task", 'Int'>
     readonly departmentId: FieldRef<"Task", 'Int'>
     readonly parentId: FieldRef<"Task", 'Int'>
+    readonly isCarriedOver: FieldRef<"Task", 'Boolean'>
+    readonly carryOverReason: FieldRef<"Task", 'String'>
+    readonly carriedOverFromDeadline: FieldRef<"Task", 'DateTime'>
+    readonly carriedOverAt: FieldRef<"Task", 'DateTime'>
   }
     
 
@@ -4532,7 +4576,11 @@ export namespace Prisma {
     updatedAt: 'updatedAt',
     createdById: 'createdById',
     departmentId: 'departmentId',
-    parentId: 'parentId'
+    parentId: 'parentId',
+    isCarriedOver: 'isCarriedOver',
+    carryOverReason: 'carryOverReason',
+    carriedOverFromDeadline: 'carriedOverFromDeadline',
+    carriedOverAt: 'carriedOverAt'
   };
 
   export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
@@ -4572,7 +4620,8 @@ export namespace Prisma {
 
   export const TaskOrderByRelevanceFieldEnum: {
     title: 'title',
-    description: 'description'
+    description: 'description',
+    carryOverReason: 'carryOverReason'
   };
 
   export type TaskOrderByRelevanceFieldEnum = (typeof TaskOrderByRelevanceFieldEnum)[keyof typeof TaskOrderByRelevanceFieldEnum]
@@ -4622,6 +4671,13 @@ export namespace Prisma {
    * Reference to a field of type 'TaskStatus'
    */
   export type EnumTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -4805,6 +4861,10 @@ export namespace Prisma {
     createdById?: IntFilter<"Task"> | number
     departmentId?: IntNullableFilter<"Task"> | number | null
     parentId?: IntNullableFilter<"Task"> | number | null
+    isCarriedOver?: BoolFilter<"Task"> | boolean
+    carryOverReason?: StringNullableFilter<"Task"> | string | null
+    carriedOverFromDeadline?: DateTimeNullableFilter<"Task"> | Date | string | null
+    carriedOverAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     parent?: XOR<TaskNullableScalarRelationFilter, TaskWhereInput> | null
@@ -4823,6 +4883,10 @@ export namespace Prisma {
     createdById?: SortOrder
     departmentId?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
+    isCarriedOver?: SortOrder
+    carryOverReason?: SortOrderInput | SortOrder
+    carriedOverFromDeadline?: SortOrderInput | SortOrder
+    carriedOverAt?: SortOrderInput | SortOrder
     createdBy?: UserOrderByWithRelationInput
     department?: DepartmentOrderByWithRelationInput
     parent?: TaskOrderByWithRelationInput
@@ -4845,6 +4909,10 @@ export namespace Prisma {
     createdById?: IntFilter<"Task"> | number
     departmentId?: IntNullableFilter<"Task"> | number | null
     parentId?: IntNullableFilter<"Task"> | number | null
+    isCarriedOver?: BoolFilter<"Task"> | boolean
+    carryOverReason?: StringNullableFilter<"Task"> | string | null
+    carriedOverFromDeadline?: DateTimeNullableFilter<"Task"> | Date | string | null
+    carriedOverAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     parent?: XOR<TaskNullableScalarRelationFilter, TaskWhereInput> | null
@@ -4863,6 +4931,10 @@ export namespace Prisma {
     createdById?: SortOrder
     departmentId?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
+    isCarriedOver?: SortOrder
+    carryOverReason?: SortOrderInput | SortOrder
+    carriedOverFromDeadline?: SortOrderInput | SortOrder
+    carriedOverAt?: SortOrderInput | SortOrder
     _count?: TaskCountOrderByAggregateInput
     _avg?: TaskAvgOrderByAggregateInput
     _max?: TaskMaxOrderByAggregateInput
@@ -4885,6 +4957,10 @@ export namespace Prisma {
     createdById?: IntWithAggregatesFilter<"Task"> | number
     departmentId?: IntNullableWithAggregatesFilter<"Task"> | number | null
     parentId?: IntNullableWithAggregatesFilter<"Task"> | number | null
+    isCarriedOver?: BoolWithAggregatesFilter<"Task"> | boolean
+    carryOverReason?: StringNullableWithAggregatesFilter<"Task"> | string | null
+    carriedOverFromDeadline?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+    carriedOverAt?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
   }
 
   export type UserCreateInput = {
@@ -5046,6 +5122,10 @@ export namespace Prisma {
     status?: $Enums.TaskStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     createdBy: UserCreateNestedOneWithoutTasksCreatedInput
     department?: DepartmentCreateNestedOneWithoutTasksInput
     parent?: TaskCreateNestedOneWithoutSubtasksInput
@@ -5064,6 +5144,10 @@ export namespace Prisma {
     createdById: number
     departmentId?: number | null
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
   }
 
@@ -5075,6 +5159,10 @@ export namespace Prisma {
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: UserUpdateOneRequiredWithoutTasksCreatedNestedInput
     department?: DepartmentUpdateOneWithoutTasksNestedInput
     parent?: TaskUpdateOneWithoutSubtasksNestedInput
@@ -5093,6 +5181,10 @@ export namespace Prisma {
     createdById?: IntFieldUpdateOperationsInput | number
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
   }
 
@@ -5108,6 +5200,10 @@ export namespace Prisma {
     createdById: number
     departmentId?: number | null
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
   }
 
   export type TaskUpdateManyMutationInput = {
@@ -5118,6 +5214,10 @@ export namespace Prisma {
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskUncheckedUpdateManyInput = {
@@ -5132,6 +5232,10 @@ export namespace Prisma {
     createdById?: IntFieldUpdateOperationsInput | number
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -5454,6 +5558,22 @@ export namespace Prisma {
     not?: NestedEnumTaskStatusFilter<$PrismaModel> | $Enums.TaskStatus
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -5482,6 +5602,10 @@ export namespace Prisma {
     createdById?: SortOrder
     departmentId?: SortOrder
     parentId?: SortOrder
+    isCarriedOver?: SortOrder
+    carryOverReason?: SortOrder
+    carriedOverFromDeadline?: SortOrder
+    carriedOverAt?: SortOrder
   }
 
   export type TaskAvgOrderByAggregateInput = {
@@ -5503,6 +5627,10 @@ export namespace Prisma {
     createdById?: SortOrder
     departmentId?: SortOrder
     parentId?: SortOrder
+    isCarriedOver?: SortOrder
+    carryOverReason?: SortOrder
+    carriedOverFromDeadline?: SortOrder
+    carriedOverAt?: SortOrder
   }
 
   export type TaskMinOrderByAggregateInput = {
@@ -5517,6 +5645,10 @@ export namespace Prisma {
     createdById?: SortOrder
     departmentId?: SortOrder
     parentId?: SortOrder
+    isCarriedOver?: SortOrder
+    carryOverReason?: SortOrder
+    carriedOverFromDeadline?: SortOrder
+    carriedOverAt?: SortOrder
   }
 
   export type TaskSumOrderByAggregateInput = {
@@ -5544,6 +5676,28 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTaskStatusFilter<$PrismaModel>
     _max?: NestedEnumTaskStatusFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type DepartmentCreateNestedOneWithoutUsersInput = {
@@ -5876,6 +6030,14 @@ export namespace Prisma {
     set?: $Enums.TaskStatus
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type UserUpdateOneRequiredWithoutTasksCreatedNestedInput = {
     create?: XOR<UserCreateWithoutTasksCreatedInput, UserUncheckedCreateWithoutTasksCreatedInput>
     connectOrCreate?: UserCreateOrConnectWithoutTasksCreatedInput
@@ -6130,6 +6292,22 @@ export namespace Prisma {
     not?: NestedEnumTaskStatusFilter<$PrismaModel> | $Enums.TaskStatus
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedEnumTaskPriorityWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TaskPriority | EnumTaskPriorityFieldRefInput<$PrismaModel>
     in?: $Enums.TaskPriority[]
@@ -6148,6 +6326,28 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTaskStatusFilter<$PrismaModel>
     _max?: NestedEnumTaskStatusFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type DepartmentCreateWithoutUsersInput = {
@@ -6215,6 +6415,10 @@ export namespace Prisma {
     status?: $Enums.TaskStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     department?: DepartmentCreateNestedOneWithoutTasksInput
     parent?: TaskCreateNestedOneWithoutSubtasksInput
     subtasks?: TaskCreateNestedManyWithoutParentInput
@@ -6231,6 +6435,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     departmentId?: number | null
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
   }
 
@@ -6335,6 +6543,10 @@ export namespace Prisma {
     createdById?: IntFilter<"Task"> | number
     departmentId?: IntNullableFilter<"Task"> | number | null
     parentId?: IntNullableFilter<"Task"> | number | null
+    isCarriedOver?: BoolFilter<"Task"> | boolean
+    carryOverReason?: StringNullableFilter<"Task"> | string | null
+    carriedOverFromDeadline?: DateTimeNullableFilter<"Task"> | Date | string | null
+    carriedOverAt?: DateTimeNullableFilter<"Task"> | Date | string | null
   }
 
   export type DepartmentCreateWithoutChildrenInput = {
@@ -6463,6 +6675,10 @@ export namespace Prisma {
     status?: $Enums.TaskStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     createdBy: UserCreateNestedOneWithoutTasksCreatedInput
     parent?: TaskCreateNestedOneWithoutSubtasksInput
     subtasks?: TaskCreateNestedManyWithoutParentInput
@@ -6479,6 +6695,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdById: number
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
   }
 
@@ -6682,6 +6902,10 @@ export namespace Prisma {
     status?: $Enums.TaskStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     createdBy: UserCreateNestedOneWithoutTasksCreatedInput
     department?: DepartmentCreateNestedOneWithoutTasksInput
     parent?: TaskCreateNestedOneWithoutSubtasksInput
@@ -6699,6 +6923,10 @@ export namespace Prisma {
     createdById: number
     departmentId?: number | null
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
   }
 
   export type TaskCreateOrConnectWithoutSubtasksInput = {
@@ -6714,6 +6942,10 @@ export namespace Prisma {
     status?: $Enums.TaskStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     createdBy: UserCreateNestedOneWithoutTasksCreatedInput
     department?: DepartmentCreateNestedOneWithoutTasksInput
     subtasks?: TaskCreateNestedManyWithoutParentInput
@@ -6730,6 +6962,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdById: number
     departmentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
     subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
   }
 
@@ -6828,6 +7064,10 @@ export namespace Prisma {
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: UserUpdateOneRequiredWithoutTasksCreatedNestedInput
     department?: DepartmentUpdateOneWithoutTasksNestedInput
     parent?: TaskUpdateOneWithoutSubtasksNestedInput
@@ -6845,6 +7085,10 @@ export namespace Prisma {
     createdById?: IntFieldUpdateOperationsInput | number
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskUpsertWithWhereUniqueWithoutParentInput = {
@@ -6882,6 +7126,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     departmentId?: number | null
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
   }
 
   export type DepartmentUpdateWithoutManagerInput = {
@@ -6921,6 +7169,10 @@ export namespace Prisma {
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: DepartmentUpdateOneWithoutTasksNestedInput
     parent?: TaskUpdateOneWithoutSubtasksNestedInput
     subtasks?: TaskUpdateManyWithoutParentNestedInput
@@ -6937,6 +7189,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
   }
 
@@ -6951,6 +7207,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DepartmentCreateManyParentInput = {
@@ -6982,6 +7242,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdById: number
     parentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
   }
 
   export type DepartmentUpdateWithoutParentInput = {
@@ -7054,6 +7318,10 @@ export namespace Prisma {
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: UserUpdateOneRequiredWithoutTasksCreatedNestedInput
     parent?: TaskUpdateOneWithoutSubtasksNestedInput
     subtasks?: TaskUpdateManyWithoutParentNestedInput
@@ -7070,6 +7338,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
   }
 
@@ -7084,6 +7356,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskCreateManyParentInput = {
@@ -7097,6 +7373,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdById: number
     departmentId?: number | null
+    isCarriedOver?: boolean
+    carryOverReason?: string | null
+    carriedOverFromDeadline?: Date | string | null
+    carriedOverAt?: Date | string | null
   }
 
   export type TaskUpdateWithoutParentInput = {
@@ -7107,6 +7387,10 @@ export namespace Prisma {
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: UserUpdateOneRequiredWithoutTasksCreatedNestedInput
     department?: DepartmentUpdateOneWithoutTasksNestedInput
     subtasks?: TaskUpdateManyWithoutParentNestedInput
@@ -7123,6 +7407,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
   }
 
@@ -7137,6 +7425,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
+    carryOverReason?: NullableStringFieldUpdateOperationsInput | string | null
+    carriedOverFromDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carriedOverAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 

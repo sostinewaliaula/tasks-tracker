@@ -8,7 +8,8 @@ export function TaskCard({
   task
 }: TaskCardProps) {
   const {
-    updateTaskStatus
+    updateTaskStatus,
+    carryOverTask
   } = useTask();
   // Live timer state
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
@@ -110,11 +111,17 @@ export function TaskCard({
           <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(task.priority)}`}>
             {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
           </span>
+          {task.isCarriedOver && (
+            <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Carried over</span>
+          )}
         </div>
         <div className="flex items-center">
           <span className={`text-sm ${timeLeft ? timerColor : getDeadlineColor(task.deadline)} dark:text-gray-300`}>
             {timeLeft ? timeLeft : getDeadlineText(task.deadline)}
           </span>
+          {(new Date(task.deadline).getTime() < new Date().getTime()) && task.status !== 'completed' && (
+            <a href={`/tasks/${task.id}`} className="ml-3 inline-flex items-center px-2 py-1 rounded text-xs bg-[#2e9d74] text-white hover:opacity-90">Carry over</a>
+          )}
         </div>
       </div>
       <div className="mt-2 sm:flex sm:justify-between">

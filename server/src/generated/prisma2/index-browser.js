@@ -151,7 +151,11 @@ exports.Prisma.TaskScalarFieldEnum = {
   updatedAt: 'updatedAt',
   createdById: 'createdById',
   departmentId: 'departmentId',
-  parentId: 'parentId'
+  parentId: 'parentId',
+  isCarriedOver: 'isCarriedOver',
+  carryOverReason: 'carryOverReason',
+  carriedOverFromDeadline: 'carriedOverFromDeadline',
+  carriedOverAt: 'carriedOverAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -176,7 +180,8 @@ exports.Prisma.DepartmentOrderByRelevanceFieldEnum = {
 
 exports.Prisma.TaskOrderByRelevanceFieldEnum = {
   title: 'title',
-  description: 'description'
+  description: 'description',
+  carryOverReason: 'carryOverReason'
 };
 exports.Role = exports.$Enums.Role = {
   admin: 'admin',

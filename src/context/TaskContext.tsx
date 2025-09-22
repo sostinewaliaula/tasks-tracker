@@ -14,6 +14,11 @@ export type Task = {
   createdAt: Date;
   parentId?: string | null;
   subtasks?: Task[];
+  // carryover fields
+  isCarriedOver?: boolean;
+  carryOverReason?: string | null;
+  carriedOverFromDeadline?: Date | null;
+  carriedOverAt?: Date | null;
 };
 type Notification = {
   id: string;
@@ -27,6 +32,7 @@ type TaskContextType = {
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>) => Promise<string>;
   addSubtask: (parentId: string, task: Omit<Task, 'id' | 'createdAt' | 'parentId' | 'subtasks'>) => Promise<void>;
   updateTaskStatus: (id: string, status: TaskStatus) => void;
+  carryOverTask: (id: string, newDeadline: Date, reason: string) => Promise<void>;
   notifications: Notification[];
   markNotificationAsRead: (id: string) => void;
   getTasksByDepartment: (department: string) => Task[];
@@ -116,6 +122,18 @@ export function TaskProvider({
       }
     }
   };
+  const carryOverTask = async (id: string, newDeadline: Date, reason: string) => {
+    const resp = await fetch(`/api/tasks/${id}/carryover`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ newDeadline, reason })
+    });
+    if (!resp.ok) throw new Error('Failed to carry over task');
+    await reloadTasks();
+  };
   const markNotificationAsRead = (id: string) => {
     setNotifications(prev => prev.map(notification => notification.id === id ? {
       ...notification,
@@ -179,7 +197,11 @@ export function TaskProvider({
       department: t.department?.name ?? '',
       createdAt: new Date(t.createdAt),
       parentId: t.parentId ? String(t.parentId) : null,
-      subtasks: Array.isArray(t.subtasks) ? t.subtasks.map(mapTask) : []
+      subtasks: Array.isArray(t.subtasks) ? t.subtasks.map(mapTask) : [],
+      isCarriedOver: Boolean(t.isCarriedOver),
+      carryOverReason: t.carryOverReason ?? null,
+      carriedOverFromDeadline: t.carriedOverFromDeadline ? new Date(t.carriedOverFromDeadline) : null,
+      carriedOverAt: t.carriedOverAt ? new Date(t.carriedOverAt) : null
     });
     const mapped: Task[] = apiTasks.map(mapTask);
     setTasks(mapped);
@@ -255,6 +277,7 @@ export function TaskProvider({
     addTask,
     addSubtask,
     updateTaskStatus,
+    carryOverTask,
     notifications,
     markNotificationAsRead,
     getTasksByDepartment,
