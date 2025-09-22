@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DownloadIcon, ChevronDownIcon } from 'lucide-react';
 import logoUrl from '../../assets/logo.png';
+import { jsPDF } from 'jspdf';
 
 export type ExportableTask = {
   id: string;
@@ -50,30 +51,30 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTas
     downloadText(`${filenameBase}.json`, json, 'application/json;charset=utf-8');
     setOpen(false);
   };
-  const toDataUrl = async (url: string) => {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.readAsDataURL(blob);
-    });
-  };
+  const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
   const doPdf = async () => {
     try {
-      const mod: any = await import('jspdf');
-      const jsPDF = (mod as any).jsPDF || (mod as any).default || mod;
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' });
       const marginX = 40;
-      let y = 40;
+      const marginY = 40;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const availableWidth = pageWidth - marginX * 2;
+      let y = marginY;
       // Logo
       try {
-        const dataUrl = await toDataUrl(logoUrl as unknown as string);
-        doc.addImage(dataUrl, 'PNG', marginX, y, 120, 40);
+        const img = await loadImage(logoUrl as unknown as string);
+        doc.addImage(img, 'PNG', marginX, y, 140, 45);
       } catch (e) {
         // ignore logo failure
       }
-      y += 60;
+      y += 65;
       doc.setFontSize(16);
       doc.text('My Tasks Report', marginX, y);
       y += 10;
@@ -81,40 +82,65 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTas
       doc.setTextColor(120);
       doc.text(new Date().toLocaleString(), marginX, y);
       doc.setTextColor(0);
-      y += 20;
-      // Table header
+      y += 24;
+
       const headers = ['ID','Title','Status','Priority','Deadline','Created'];
-      const colWidths = [50, 200, 70, 70, 90, 90];
-      let x = marginX;
-      doc.setFontSize(11);
-      doc.setFillColor(46, 157, 116);
-      doc.setTextColor(255);
-      doc.rect(marginX, y - 12, colWidths.reduce((a,b)=>a+b,0), 22, 'F');
-      x = marginX + 6;
-      headers.forEach((h, i) => {
-        doc.text(h, x, y);
-        x += colWidths[i];
-      });
-      doc.setTextColor(0);
-      y += 16;
-      // Rows
-      const lineHeight = 16;
-      tasks.forEach(t => {
-        if (y > 780) { doc.addPage(); y = 40; }
-        x = marginX + 6;
-        const row = [
-          t.id,
-          (t.title || '').slice(0,40),
-          t.status,
-          t.priority,
+      const statusW = 90, priorityW = 80, dateW = 110, createdW = 110, idW = 60;
+      const titleW = availableWidth - (idW + statusW + priorityW + dateW + createdW);
+      const colWidths = [idW, titleW, statusW, priorityW, dateW, createdW];
+
+      const drawHeader = () => {
+        const headerHeight = 28;
+        // Draw background bar
+        doc.setFillColor(46, 157, 116);
+        doc.rect(marginX, y, availableWidth, headerHeight, 'F');
+        // Header text
+        let x = marginX + 8;
+        const textY = y + 18; // baseline inside header
+        doc.setFontSize(11);
+        doc.setTextColor(255);
+        headers.forEach((h, i) => {
+          doc.text(h, x, textY);
+          x += colWidths[i];
+        });
+        // Move y below header with small padding
+        doc.setTextColor(0);
+        y += headerHeight + 6;
+      };
+
+      drawHeader();
+
+      const lineGap = 4;
+      const baseLine = 12;
+      doc.setFontSize(10);
+      tasks.forEach((t) => {
+        // compute wrapped title
+        const titleLines = doc.splitTextToSize(t.title || '', titleW - 12);
+        const rowHeight = Math.max(baseLine, titleLines.length * (baseLine + lineGap));
+        if (y + rowHeight + marginY > pageHeight) {
+          doc.addPage('a4', 'landscape');
+          y = marginY;
+          drawHeader();
+        }
+        let x = marginX + 8;
+        const cells = [
+          String(t.id),
+          titleLines,
+          String(t.status),
+          String(t.priority),
           new Date(t.deadline).toLocaleDateString(),
           new Date(t.createdAt).toLocaleDateString(),
         ];
-        row.forEach((val, i) => {
-          doc.text(String(val), x, y);
+        cells.forEach((val, i) => {
+          if (Array.isArray(val)) {
+            let ly = y;
+            val.forEach((ln) => { doc.text(String(ln), x, ly); ly += baseLine + lineGap; });
+          } else {
+            doc.text(String(val), x, y);
+          }
           x += colWidths[i];
         });
-        y += lineHeight;
+        y += rowHeight + 2;
       });
       doc.save(`${filenameBase}.pdf`);
       setOpen(false);
