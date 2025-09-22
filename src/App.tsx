@@ -16,6 +16,7 @@ import { Header } from './components/layout/Header';
 import { RBAC } from './components/auth/RBAC';
 import { useAuth } from './context/AuthContext';
 import { DarkModeProvider } from './context/DarkModeContext';
+import { TaskDetailsPage } from './pages/TaskDetailsPage';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -50,6 +51,7 @@ function AppContent() {
               </RBAC>
             }
           />
+          <Route path="/tasks/:taskId" element={<RBAC allowedRoles={['employee', 'manager', 'admin']}><TaskDetailsPage /></RBAC>} />
           
           {/* Manager Routes */}
           <Route

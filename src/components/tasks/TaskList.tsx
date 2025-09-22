@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Task, TaskStatus, useTask } from '../../context/TaskContext';
 import { TaskCard } from './TaskCard';
+import { useNavigate } from 'react-router-dom';
 type TaskListProps = {
   tasks: Task[];
   onTaskClick?: (taskId: string) => void;
@@ -31,6 +32,7 @@ export function TaskList({
     // Finally by deadline (soonest first)
     return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
+  const navigate = useNavigate();
   return <div>
       <div className="bg-white dark:bg-gray-900 px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
         <div className="flex flex-wrap items-center justify-between">
@@ -48,7 +50,7 @@ export function TaskList({
         </div>
       </div>
       <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-        {sortedTasks.length > 0 ? sortedTasks.map(task => <li key={task.id} onClick={onTaskClick ? () => onTaskClick(task.id) : undefined} className={onTaskClick ? 'cursor-pointer' : ''}>
+        {sortedTasks.length > 0 ? sortedTasks.map(task => <li key={task.id} onClick={() => navigate(`/tasks/${task.id}`)} className='cursor-pointer'>
               <TaskCard task={task} />
             </li>) : <li className="px-4 py-6 text-center text-gray-500 dark:text-gray-300">
             No tasks found. {filter !== 'all' && 'Try changing the filter.'}

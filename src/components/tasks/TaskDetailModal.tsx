@@ -19,8 +19,20 @@ export function TaskDetailModal({
   const [subtaskTitle, setSubtaskTitle] = React.useState('');
   const [subtaskDescription, setSubtaskDescription] = React.useState('');
   const [subtaskPriority, setSubtaskPriority] = React.useState<TaskPriority>('medium');
+  const [warning, setWarning] = React.useState<string | null>(null);
+  const completedSubtasks = task.subtasks ? task.subtasks.filter(st => st.status === 'completed').length : 0;
+  const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+  const progress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
   if (!task) return null;
   const handleStatusChange = (newStatus: TaskStatus) => {
+    if (newStatus === 'completed' && task.subtasks && task.subtasks.length > 0) {
+      const incomplete = task.subtasks.some(st => st.status !== 'completed');
+      if (incomplete) {
+        setWarning('You cannot complete this task until all subtasks are completed.');
+        return;
+      }
+    }
+    setWarning(null);
     updateTaskStatus(taskId, newStatus);
   };
   const handleCreateSubtask = async () => {
@@ -145,6 +157,9 @@ export function TaskDetailModal({
                           </span>
                           {getStatusBadge(task.status)}
                         </div>
+                        {warning && (
+                          <div className="text-xs text-red-500 mt-2">{warning}</div>
+                        )}
                         {task.status !== 'completed' && <div className="flex space-x-2">
                             {task.status === 'todo' && <button onClick={() => handleStatusChange('in-progress')} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-[#2e9d74] bg-[#e8f5f0] hover:bg-[#d1ebe3] dark:bg-[#22332c] dark:hover:bg-[#1a2821] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
                                 Start
@@ -166,6 +181,17 @@ export function TaskDetailModal({
                           Add Subtask
                         </button>
                       </div>
+                      {totalSubtasks > 0 && (
+                        <div className="mb-3">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-gray-600 dark:text-gray-300">Progress</span>
+                            <span className="text-gray-600 dark:text-gray-300">{completedSubtasks}/{totalSubtasks} completed</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2.5">
+                            <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                          </div>
+                        </div>
+                      )}
                       <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {task.subtasks && task.subtasks.length > 0 ? (
                           task.subtasks.map(st => (
@@ -174,7 +200,12 @@ export function TaskDetailModal({
                                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{st.title}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-300">Due {formatDate(st.deadline)}</p>
                               </div>
-                              <div>
+                              <div className="flex items-center space-x-2">
+                                <select value={st.status} onChange={e => updateTaskStatus(st.id, e.target.value as TaskStatus)} className="text-xs rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                                  <option value="todo">To Do</option>
+                                  <option value="in-progress">In Progress</option>
+                                  <option value="completed">Completed</option>
+                                </select>
                                 {getStatusBadge(st.status)}
                               </div>
                             </li>

@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTask, TaskStatus, TaskPriority } from '../context/TaskContext';
 import { TaskList } from '../components/tasks/TaskList';
 import { TaskForm } from '../components/tasks/TaskForm';
-import { TaskDetailModal } from '../components/tasks/TaskDetailModal';
 import { PlusIcon, FilterIcon, SortAscIcon, XIcon } from 'lucide-react';
 
 export function TasksPage() {
@@ -11,7 +10,6 @@ export function TasksPage() {
   const { tasks } = useTask();
 
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     status: 'all' as TaskStatus | 'all',
@@ -106,10 +104,6 @@ export function TasksPage() {
 
   const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({ ...prev, dateTo: e.target.value }));
-  };
-
-  const handleTaskClick = (taskId: string) => {
-    setSelectedTask(taskId);
   };
 
   return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -277,12 +271,8 @@ export function TasksPage() {
             <p className="text-lg">You have no tasks yet.</p>
           </div>
         ) : (
-          <TaskList tasks={sortedTasks} onTaskClick={handleTaskClick} />
+          <TaskList tasks={sortedTasks} />
         )}
       </div>
-
-      {selectedTask && (
-        <TaskDetailModal taskId={selectedTask} onClose={() => setSelectedTask(null)} />
-      )}
     </div>;
 }
