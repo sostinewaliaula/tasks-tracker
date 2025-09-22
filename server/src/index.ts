@@ -1,13 +1,13 @@
+import './loadEnv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
+import { sendMail } from './lib/mailer';
+import './lib/scheduler';
+import reportsRouter from './routes/reports';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load server/.env first (backend-specific), then fallback to project root .env
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth';
@@ -30,9 +30,23 @@ app.use('/api/auth', authRouter);
 app.use('/api/departments', departmentsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/tasks', tasksRouter);
+app.use('/api/reports', reportsRouter);
 
 app.get('/api/auth/me', authMiddleware, (req, res) => {
     res.json({ user: (req as any).user });
+});
+
+app.get('/api/test-email', async (req, res) => {
+    try {
+        await sendMail({
+            to: 'turnquest-infra-monitoring@turnkeyafrica.com',
+            subject: 'SMTP Test Email',
+            text: 'This is a test email from the tasks-tracker system.',
+        });
+        res.json({ success: true, message: 'Test email sent.' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: (error as Error).message });
+    }
 });
 
 app.listen(port, () => {

@@ -147,6 +147,7 @@ exports.Prisma.TaskScalarFieldEnum = {
   deadline: 'deadline',
   priority: 'priority',
   status: 'status',
+  blockerReason: 'blockerReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   createdById: 'createdById',
@@ -181,6 +182,7 @@ exports.Prisma.DepartmentOrderByRelevanceFieldEnum = {
 exports.Prisma.TaskOrderByRelevanceFieldEnum = {
   title: 'title',
   description: 'description',
+  blockerReason: 'blockerReason',
   carryOverReason: 'carryOverReason'
 };
 exports.Role = exports.$Enums.Role = {
@@ -198,7 +200,8 @@ exports.TaskPriority = exports.$Enums.TaskPriority = {
 exports.TaskStatus = exports.$Enums.TaskStatus = {
   todo: 'todo',
   in_progress: 'in_progress',
-  completed: 'completed'
+  completed: 'completed',
+  blocker: 'blocker'
 };
 
 exports.Prisma.ModelName = {

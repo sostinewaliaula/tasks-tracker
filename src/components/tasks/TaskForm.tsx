@@ -22,6 +22,8 @@ export function TaskForm({
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [deadline, setDeadline] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('medium');
+  const [status, setStatus] = useState<'todo' | 'in_progress' | 'completed' | 'blocker'>('todo');
+  const [blockerReason, setBlockerReason] = useState('');
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
@@ -30,7 +32,8 @@ export function TaskForm({
       description: '',
       deadline: new Date(deadline),
       priority,
-      status: 'todo',
+      status,
+      blockerReason: status === 'blocker' ? blockerReason : undefined,
       createdBy: currentUser.id,
       department: currentUser.department
     });
@@ -120,6 +123,25 @@ export function TaskForm({
               )}
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">You can add more subtasks later from the task details.</p>
             </div>
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Status
+              </label>
+              <select id="status" name="status" className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={status} onChange={e => setStatus(e.target.value as any)}>
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="blocker">Blocker</option>
+              </select>
+            </div>
+            {status === 'blocker' && (
+              <div>
+                <label htmlFor="blockerReason" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Blocker Reason
+                </label>
+                <input type="text" id="blockerReason" name="blockerReason" required={status === 'blocker'} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={blockerReason} onChange={e => setBlockerReason(e.target.value)} />
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 dark:text-gray-200">

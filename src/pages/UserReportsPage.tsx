@@ -136,7 +136,7 @@ export function UserReportsPage() {
           )}
         </div>
         <UserExportButton
-          tasks={userTasks.map(t => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, deadline: t.deadline, createdAt: t.createdAt, isCarriedOver: t.isCarriedOver }))}
+          tasks={userTasks.map(t => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, deadline: t.deadline, createdAt: t.createdAt, isCarriedOver: t.isCarriedOver, subtasks: (t.subtasks || []).map(st => ({ id: st.id, title: st.title, status: st.status, priority: st.priority, deadline: st.deadline, createdAt: st.createdAt, isCarriedOver: st.isCarriedOver })) }))}
           filenameBase={`my-reports-${new Date().toISOString().slice(0,10)}`}
         />
       </div>

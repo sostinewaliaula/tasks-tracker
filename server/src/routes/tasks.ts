@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const user = (req as any).user as { id: number; role: 'admin' | 'manager' | 'employee' };
-    const { title, description, deadline, priority, status, departmentId, createdById, parentId } = req.body || {};
+    const { title, description, deadline, priority, status, departmentId, createdById, parentId, blockerReason } = req.body || {};
 
     if (!title || !deadline || !priority) {
       return res.status(400).json({ error: 'title, deadline, priority are required' });
@@ -94,6 +94,7 @@ router.post('/', async (req, res) => {
         deadline: new Date(deadline),
         priority: String(priority) as any,
         status: (status ? String(status).replace('-', '_') : 'todo') as any,
+        blockerReason: status === 'blocker' ? String(blockerReason ?? '') : undefined,
         createdById: resolvedCreatedById,
         departmentId: resolvedDepartmentId ?? null,
         parentId: resolvedParentId,
@@ -123,7 +124,7 @@ router.patch('/:id', async (req, res) => {
       return res.status(403).json({ error: 'Cannot modify others\' tasks' });
     }
 
-    const { title, description, deadline, priority, status } = req.body || {};
+    const { title, description, deadline, priority, status, blockerReason } = req.body || {};
 
     const updated = await prisma.task.update({
       where: { id },
@@ -133,6 +134,7 @@ router.patch('/:id', async (req, res) => {
         deadline: deadline ? new Date(deadline) : undefined,
         priority: priority ? String(priority) as any : undefined,
         status: status ? (String(status).replace('-', '_') as any) : undefined,
+        blockerReason: status === 'blocker' ? String(blockerReason ?? '') : (status ? undefined : blockerReason),
       },
     });
     // If this is a subtask, update parent status

@@ -54,7 +54,8 @@ export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
 export const TaskStatus: {
   todo: 'todo',
   in_progress: 'in_progress',
-  completed: 'completed'
+  completed: 'completed',
+  blocker: 'blocker'
 };
 
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus]
@@ -3397,6 +3398,7 @@ export namespace Prisma {
     deadline: Date | null
     priority: $Enums.TaskPriority | null
     status: $Enums.TaskStatus | null
+    blockerReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
     createdById: number | null
@@ -3415,6 +3417,7 @@ export namespace Prisma {
     deadline: Date | null
     priority: $Enums.TaskPriority | null
     status: $Enums.TaskStatus | null
+    blockerReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
     createdById: number | null
@@ -3433,6 +3436,7 @@ export namespace Prisma {
     deadline: number
     priority: number
     status: number
+    blockerReason: number
     createdAt: number
     updatedAt: number
     createdById: number
@@ -3467,6 +3471,7 @@ export namespace Prisma {
     deadline?: true
     priority?: true
     status?: true
+    blockerReason?: true
     createdAt?: true
     updatedAt?: true
     createdById?: true
@@ -3485,6 +3490,7 @@ export namespace Prisma {
     deadline?: true
     priority?: true
     status?: true
+    blockerReason?: true
     createdAt?: true
     updatedAt?: true
     createdById?: true
@@ -3503,6 +3509,7 @@ export namespace Prisma {
     deadline?: true
     priority?: true
     status?: true
+    blockerReason?: true
     createdAt?: true
     updatedAt?: true
     createdById?: true
@@ -3608,6 +3615,7 @@ export namespace Prisma {
     deadline: Date
     priority: $Enums.TaskPriority
     status: $Enums.TaskStatus
+    blockerReason: string | null
     createdAt: Date
     updatedAt: Date
     createdById: number
@@ -3645,6 +3653,7 @@ export namespace Prisma {
     deadline?: boolean
     priority?: boolean
     status?: boolean
+    blockerReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdById?: boolean
@@ -3670,6 +3679,7 @@ export namespace Prisma {
     deadline?: boolean
     priority?: boolean
     status?: boolean
+    blockerReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdById?: boolean
@@ -3681,7 +3691,7 @@ export namespace Prisma {
     carriedOverAt?: boolean
   }
 
-  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "deadline" | "priority" | "status" | "createdAt" | "updatedAt" | "createdById" | "departmentId" | "parentId" | "isCarriedOver" | "carryOverReason" | "carriedOverFromDeadline" | "carriedOverAt", ExtArgs["result"]["task"]>
+  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "deadline" | "priority" | "status" | "blockerReason" | "createdAt" | "updatedAt" | "createdById" | "departmentId" | "parentId" | "isCarriedOver" | "carryOverReason" | "carriedOverFromDeadline" | "carriedOverAt", ExtArgs["result"]["task"]>
   export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     department?: boolean | Task$departmentArgs<ExtArgs>
@@ -3705,6 +3715,7 @@ export namespace Prisma {
       deadline: Date
       priority: $Enums.TaskPriority
       status: $Enums.TaskStatus
+      blockerReason: string | null
       createdAt: Date
       updatedAt: Date
       createdById: number
@@ -4093,6 +4104,7 @@ export namespace Prisma {
     readonly deadline: FieldRef<"Task", 'DateTime'>
     readonly priority: FieldRef<"Task", 'TaskPriority'>
     readonly status: FieldRef<"Task", 'TaskStatus'>
+    readonly blockerReason: FieldRef<"Task", 'String'>
     readonly createdAt: FieldRef<"Task", 'DateTime'>
     readonly updatedAt: FieldRef<"Task", 'DateTime'>
     readonly createdById: FieldRef<"Task", 'Int'>
@@ -4572,6 +4584,7 @@ export namespace Prisma {
     deadline: 'deadline',
     priority: 'priority',
     status: 'status',
+    blockerReason: 'blockerReason',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     createdById: 'createdById',
@@ -4621,6 +4634,7 @@ export namespace Prisma {
   export const TaskOrderByRelevanceFieldEnum: {
     title: 'title',
     description: 'description',
+    blockerReason: 'blockerReason',
     carryOverReason: 'carryOverReason'
   };
 
@@ -4856,6 +4870,7 @@ export namespace Prisma {
     deadline?: DateTimeFilter<"Task"> | Date | string
     priority?: EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
     status?: EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
+    blockerReason?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     createdById?: IntFilter<"Task"> | number
@@ -4878,6 +4893,7 @@ export namespace Prisma {
     deadline?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    blockerReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -4904,6 +4920,7 @@ export namespace Prisma {
     deadline?: DateTimeFilter<"Task"> | Date | string
     priority?: EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
     status?: EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
+    blockerReason?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     createdById?: IntFilter<"Task"> | number
@@ -4926,6 +4943,7 @@ export namespace Prisma {
     deadline?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    blockerReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -4952,6 +4970,7 @@ export namespace Prisma {
     deadline?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     priority?: EnumTaskPriorityWithAggregatesFilter<"Task"> | $Enums.TaskPriority
     status?: EnumTaskStatusWithAggregatesFilter<"Task"> | $Enums.TaskStatus
+    blockerReason?: StringNullableWithAggregatesFilter<"Task"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     createdById?: IntWithAggregatesFilter<"Task"> | number
@@ -5120,6 +5139,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isCarriedOver?: boolean
@@ -5139,6 +5159,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -5157,6 +5178,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
@@ -5176,6 +5198,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
@@ -5195,6 +5218,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -5212,6 +5236,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
@@ -5227,6 +5252,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
@@ -5597,6 +5623,7 @@ export namespace Prisma {
     deadline?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    blockerReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -5622,6 +5649,7 @@ export namespace Prisma {
     deadline?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    blockerReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -5640,6 +5668,7 @@ export namespace Prisma {
     deadline?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    blockerReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -6413,6 +6442,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isCarriedOver?: boolean
@@ -6431,6 +6461,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     departmentId?: number | null
@@ -6538,6 +6569,7 @@ export namespace Prisma {
     deadline?: DateTimeFilter<"Task"> | Date | string
     priority?: EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
     status?: EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
+    blockerReason?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     createdById?: IntFilter<"Task"> | number
@@ -6673,6 +6705,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isCarriedOver?: boolean
@@ -6691,6 +6724,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -6900,6 +6934,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isCarriedOver?: boolean
@@ -6918,6 +6953,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -6940,6 +6976,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isCarriedOver?: boolean
@@ -6958,6 +6995,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -7062,6 +7100,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
@@ -7080,6 +7119,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
@@ -7122,6 +7162,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     departmentId?: number | null
@@ -7167,6 +7208,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
@@ -7185,6 +7227,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -7203,6 +7246,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -7238,6 +7282,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -7316,6 +7361,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
@@ -7334,6 +7380,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
@@ -7352,6 +7399,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
@@ -7369,6 +7417,7 @@ export namespace Prisma {
     deadline: Date | string
     priority: $Enums.TaskPriority
     status?: $Enums.TaskStatus
+    blockerReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: number
@@ -7385,6 +7434,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isCarriedOver?: BoolFieldUpdateOperationsInput | boolean
@@ -7403,6 +7453,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number
@@ -7421,6 +7472,7 @@ export namespace Prisma {
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     priority?: EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    blockerReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: IntFieldUpdateOperationsInput | number

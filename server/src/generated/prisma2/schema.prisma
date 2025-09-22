@@ -62,17 +62,19 @@ enum TaskStatus {
   todo
   in_progress
   completed
+  blocker
 }
 
 model Task {
-  id          Int          @id @default(autoincrement())
-  title       String
-  description String
-  deadline    DateTime
-  priority    TaskPriority
-  status      TaskStatus   @default(todo)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String
+  deadline      DateTime
+  priority      TaskPriority
+  status        TaskStatus   @default(todo)
+  blockerReason String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   // Relations
   createdById  Int

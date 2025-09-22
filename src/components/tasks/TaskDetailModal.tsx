@@ -69,20 +69,16 @@ export function TaskDetailModal({
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
     }
   };
-  const getStatusBadge = (status: TaskStatus) => {
+  const getStatusBadge = (status: TaskStatus, blockerReason?: string) => {
     switch (status) {
       case 'todo':
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-            To Do
-          </span>;
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">To Do</span>;
       case 'in-progress':
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-            In Progress
-          </span>;
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">In Progress</span>;
       case 'completed':
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-            Completed
-          </span>;
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Completed</span>;
+      case 'blocker':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Blocker</span>;
     }
   };
   return <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -155,8 +151,13 @@ export function TaskDetailModal({
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-200 mr-2">
                             Status:
                           </span>
-                          {getStatusBadge(task.status)}
+                          {getStatusBadge(task.status, task.blockerReason)}
                         </div>
+                        {task.status === 'blocker' && task.blockerReason && (
+                          <div className="mt-2 text-xs text-red-600 dark:text-red-300">
+                            <b>Blocker Reason:</b> {task.blockerReason}
+                          </div>
+                        )}
                         {warning && (
                           <div className="text-xs text-red-500 mt-2">{warning}</div>
                         )}

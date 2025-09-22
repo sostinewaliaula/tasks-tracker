@@ -4,20 +4,22 @@ import logoUrl from '../../assets/logo.png';
 import { jsPDF } from 'jspdf';
 
 export type ExportableTask = {
-  id: string;
   title: string;
   status: string;
   priority: string;
   deadline: Date;
   createdAt: Date;
   isCarriedOver?: boolean;
+  parentId?: string | null;
+  parentTitle?: string | null;
+  isSubtask?: boolean;
 };
 
 function toCsv(tasks: ExportableTask[]): string {
-  const headers = ['ID','Title','Status','Priority','Deadline','Created At','Overdue','Carried Over'];
+  const headers = ['Title','Parent','Status','Priority','Deadline','Created At','Overdue','Carried Over'];
   const rows = tasks.map(t => [
-    t.id,
-    t.title.replace(/\n/g, ' '),
+    (t.isSubtask ? '- ' : '') + t.title.replace(/\n/g, ' '),
+    t.parentTitle ? t.parentTitle.replace(/\n/g, ' ') : '',
     t.status,
     t.priority,
     new Date(t.deadline).toISOString(),
@@ -39,15 +41,29 @@ function downloadText(filename: string, text: string, mime = 'text/plain;charset
   URL.revokeObjectURL(url);
 }
 
-export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTask[]; filenameBase: string; }) {
+type AnyTask = ExportableTask & { subtasks?: AnyTask[] };
+
+function flattenWithSubtasks(input: AnyTask[]): ExportableTask[] {
+  const out: ExportableTask[] = [];
+  input.forEach(t => {
+    out.push({ title: t.title, status: t.status, priority: t.priority, deadline: t.deadline, createdAt: t.createdAt, isCarriedOver: t.isCarriedOver, parentId: null, parentTitle: null, isSubtask: false });
+    if (Array.isArray(t.subtasks) && t.subtasks.length > 0) {
+      t.subtasks.forEach(st => out.push({ title: st.title, status: st.status as any, priority: st.priority as any, deadline: st.deadline as any, createdAt: st.createdAt as any, isCarriedOver: st.isCarriedOver as any, parentId: t as any, parentTitle: t.title, isSubtask: true }));
+    }
+  });
+  return out;
+}
+
+export function UserExportButton({ tasks, filenameBase }: { tasks: AnyTask[]; filenameBase: string; }) {
   const [open, setOpen] = useState(false);
+  const flat = flattenWithSubtasks(tasks);
   const doCsv = () => {
-    const csv = toCsv(tasks);
+    const csv = toCsv(flat);
     downloadText(`${filenameBase}.csv`, csv, 'text/csv;charset=utf-8');
     setOpen(false);
   };
   const doJson = () => {
-    const json = JSON.stringify(tasks, null, 2);
+    const json = JSON.stringify(flat, null, 2);
     downloadText(`${filenameBase}.json`, json, 'application/json;charset=utf-8');
     setOpen(false);
   };
@@ -84,10 +100,10 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTas
       doc.setTextColor(0);
       y += 24;
 
-      const headers = ['ID','Title','Status','Priority','Deadline','Created'];
-      const statusW = 90, priorityW = 80, dateW = 110, createdW = 110, idW = 60;
-      const titleW = availableWidth - (idW + statusW + priorityW + dateW + createdW);
-      const colWidths = [idW, titleW, statusW, priorityW, dateW, createdW];
+      const headers = ['Title','Parent','Status','Priority','Deadline','Created'];
+      const statusW = 90, priorityW = 80, dateW = 110, createdW = 110, parentW = 180;
+      const titleW = availableWidth - (parentW + statusW + priorityW + dateW + createdW);
+      const colWidths = [titleW, parentW, statusW, priorityW, dateW, createdW];
 
       const drawHeader = () => {
         const headerHeight = 28;
@@ -113,7 +129,7 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTas
       const lineGap = 4;
       const baseLine = 12;
       doc.setFontSize(10);
-      tasks.forEach((t) => {
+      flat.forEach((t) => {
         // compute wrapped title
         const titleLines = doc.splitTextToSize(t.title || '', titleW - 12);
         const rowHeight = Math.max(baseLine, titleLines.length * (baseLine + lineGap));
@@ -124,8 +140,8 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTas
         }
         let x = marginX + 8;
         const cells = [
-          String(t.id),
           titleLines,
+          t.parentTitle ? String(t.parentTitle) : '',
           String(t.status),
           String(t.priority),
           new Date(t.deadline).toLocaleDateString(),
@@ -134,7 +150,14 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: ExportableTas
         cells.forEach((val, i) => {
           if (Array.isArray(val)) {
             let ly = y;
-            val.forEach((ln) => { doc.text(String(ln), x, ly); ly += baseLine + lineGap; });
+            val.forEach((ln, idx) => { 
+              const tx = x + (t.isSubtask ? 14 : 0);
+              if (t.isSubtask && idx === 0) {
+                doc.circle(x + 4, ly - 3, 2, 'F');
+              }
+              doc.text(String(ln), tx, ly); 
+              ly += baseLine + lineGap; 
+            });
           } else {
             doc.text(String(val), x, y);
           }
