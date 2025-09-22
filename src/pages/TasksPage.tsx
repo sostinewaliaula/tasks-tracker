@@ -4,7 +4,7 @@ import { useTask, TaskStatus, TaskPriority } from '../context/TaskContext';
 import { TaskList } from '../components/tasks/TaskList';
 import { TaskForm } from '../components/tasks/TaskForm';
 import { TaskDetailModal } from '../components/tasks/TaskDetailModal';
-import { PlusIcon, FilterIcon, SortAscIcon } from 'lucide-react';
+import { PlusIcon, FilterIcon, SortAscIcon, XIcon } from 'lucide-react';
 
 export function TasksPage() {
   const { currentUser } = useAuth();
@@ -135,14 +135,20 @@ export function TasksPage() {
       </div>
 
       {isAddingTask && (
-        <div className="fixed z-20 inset-0 overflow-y-auto">
+        <div className="fixed z-30 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900 dark:opacity-80"></div>
             </div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div className="inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="px-4 py-5 sm:p-6">
+              <div className="px-6 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Add Task</h3>
+                  <button onClick={() => setIsAddingTask(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Close">
+                    <XIcon className="h-6 w-6" />
+                  </button>
+                </div>
                 <TaskForm onCancel={() => setIsAddingTask(false)} onTaskAdded={() => setIsAddingTask(false)} />
               </div>
             </div>

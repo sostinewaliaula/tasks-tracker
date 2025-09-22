@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BellIcon, LogOutIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { BellIcon, LogOutIcon, UserIcon } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../components/auth/RBAC';
@@ -17,6 +17,21 @@ export function Header() {
   const location = useLocation();
   const unreadCount = notifications.filter(n => !n.read).length;
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const formatDisplayName = (name?: string) => {
+    if (!name) return '';
+    const cleaned = name.replace(/[._]+/g, ' ').trim();
+    return cleaned
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  };
+  const rawName = currentUser?.name 
+    || (currentUser as any)?.email?.split('@')[0]
+    || (currentUser as any)?.ldap_uid
+    || '';
+  const displayName = formatDisplayName(rawName);
+  const formatRole = (role?: string) => role === 'employee' ? 'User' : (role ? formatDisplayName(role) : '');
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
@@ -136,9 +151,7 @@ export function Header() {
               >
                 <BellIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    {unreadCount}
-                  </span>
+                  <span className="absolute top-1 right-1 bg-red-500 rounded-full h-2 w-2 border-2 border-white dark:border-gray-900" />
                 )}
               </button>
               {isNotificationsOpen && (
@@ -164,25 +177,57 @@ export function Header() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" /></svg>
               )}
             </button>
-            {/* Profile/Logout */}
-            <div className="flex items-center space-x-3">
-              <div className="text-sm">
-                <p className="font-medium text-gray-700 dark:text-gray-200">{currentUser?.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{currentUser?.role}</p>
-              </div>
-              <button
-                onClick={() => {
-                  logout();
-                  navigate('/login');
-                }}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <LogOutIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
-              </button>
-            </div>
+            {/* Profile menu */}
+            <ProfileMenu
+              name={displayName}
+              roleLabel={formatRole(currentUser?.role)}
+              onLogout={() => { logout(); navigate('/login'); }}
+              onProfile={() => navigate('/profile')}
+              onSettings={() => navigate('/settings')}
+            />
           </div>
         </div>
       </div>
     </header>
+  );
+}
+
+function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onSettings: () => void; }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen(v => !v)} className="flex items-center space-x-3 px-2 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+        <div className="text-left hidden sm:block">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 leading-tight">{name || 'User'}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{roleLabel}</p>
+        </div>
+        <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <UserIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+        </div>
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{name || 'User'}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel}</p>
+          </div>
+          <div className="py-1">
+            <button onClick={() => { setOpen(false); onProfile(); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">Profile</button>
+            <button onClick={() => { setOpen(false); onSettings(); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">Settings</button>
+            <button onClick={() => { setOpen(false); onLogout(); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 flex items-center">
+              <LogOutIcon className="h-4 w-4 mr-2" /> Logout
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
