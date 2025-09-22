@@ -13,6 +13,7 @@ type DepartmentNode = {
 export function AdminDepartmentPanel() {
   const { currentUser, token } = useAuth() as any;
   const [departments, setDepartments] = React.useState<DepartmentNode[]>([]);
+  const [managers, setManagers] = React.useState<{ id: number; name: string }[]>([]);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
   const [editName, setEditName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -39,8 +40,25 @@ export function AdminDepartmentPanel() {
     }
   };
 
+  const fetchManagers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users?eligibleManager=true`, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
+      });
+      if (!res.ok) throw new Error('Failed to load managers');
+      const json = await res.json();
+      const items = (json.data || []).map((u: any) => ({ id: u.id, name: u.name }));
+      setManagers(items);
+    } catch (e) {
+      // noop for now
+    }
+  };
+
   React.useEffect(() => {
-    if (currentUser?.role === 'admin') fetchDepartments();
+    if (currentUser?.role === 'admin') {
+      fetchDepartments();
+      fetchManagers();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role]);
 
@@ -125,10 +143,11 @@ export function AdminDepartmentPanel() {
     setModalParent({ id: selectedId, name: parent?.name });
     setModalOpen(true);
   };
-  const handleModalSubmit = async (name: string, parentId?: number | null) => {
+  const handleModalSubmit = async (name: string, parentId?: number | null, managerId?: number | null) => {
     if (!name.trim()) return;
     const body: any = { name: name.trim() };
     if (parentId) body.parentId = parentId;
+    if (managerId !== undefined) body.managerId = managerId;
     const res = await fetch(`${API_URL}/api/departments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
@@ -173,6 +192,8 @@ export function AdminDepartmentPanel() {
         onSubmit={handleModalSubmit}
         parentId={modalParent?.id ?? undefined}
         parentName={modalParent?.name}
+        primaryDepartments={departments.filter(d => d.parentId === null).map(d => ({ id: d.id, name: d.name }))}
+        managers={managers}
       />
       {/* Rename and error UI remains unchanged */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

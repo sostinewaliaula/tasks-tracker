@@ -29,11 +29,11 @@ function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boo
   );
 }
 
-function EditDepartmentModal({ open, onClose, department, users, onSave, loading }: {
+function EditDepartmentModal({ open, onClose, department, managerOptions, onSave, loading }: {
   open: boolean;
   onClose: () => void;
   department: DepartmentNode | null;
-  users: { id: number; name: string; email: string | null; ldapUid: string }[];
+  managerOptions: { id: number; name: string }[];
   onSave: (data: { name: string; managerId: number | null; description?: string }) => void;
   loading: boolean;
 }) {
@@ -46,7 +46,6 @@ function EditDepartmentModal({ open, onClose, department, users, onSave, loading
     setDescription(department?.description || '');
   }, [department, open]);
   if (!open || !department) return null;
-  const deptUsers = users.filter(u => u.primaryDepartment === department.name || u.department === department.name);
   return (
     <div className="fixed z-30 inset-0 flex items-center justify-center bg-black bg-opacity-40">
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md">
@@ -60,8 +59,8 @@ function EditDepartmentModal({ open, onClose, department, users, onSave, loading
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager</label>
             <select value={managerId} onChange={e => setManagerId(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
               <option value="">No manager</option>
-              {deptUsers.map(u => (
-                <option key={u.id} value={u.id}>{u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}</option>
+              {managerOptions.map(u => (
+                <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </select>
           </div>
@@ -105,6 +104,7 @@ function DepartmentsPageContent() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalParent, setModalParent] = useState<{ id: number | null, name?: string } | null>(null);
   const [editModal, setEditModal] = useState<{ open: boolean; dept: DepartmentNode | null }>({ open: false, dept: null });
+  const [managers, setManagers] = useState<{ id: number; name: string }[]>([]);
   const [editLoading, setEditLoading] = useState(false);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
@@ -138,6 +138,17 @@ function DepartmentsPageContent() {
       setUsers(j.data || []);
     };
     loadUsers();
+  }, [API_URL, currentUser?.role, token]);
+
+  useEffect(() => {
+    const loadManagers = async () => {
+      if (currentUser?.role !== 'admin') return;
+      const res = await fetch(`${API_URL}/api/users?eligibleManager=true`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+      if (!res.ok) return;
+      const j = await res.json();
+      setManagers((j.data || []).map((u: any) => ({ id: u.id, name: u.name })));
+    };
+    loadManagers();
   }, [API_URL, currentUser?.role, token]);
 
   const allDepartments: DepartmentNode[] = useMemo(() => {
@@ -212,10 +223,11 @@ function DepartmentsPageContent() {
     setModalParent({ id: defaultPrimary?.id ?? null, name: defaultPrimary?.name });
     setModalOpen(true);
   };
-  const handleModalSubmit = async (name: string, parentId?: number | null) => {
+  const handleModalSubmit = async (name: string, parentId?: number | null, managerId?: number | null) => {
     if (!name.trim()) return;
     const body: any = { name: name.trim() };
     if (parentId) body.parentId = parentId;
+    if (managerId !== undefined) body.managerId = managerId;
     try {
       const res = await fetch(`${API_URL}/api/departments`, {
         method: 'POST',
@@ -299,9 +311,6 @@ function DepartmentsPageContent() {
             </div>
             {currentUser?.role === 'admin' ? (
               <div className="flex items-center space-x-2">
-                <button onClick={(e) => { e.stopPropagation(); setSelectedId(dept.id); setEditName(dept.name); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
-                  <PencilIcon className="h-4 w-4" />
-                </button>
                 <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
                   <PencilIcon className="h-4 w-4" />
                 </button>
@@ -360,6 +369,7 @@ function DepartmentsPageContent() {
               parentId={modalParent?.id ?? undefined}
               parentName={modalParent?.name}
               primaryDepartments={modalParent ? primaryDepartments : undefined}
+              managers={managers}
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -400,7 +410,7 @@ function DepartmentsPageContent() {
                   <dl>
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-white dark:bg-gray-800">
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center"><UsersIcon className="h-5 w-5 mr-2 accent-green" />Manager</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:mt-0 sm:col-span-2">—</dd>
+                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:mt-0 sm:col-span-2">{selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId)?.name || '—') : '—'}</dd>
                     </div>
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-white dark:bg-gray-800">
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center"><UsersIcon className="h-5 w-5 mr-2 accent-green" />Team Size</dt>
@@ -482,7 +492,7 @@ function DepartmentsPageContent() {
         </div>
       </div>
       <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
-      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} users={users} onSave={handleEditSave} loading={editLoading} />
+      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={[...managers, ...(editModal.dept?.managerId ? managers.find(m => m.id === editModal.dept?.managerId) ? [] : [{ id: editModal.dept.managerId, name: users.find(u => u.id === editModal.dept?.managerId)?.name || `User ${editModal.dept.managerId}` }] : [])]} onSave={handleEditSave} loading={editLoading} />
     </div>
   </ToastProvider>;
 }

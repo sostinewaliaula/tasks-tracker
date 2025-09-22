@@ -1058,10 +1058,12 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
+    managingDepartments: number
     tasksCreated: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    managingDepartments?: boolean | UserCountOutputTypeCountManagingDepartmentsArgs
     tasksCreated?: boolean | UserCountOutputTypeCountTasksCreatedArgs
   }
 
@@ -1074,6 +1076,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the UserCountOutputType
      */
     select?: UserCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountManagingDepartmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DepartmentWhereInput
   }
 
   /**
@@ -1395,6 +1404,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     department?: boolean | User$departmentArgs<ExtArgs>
+    managingDepartments?: boolean | User$managingDepartmentsArgs<ExtArgs>
     tasksCreated?: boolean | User$tasksCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -1415,6 +1425,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ldapUid" | "email" | "name" | "role" | "departmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     department?: boolean | User$departmentArgs<ExtArgs>
+    managingDepartments?: boolean | User$managingDepartmentsArgs<ExtArgs>
     tasksCreated?: boolean | User$tasksCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -1423,6 +1434,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       department: Prisma.$DepartmentPayload<ExtArgs> | null
+      managingDepartments: Prisma.$DepartmentPayload<ExtArgs>[]
       tasksCreated: Prisma.$TaskPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -1775,6 +1787,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     department<T extends User$departmentArgs<ExtArgs> = {}>(args?: Subset<T, User$departmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    managingDepartments<T extends User$managingDepartmentsArgs<ExtArgs> = {}>(args?: Subset<T, User$managingDepartmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tasksCreated<T extends User$tasksCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$tasksCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2175,6 +2188,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.managingDepartments
+   */
+  export type User$managingDepartmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
+    orderBy?: DepartmentOrderByWithRelationInput | DepartmentOrderByWithRelationInput[]
+    cursor?: DepartmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
    * User.tasksCreated
    */
   export type User$tasksCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2232,17 +2269,20 @@ export namespace Prisma {
   export type DepartmentAvgAggregateOutputType = {
     id: number | null
     parentId: number | null
+    managerId: number | null
   }
 
   export type DepartmentSumAggregateOutputType = {
     id: number | null
     parentId: number | null
+    managerId: number | null
   }
 
   export type DepartmentMinAggregateOutputType = {
     id: number | null
     name: string | null
     parentId: number | null
+    managerId: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2251,6 +2291,7 @@ export namespace Prisma {
     id: number | null
     name: string | null
     parentId: number | null
+    managerId: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2259,6 +2300,7 @@ export namespace Prisma {
     id: number
     name: number
     parentId: number
+    managerId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2268,17 +2310,20 @@ export namespace Prisma {
   export type DepartmentAvgAggregateInputType = {
     id?: true
     parentId?: true
+    managerId?: true
   }
 
   export type DepartmentSumAggregateInputType = {
     id?: true
     parentId?: true
+    managerId?: true
   }
 
   export type DepartmentMinAggregateInputType = {
     id?: true
     name?: true
     parentId?: true
+    managerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2287,6 +2332,7 @@ export namespace Prisma {
     id?: true
     name?: true
     parentId?: true
+    managerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2295,6 +2341,7 @@ export namespace Prisma {
     id?: true
     name?: true
     parentId?: true
+    managerId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2390,6 +2437,7 @@ export namespace Prisma {
     id: number
     name: string
     parentId: number | null
+    managerId: number | null
     createdAt: Date
     updatedAt: Date
     _count: DepartmentCountAggregateOutputType | null
@@ -2417,10 +2465,12 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     parentId?: boolean
+    managerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     parent?: boolean | Department$parentArgs<ExtArgs>
     children?: boolean | Department$childrenArgs<ExtArgs>
+    manager?: boolean | Department$managerArgs<ExtArgs>
     users?: boolean | Department$usersArgs<ExtArgs>
     tasks?: boolean | Department$tasksArgs<ExtArgs>
     _count?: boolean | DepartmentCountOutputTypeDefaultArgs<ExtArgs>
@@ -2432,14 +2482,16 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     parentId?: boolean
+    managerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DepartmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "parentId" | "createdAt" | "updatedAt", ExtArgs["result"]["department"]>
+  export type DepartmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "parentId" | "managerId" | "createdAt" | "updatedAt", ExtArgs["result"]["department"]>
   export type DepartmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     parent?: boolean | Department$parentArgs<ExtArgs>
     children?: boolean | Department$childrenArgs<ExtArgs>
+    manager?: boolean | Department$managerArgs<ExtArgs>
     users?: boolean | Department$usersArgs<ExtArgs>
     tasks?: boolean | Department$tasksArgs<ExtArgs>
     _count?: boolean | DepartmentCountOutputTypeDefaultArgs<ExtArgs>
@@ -2450,6 +2502,7 @@ export namespace Prisma {
     objects: {
       parent: Prisma.$DepartmentPayload<ExtArgs> | null
       children: Prisma.$DepartmentPayload<ExtArgs>[]
+      manager: Prisma.$UserPayload<ExtArgs> | null
       users: Prisma.$UserPayload<ExtArgs>[]
       tasks: Prisma.$TaskPayload<ExtArgs>[]
     }
@@ -2457,6 +2510,7 @@ export namespace Prisma {
       id: number
       name: string
       parentId: number | null
+      managerId: number | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["department"]>
@@ -2801,6 +2855,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     parent<T extends Department$parentArgs<ExtArgs> = {}>(args?: Subset<T, Department$parentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     children<T extends Department$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Department$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    manager<T extends Department$managerArgs<ExtArgs> = {}>(args?: Subset<T, Department$managerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     users<T extends Department$usersArgs<ExtArgs> = {}>(args?: Subset<T, Department$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tasks<T extends Department$tasksArgs<ExtArgs> = {}>(args?: Subset<T, Department$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -2835,6 +2890,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Department", 'Int'>
     readonly name: FieldRef<"Department", 'String'>
     readonly parentId: FieldRef<"Department", 'Int'>
+    readonly managerId: FieldRef<"Department", 'Int'>
     readonly createdAt: FieldRef<"Department", 'DateTime'>
     readonly updatedAt: FieldRef<"Department", 'DateTime'>
   }
@@ -3220,6 +3276,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
+   * Department.manager
+   */
+  export type Department$managerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -4438,6 +4513,7 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     parentId: 'parentId',
+    managerId: 'managerId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -4572,6 +4648,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    managingDepartments?: DepartmentListRelationFilter
     tasksCreated?: TaskListRelationFilter
   }
 
@@ -4585,6 +4662,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     department?: DepartmentOrderByWithRelationInput
+    managingDepartments?: DepartmentOrderByRelationAggregateInput
     tasksCreated?: TaskOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
@@ -4602,6 +4680,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    managingDepartments?: DepartmentListRelationFilter
     tasksCreated?: TaskListRelationFilter
   }, "id" | "ldapUid" | "email">
 
@@ -4642,10 +4721,12 @@ export namespace Prisma {
     id?: IntFilter<"Department"> | number
     name?: StringFilter<"Department"> | string
     parentId?: IntNullableFilter<"Department"> | number | null
+    managerId?: IntNullableFilter<"Department"> | number | null
     createdAt?: DateTimeFilter<"Department"> | Date | string
     updatedAt?: DateTimeFilter<"Department"> | Date | string
     parent?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     children?: DepartmentListRelationFilter
+    manager?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     users?: UserListRelationFilter
     tasks?: TaskListRelationFilter
   }
@@ -4654,10 +4735,12 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     parentId?: SortOrderInput | SortOrder
+    managerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     parent?: DepartmentOrderByWithRelationInput
     children?: DepartmentOrderByRelationAggregateInput
+    manager?: UserOrderByWithRelationInput
     users?: UserOrderByRelationAggregateInput
     tasks?: TaskOrderByRelationAggregateInput
     _relevance?: DepartmentOrderByRelevanceInput
@@ -4671,10 +4754,12 @@ export namespace Prisma {
     NOT?: DepartmentWhereInput | DepartmentWhereInput[]
     name?: StringFilter<"Department"> | string
     parentId?: IntNullableFilter<"Department"> | number | null
+    managerId?: IntNullableFilter<"Department"> | number | null
     createdAt?: DateTimeFilter<"Department"> | Date | string
     updatedAt?: DateTimeFilter<"Department"> | Date | string
     parent?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     children?: DepartmentListRelationFilter
+    manager?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     users?: UserListRelationFilter
     tasks?: TaskListRelationFilter
   }, "id" | "name_parentId">
@@ -4683,6 +4768,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     parentId?: SortOrderInput | SortOrder
+    managerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DepartmentCountOrderByAggregateInput
@@ -4699,6 +4785,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Department"> | number
     name?: StringWithAggregatesFilter<"Department"> | string
     parentId?: IntNullableWithAggregatesFilter<"Department"> | number | null
+    managerId?: IntNullableWithAggregatesFilter<"Department"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Department"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Department"> | Date | string
   }
@@ -4808,6 +4895,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     department?: DepartmentCreateNestedOneWithoutUsersInput
+    managingDepartments?: DepartmentCreateNestedManyWithoutManagerInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
   }
 
@@ -4820,6 +4908,7 @@ export namespace Prisma {
     departmentId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managingDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -4831,6 +4920,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: DepartmentUpdateOneWithoutUsersNestedInput
+    managingDepartments?: DepartmentUpdateManyWithoutManagerNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -4843,6 +4933,7 @@ export namespace Prisma {
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managingDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -4883,6 +4974,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     parent?: DepartmentCreateNestedOneWithoutChildrenInput
     children?: DepartmentCreateNestedManyWithoutParentInput
+    manager?: UserCreateNestedOneWithoutManagingDepartmentsInput
     users?: UserCreateNestedManyWithoutDepartmentInput
     tasks?: TaskCreateNestedManyWithoutDepartmentInput
   }
@@ -4891,6 +4983,7 @@ export namespace Prisma {
     id?: number
     name: string
     parentId?: number | null
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: DepartmentUncheckedCreateNestedManyWithoutParentInput
@@ -4904,6 +4997,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: DepartmentUpdateOneWithoutChildrenNestedInput
     children?: DepartmentUpdateManyWithoutParentNestedInput
+    manager?: UserUpdateOneWithoutManagingDepartmentsNestedInput
     users?: UserUpdateManyWithoutDepartmentNestedInput
     tasks?: TaskUpdateManyWithoutDepartmentNestedInput
   }
@@ -4912,6 +5006,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: DepartmentUncheckedUpdateManyWithoutParentNestedInput
@@ -4923,6 +5018,7 @@ export namespace Prisma {
     id?: number
     name: string
     parentId?: number | null
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -4937,6 +5033,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5112,6 +5209,12 @@ export namespace Prisma {
     isNot?: DepartmentWhereInput | null
   }
 
+  export type DepartmentListRelationFilter = {
+    every?: DepartmentWhereInput
+    some?: DepartmentWhereInput
+    none?: DepartmentWhereInput
+  }
+
   export type TaskListRelationFilter = {
     every?: TaskWhereInput
     some?: TaskWhereInput
@@ -5121,6 +5224,10 @@ export namespace Prisma {
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
+  }
+
+  export type DepartmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type TaskOrderByRelationAggregateInput = {
@@ -5268,20 +5375,15 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type DepartmentListRelationFilter = {
-    every?: DepartmentWhereInput
-    some?: DepartmentWhereInput
-    none?: DepartmentWhereInput
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
   }
 
   export type UserListRelationFilter = {
     every?: UserWhereInput
     some?: UserWhereInput
     none?: UserWhereInput
-  }
-
-  export type DepartmentOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type UserOrderByRelationAggregateInput = {
@@ -5303,6 +5405,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     parentId?: SortOrder
+    managerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5310,12 +5413,14 @@ export namespace Prisma {
   export type DepartmentAvgOrderByAggregateInput = {
     id?: SortOrder
     parentId?: SortOrder
+    managerId?: SortOrder
   }
 
   export type DepartmentMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     parentId?: SortOrder
+    managerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5324,6 +5429,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     parentId?: SortOrder
+    managerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5331,6 +5437,7 @@ export namespace Prisma {
   export type DepartmentSumOrderByAggregateInput = {
     id?: SortOrder
     parentId?: SortOrder
+    managerId?: SortOrder
   }
 
   export type EnumTaskPriorityFilter<$PrismaModel = never> = {
@@ -5445,11 +5552,25 @@ export namespace Prisma {
     connect?: DepartmentWhereUniqueInput
   }
 
+  export type DepartmentCreateNestedManyWithoutManagerInput = {
+    create?: XOR<DepartmentCreateWithoutManagerInput, DepartmentUncheckedCreateWithoutManagerInput> | DepartmentCreateWithoutManagerInput[] | DepartmentUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutManagerInput | DepartmentCreateOrConnectWithoutManagerInput[]
+    createMany?: DepartmentCreateManyManagerInputEnvelope
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+  }
+
   export type TaskCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<TaskCreateWithoutCreatedByInput, TaskUncheckedCreateWithoutCreatedByInput> | TaskCreateWithoutCreatedByInput[] | TaskUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: TaskCreateOrConnectWithoutCreatedByInput | TaskCreateOrConnectWithoutCreatedByInput[]
     createMany?: TaskCreateManyCreatedByInputEnvelope
     connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
+  export type DepartmentUncheckedCreateNestedManyWithoutManagerInput = {
+    create?: XOR<DepartmentCreateWithoutManagerInput, DepartmentUncheckedCreateWithoutManagerInput> | DepartmentCreateWithoutManagerInput[] | DepartmentUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutManagerInput | DepartmentCreateOrConnectWithoutManagerInput[]
+    createMany?: DepartmentCreateManyManagerInputEnvelope
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
   }
 
   export type TaskUncheckedCreateNestedManyWithoutCreatedByInput = {
@@ -5485,6 +5606,20 @@ export namespace Prisma {
     update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutUsersInput, DepartmentUpdateWithoutUsersInput>, DepartmentUncheckedUpdateWithoutUsersInput>
   }
 
+  export type DepartmentUpdateManyWithoutManagerNestedInput = {
+    create?: XOR<DepartmentCreateWithoutManagerInput, DepartmentUncheckedCreateWithoutManagerInput> | DepartmentCreateWithoutManagerInput[] | DepartmentUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutManagerInput | DepartmentCreateOrConnectWithoutManagerInput[]
+    upsert?: DepartmentUpsertWithWhereUniqueWithoutManagerInput | DepartmentUpsertWithWhereUniqueWithoutManagerInput[]
+    createMany?: DepartmentCreateManyManagerInputEnvelope
+    set?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    disconnect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    delete?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    update?: DepartmentUpdateWithWhereUniqueWithoutManagerInput | DepartmentUpdateWithWhereUniqueWithoutManagerInput[]
+    updateMany?: DepartmentUpdateManyWithWhereWithoutManagerInput | DepartmentUpdateManyWithWhereWithoutManagerInput[]
+    deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+  }
+
   export type TaskUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<TaskCreateWithoutCreatedByInput, TaskUncheckedCreateWithoutCreatedByInput> | TaskCreateWithoutCreatedByInput[] | TaskUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: TaskCreateOrConnectWithoutCreatedByInput | TaskCreateOrConnectWithoutCreatedByInput[]
@@ -5515,6 +5650,20 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type DepartmentUncheckedUpdateManyWithoutManagerNestedInput = {
+    create?: XOR<DepartmentCreateWithoutManagerInput, DepartmentUncheckedCreateWithoutManagerInput> | DepartmentCreateWithoutManagerInput[] | DepartmentUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutManagerInput | DepartmentCreateOrConnectWithoutManagerInput[]
+    upsert?: DepartmentUpsertWithWhereUniqueWithoutManagerInput | DepartmentUpsertWithWhereUniqueWithoutManagerInput[]
+    createMany?: DepartmentCreateManyManagerInputEnvelope
+    set?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    disconnect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    delete?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    update?: DepartmentUpdateWithWhereUniqueWithoutManagerInput | DepartmentUpdateWithWhereUniqueWithoutManagerInput[]
+    updateMany?: DepartmentUpdateManyWithWhereWithoutManagerInput | DepartmentUpdateManyWithWhereWithoutManagerInput[]
+    deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+  }
+
   export type TaskUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<TaskCreateWithoutCreatedByInput, TaskUncheckedCreateWithoutCreatedByInput> | TaskCreateWithoutCreatedByInput[] | TaskUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: TaskCreateOrConnectWithoutCreatedByInput | TaskCreateOrConnectWithoutCreatedByInput[]
@@ -5540,6 +5689,12 @@ export namespace Prisma {
     connectOrCreate?: DepartmentCreateOrConnectWithoutParentInput | DepartmentCreateOrConnectWithoutParentInput[]
     createMany?: DepartmentCreateManyParentInputEnvelope
     connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutManagingDepartmentsInput = {
+    create?: XOR<UserCreateWithoutManagingDepartmentsInput, UserUncheckedCreateWithoutManagingDepartmentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagingDepartmentsInput
+    connect?: UserWhereUniqueInput
   }
 
   export type UserCreateNestedManyWithoutDepartmentInput = {
@@ -5599,6 +5754,16 @@ export namespace Prisma {
     update?: DepartmentUpdateWithWhereUniqueWithoutParentInput | DepartmentUpdateWithWhereUniqueWithoutParentInput[]
     updateMany?: DepartmentUpdateManyWithWhereWithoutParentInput | DepartmentUpdateManyWithWhereWithoutParentInput[]
     deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+  }
+
+  export type UserUpdateOneWithoutManagingDepartmentsNestedInput = {
+    create?: XOR<UserCreateWithoutManagingDepartmentsInput, UserUncheckedCreateWithoutManagingDepartmentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagingDepartmentsInput
+    upsert?: UserUpsertWithoutManagingDepartmentsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutManagingDepartmentsInput, UserUpdateWithoutManagingDepartmentsInput>, UserUncheckedUpdateWithoutManagingDepartmentsInput>
   }
 
   export type UserUpdateManyWithoutDepartmentNestedInput = {
@@ -5991,6 +6156,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     parent?: DepartmentCreateNestedOneWithoutChildrenInput
     children?: DepartmentCreateNestedManyWithoutParentInput
+    manager?: UserCreateNestedOneWithoutManagingDepartmentsInput
     tasks?: TaskCreateNestedManyWithoutDepartmentInput
   }
 
@@ -5998,6 +6164,7 @@ export namespace Prisma {
     id?: number
     name: string
     parentId?: number | null
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: DepartmentUncheckedCreateNestedManyWithoutParentInput
@@ -6007,6 +6174,37 @@ export namespace Prisma {
   export type DepartmentCreateOrConnectWithoutUsersInput = {
     where: DepartmentWhereUniqueInput
     create: XOR<DepartmentCreateWithoutUsersInput, DepartmentUncheckedCreateWithoutUsersInput>
+  }
+
+  export type DepartmentCreateWithoutManagerInput = {
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: DepartmentCreateNestedOneWithoutChildrenInput
+    children?: DepartmentCreateNestedManyWithoutParentInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    tasks?: TaskCreateNestedManyWithoutDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutManagerInput = {
+    id?: number
+    name: string
+    parentId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: DepartmentUncheckedCreateNestedManyWithoutParentInput
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutManagerInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutManagerInput, DepartmentUncheckedCreateWithoutManagerInput>
+  }
+
+  export type DepartmentCreateManyManagerInputEnvelope = {
+    data: DepartmentCreateManyManagerInput | DepartmentCreateManyManagerInput[]
+    skipDuplicates?: boolean
   }
 
   export type TaskCreateWithoutCreatedByInput = {
@@ -6063,6 +6261,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: DepartmentUpdateOneWithoutChildrenNestedInput
     children?: DepartmentUpdateManyWithoutParentNestedInput
+    manager?: UserUpdateOneWithoutManagingDepartmentsNestedInput
     tasks?: TaskUpdateManyWithoutDepartmentNestedInput
   }
 
@@ -6070,10 +6269,39 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: DepartmentUncheckedUpdateManyWithoutParentNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutDepartmentNestedInput
+  }
+
+  export type DepartmentUpsertWithWhereUniqueWithoutManagerInput = {
+    where: DepartmentWhereUniqueInput
+    update: XOR<DepartmentUpdateWithoutManagerInput, DepartmentUncheckedUpdateWithoutManagerInput>
+    create: XOR<DepartmentCreateWithoutManagerInput, DepartmentUncheckedCreateWithoutManagerInput>
+  }
+
+  export type DepartmentUpdateWithWhereUniqueWithoutManagerInput = {
+    where: DepartmentWhereUniqueInput
+    data: XOR<DepartmentUpdateWithoutManagerInput, DepartmentUncheckedUpdateWithoutManagerInput>
+  }
+
+  export type DepartmentUpdateManyWithWhereWithoutManagerInput = {
+    where: DepartmentScalarWhereInput
+    data: XOR<DepartmentUpdateManyMutationInput, DepartmentUncheckedUpdateManyWithoutManagerInput>
+  }
+
+  export type DepartmentScalarWhereInput = {
+    AND?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+    OR?: DepartmentScalarWhereInput[]
+    NOT?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+    id?: IntFilter<"Department"> | number
+    name?: StringFilter<"Department"> | string
+    parentId?: IntNullableFilter<"Department"> | number | null
+    managerId?: IntNullableFilter<"Department"> | number | null
+    createdAt?: DateTimeFilter<"Department"> | Date | string
+    updatedAt?: DateTimeFilter<"Department"> | Date | string
   }
 
   export type TaskUpsertWithWhereUniqueWithoutCreatedByInput = {
@@ -6114,6 +6342,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: DepartmentCreateNestedOneWithoutChildrenInput
+    manager?: UserCreateNestedOneWithoutManagingDepartmentsInput
     users?: UserCreateNestedManyWithoutDepartmentInput
     tasks?: TaskCreateNestedManyWithoutDepartmentInput
   }
@@ -6122,6 +6351,7 @@ export namespace Prisma {
     id?: number
     name: string
     parentId?: number | null
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
@@ -6138,6 +6368,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: DepartmentCreateNestedManyWithoutParentInput
+    manager?: UserCreateNestedOneWithoutManagingDepartmentsInput
     users?: UserCreateNestedManyWithoutDepartmentInput
     tasks?: TaskCreateNestedManyWithoutDepartmentInput
   }
@@ -6145,6 +6376,7 @@ export namespace Prisma {
   export type DepartmentUncheckedCreateWithoutParentInput = {
     id?: number
     name: string
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: DepartmentUncheckedCreateNestedManyWithoutParentInput
@@ -6162,6 +6394,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserCreateWithoutManagingDepartmentsInput = {
+    ldapUid: string
+    email?: string | null
+    name: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutManagingDepartmentsInput = {
+    id?: number
+    ldapUid: string
+    email?: string | null
+    name: string
+    role?: $Enums.Role
+    departmentId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutManagingDepartmentsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutManagingDepartmentsInput, UserUncheckedCreateWithoutManagingDepartmentsInput>
+  }
+
   export type UserCreateWithoutDepartmentInput = {
     ldapUid: string
     email?: string | null
@@ -6169,6 +6429,7 @@ export namespace Prisma {
     role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
+    managingDepartments?: DepartmentCreateNestedManyWithoutManagerInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
   }
 
@@ -6180,6 +6441,7 @@ export namespace Prisma {
     role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
+    managingDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -6246,6 +6508,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: DepartmentUpdateOneWithoutChildrenNestedInput
+    manager?: UserUpdateOneWithoutManagingDepartmentsNestedInput
     users?: UserUpdateManyWithoutDepartmentNestedInput
     tasks?: TaskUpdateManyWithoutDepartmentNestedInput
   }
@@ -6254,6 +6517,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
@@ -6276,15 +6540,38 @@ export namespace Prisma {
     data: XOR<DepartmentUpdateManyMutationInput, DepartmentUncheckedUpdateManyWithoutParentInput>
   }
 
-  export type DepartmentScalarWhereInput = {
-    AND?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
-    OR?: DepartmentScalarWhereInput[]
-    NOT?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
-    id?: IntFilter<"Department"> | number
-    name?: StringFilter<"Department"> | string
-    parentId?: IntNullableFilter<"Department"> | number | null
-    createdAt?: DateTimeFilter<"Department"> | Date | string
-    updatedAt?: DateTimeFilter<"Department"> | Date | string
+  export type UserUpsertWithoutManagingDepartmentsInput = {
+    update: XOR<UserUpdateWithoutManagingDepartmentsInput, UserUncheckedUpdateWithoutManagingDepartmentsInput>
+    create: XOR<UserCreateWithoutManagingDepartmentsInput, UserUncheckedCreateWithoutManagingDepartmentsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutManagingDepartmentsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutManagingDepartmentsInput, UserUncheckedUpdateWithoutManagingDepartmentsInput>
+  }
+
+  export type UserUpdateWithoutManagingDepartmentsInput = {
+    ldapUid?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutManagingDepartmentsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    ldapUid?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -6341,6 +6628,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     department?: DepartmentCreateNestedOneWithoutUsersInput
+    managingDepartments?: DepartmentCreateNestedManyWithoutManagerInput
   }
 
   export type UserUncheckedCreateWithoutTasksCreatedInput = {
@@ -6352,6 +6640,7 @@ export namespace Prisma {
     departmentId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managingDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
   }
 
   export type UserCreateOrConnectWithoutTasksCreatedInput = {
@@ -6365,6 +6654,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     parent?: DepartmentCreateNestedOneWithoutChildrenInput
     children?: DepartmentCreateNestedManyWithoutParentInput
+    manager?: UserCreateNestedOneWithoutManagingDepartmentsInput
     users?: UserCreateNestedManyWithoutDepartmentInput
   }
 
@@ -6372,6 +6662,7 @@ export namespace Prisma {
     id?: number
     name: string
     parentId?: number | null
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: DepartmentUncheckedCreateNestedManyWithoutParentInput
@@ -6471,6 +6762,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: DepartmentUpdateOneWithoutUsersNestedInput
+    managingDepartments?: DepartmentUpdateManyWithoutManagerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTasksCreatedInput = {
@@ -6482,6 +6774,7 @@ export namespace Prisma {
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managingDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
   }
 
   export type DepartmentUpsertWithoutTasksInput = {
@@ -6501,6 +6794,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: DepartmentUpdateOneWithoutChildrenNestedInput
     children?: DepartmentUpdateManyWithoutParentNestedInput
+    manager?: UserUpdateOneWithoutManagingDepartmentsNestedInput
     users?: UserUpdateManyWithoutDepartmentNestedInput
   }
 
@@ -6508,6 +6802,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: DepartmentUncheckedUpdateManyWithoutParentNestedInput
@@ -6568,6 +6863,14 @@ export namespace Prisma {
     data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutParentInput>
   }
 
+  export type DepartmentCreateManyManagerInput = {
+    id?: number
+    name: string
+    parentId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type TaskCreateManyCreatedByInput = {
     id?: number
     title: string
@@ -6579,6 +6882,35 @@ export namespace Prisma {
     updatedAt?: Date | string
     departmentId?: number | null
     parentId?: number | null
+  }
+
+  export type DepartmentUpdateWithoutManagerInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: DepartmentUpdateOneWithoutChildrenNestedInput
+    children?: DepartmentUpdateManyWithoutParentNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    tasks?: TaskUpdateManyWithoutDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutManagerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: DepartmentUncheckedUpdateManyWithoutParentNestedInput
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateManyWithoutManagerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskUpdateWithoutCreatedByInput = {
@@ -6624,6 +6956,7 @@ export namespace Prisma {
   export type DepartmentCreateManyParentInput = {
     id?: number
     name: string
+    managerId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6656,6 +6989,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: DepartmentUpdateManyWithoutParentNestedInput
+    manager?: UserUpdateOneWithoutManagingDepartmentsNestedInput
     users?: UserUpdateManyWithoutDepartmentNestedInput
     tasks?: TaskUpdateManyWithoutDepartmentNestedInput
   }
@@ -6663,6 +6997,7 @@ export namespace Prisma {
   export type DepartmentUncheckedUpdateWithoutParentInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: DepartmentUncheckedUpdateManyWithoutParentNestedInput
@@ -6673,6 +7008,7 @@ export namespace Prisma {
   export type DepartmentUncheckedUpdateManyWithoutParentInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    managerId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6684,6 +7020,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managingDepartments?: DepartmentUpdateManyWithoutManagerNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -6695,6 +7032,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managingDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 

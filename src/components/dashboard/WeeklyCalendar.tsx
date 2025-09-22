@@ -3,9 +3,11 @@ import { Task } from '../../context/TaskContext';
 import { TaskCard } from '../tasks/TaskCard';
 type WeeklyCalendarProps = {
   tasks: Task[];
+  onViewAll?: () => void;
 };
 export function WeeklyCalendar({
-  tasks
+  tasks,
+  onViewAll
 }: WeeklyCalendarProps) {
   // Get the current week's dates (Monday to Friday)
   const getWeekDays = () => {
@@ -53,13 +55,18 @@ export function WeeklyCalendar({
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
   };
   return <div>
-      <div className="bg-white dark:bg-gray-900 px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
-          Weekly Calendar
-        </h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-          Tasks scheduled for this week
-        </p>
+      <div className="bg-white dark:bg-gray-900 px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+            Weekly Calendar
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
+            Tasks scheduled for this week
+          </p>
+        </div>
+        {onViewAll ? (
+          <button onClick={onViewAll} className="inline-flex items-center px-4 py-2 rounded-full text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90 text-sm">Go to Tasks</button>
+        ) : null}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700">
         {tasksByDay.map(({ date, tasks }) => <div key={date.toISOString()} className="min-h-[200px]">

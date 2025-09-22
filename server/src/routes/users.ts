@@ -8,15 +8,25 @@ const router = express.Router();
 router.get('/', authMiddleware, roleCheck(['admin']), async (req, res) => {
     try {
         const q = String(req.query.q || '').trim();
+        const role = String(req.query.role || '').trim();
+        const eligibleManager = String(req.query.eligibleManager || '').trim().toLowerCase() === 'true';
         const users = await prisma.user.findMany({
-            where: q
+            where: q || role || eligibleManager
                 ? {
                       OR: [
-                          { name: { contains: q } },
-                          { email: q ? { contains: q } : undefined },
-                          { ldapUid: { contains: q } },
+                          q ? { name: { contains: q } } : undefined,
+                          q ? { email: { contains: q } } : undefined,
+                          q ? { ldapUid: { contains: q } } : undefined,
+                      ].filter(Boolean) as any,
+                      AND: [
+                        role ? { role: role as any } : undefined,
+                        eligibleManager ? { managingDepartments: { none: {} } } : undefined,
                       ].filter(Boolean) as any,
                   }
+                : role
+                ? { role: role as any }
+                : eligibleManager
+                ? { managingDepartments: { none: {} } }
                 : undefined,
             select: { id: true, name: true, email: true, ldapUid: true, departmentId: true, role: true },
             orderBy: { name: 'asc' },

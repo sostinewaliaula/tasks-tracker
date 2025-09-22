@@ -13,9 +13,15 @@ router.get('/', async (_req, res) => {
         const departments = await prisma.department.findMany({
             where: { parentId: null },
             include: {
+                manager: { select: { id: true, name: true } },
                 children: {
                     include: {
-                        children: true,
+                        manager: { select: { id: true, name: true } },
+                        children: {
+                            include: {
+                                manager: { select: { id: true, name: true } },
+                            },
+                        },
                     },
                 },
             },
@@ -28,17 +34,34 @@ router.get('/', async (_req, res) => {
     }
 });
 
-// Create primary or sub-department
+// Create primary or sub-department (optional manager)
 router.post('/', async (req, res) => {
-    const { name, parentId } = req.body || {};
+    const { name, parentId, managerId } = req.body || {};
     if (!name || typeof name !== 'string') {
         return res.status(400).json({ error: 'Name is required' });
     }
     try {
-        const department = await prisma.department.create({
-            data: { name: name.trim(), parentId: parentId ?? null },
+        // Ensure manager is not already assigned elsewhere
+        if (managerId) {
+            const existing = await prisma.department.findFirst({ where: { managerId: Number(managerId) } });
+            if (existing) {
+                return res.status(400).json({ error: 'Selected manager is already assigned to another department' });
+            }
+        }
+        const result = await prisma.$transaction(async (tx) => {
+            const department = await tx.department.create({
+                data: {
+                    name: name.trim(),
+                    parentId: parentId ?? null,
+                    managerId: managerId ? Number(managerId) : null,
+                },
+            });
+            if (managerId) {
+                await tx.user.update({ where: { id: Number(managerId) }, data: { role: 'manager', departmentId: department.id } });
+            }
+            return department;
         });
-        res.status(201).json({ data: department });
+        res.status(201).json({ data: result });
     } catch (e: any) {
         if (e?.code === 'P2002') {
             return res.status(409).json({ error: 'A department with this name already exists at this level' });
@@ -48,22 +71,36 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update department (name and/or parent)
+// Update department (name and/or parent and/or manager)
 router.put('/:id', async (req, res) => {
     const id = Number(req.params.id);
-    const { name, parentId } = req.body || {};
+    const { name, parentId, managerId } = req.body || {};
     if (!Number.isFinite(id)) {
         return res.status(400).json({ error: 'Invalid id' });
     }
     try {
-        const department = await prisma.department.update({
-            where: { id },
-            data: {
-                name: typeof name === 'string' ? name.trim() : undefined,
-                parentId: parentId === undefined ? undefined : parentId,
-            },
+        if (managerId !== undefined && managerId !== null) {
+            const existing = await prisma.department.findFirst({ where: { managerId: Number(managerId), NOT: { id } } });
+            if (existing) {
+                return res.status(400).json({ error: 'Selected manager is already assigned to another department' });
+            }
+        }
+        const department = await prisma.department.findUnique({ where: { id } });
+        const updated = await prisma.$transaction(async (tx) => {
+            const dep = await tx.department.update({
+                where: { id },
+                data: {
+                    name: typeof name === 'string' ? name.trim() : undefined,
+                    parentId: parentId === undefined ? undefined : parentId,
+                    managerId: managerId === undefined ? undefined : (managerId === null ? null : Number(managerId)),
+                },
+            });
+            if (managerId) {
+                await tx.user.update({ where: { id: Number(managerId) }, data: { role: 'manager', departmentId: dep.id } });
+            }
+            return dep;
         });
-        res.json({ data: department });
+        res.json({ data: updated });
     } catch (e: any) {
         if (e?.code === 'P2002') {
             return res.status(409).json({ error: 'A department with this name already exists at this level' });

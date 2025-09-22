@@ -4,10 +4,11 @@ import { XIcon } from 'lucide-react';
 interface DepartmentModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (name: string, parentId?: number | null) => void;
+  onSubmit: (name: string, parentId?: number | null, managerId?: number | null) => void;
   parentId?: number | null;
   parentName?: string;
   primaryDepartments?: { id: number; name: string }[];
+  managers?: { id: number; name: string }[];
 }
 
 // Toast context and provider
@@ -34,16 +35,18 @@ export function useToast() {
   return ctx;
 }
 
-export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments }: DepartmentModalProps) {
+export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments, managers }: DepartmentModalProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(parentId ?? null);
+  const [selectedManagerId, setSelectedManagerId] = useState<number | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
     if (open) {
       setName('');
       setSelectedParentId(parentId ?? null);
+      setSelectedManagerId(null);
     }
   }, [open, parentId]);
 
@@ -53,12 +56,12 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
       setError('Department name is required');
       return;
     }
-    if (parentId && !selectedParentId) {
+    if (primaryDepartments && !selectedParentId) {
       setError('Please select a primary department');
       return;
     }
     setError(null);
-    onSubmit(name.trim(), parentId ? selectedParentId : undefined);
+    onSubmit(name.trim(), primaryDepartments ? selectedParentId : undefined, selectedManagerId ?? undefined);
     setName('');
     onClose();
   };
@@ -83,7 +86,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                 <XIcon className="h-6 w-6" />
               </button>
             </div>
-            {parentId && primaryDepartments && (
+            {primaryDepartments && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Primary Department</label>
                 <select
@@ -95,6 +98,21 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                   <option value="">Select primary department</option>
                   {primaryDepartments.map(pd => (
                     <option key={pd.id} value={pd.id}>{pd.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {managers && managers.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager (optional)</label>
+                <select
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  value={selectedManagerId ?? ''}
+                  onChange={e => setSelectedManagerId(e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">No manager</option>
+                  {managers.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
                   ))}
                 </select>
               </div>

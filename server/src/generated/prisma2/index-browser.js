@@ -135,6 +135,7 @@ exports.Prisma.DepartmentScalarFieldEnum = {
   id: 'id',
   name: 'name',
   parentId: 'parentId',
+  managerId: 'managerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
