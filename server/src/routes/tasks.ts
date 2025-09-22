@@ -7,6 +7,24 @@ const router = express.Router();
 // All task routes require auth
 router.use(authMiddleware);
 
+// Helper to update parent task status based on its subtasks
+async function updateParentTaskStatus(parentId: number) {
+  if (!parentId) return;
+  const subtasks = await prisma.task.findMany({ where: { parentId } });
+  if (subtasks.length === 0) return;
+  const completed = subtasks.filter(st => st.status === 'completed').length;
+  let newStatus: 'todo' | 'in_progress' | 'completed' = 'todo';
+  if (completed === subtasks.length) {
+    newStatus = 'completed';
+  } else if (completed > 0) {
+    newStatus = 'in_progress';
+  }
+  const parent = await prisma.task.findUnique({ where: { id: parentId } });
+  if (parent && parent.status !== newStatus) {
+    await prisma.task.update({ where: { id: parentId }, data: { status: newStatus } });
+  }
+}
+
 // GET /api/tasks - list tasks visible to the current user
 router.get('/', async (req, res) => {
   try {
@@ -81,6 +99,10 @@ router.post('/', async (req, res) => {
         parentId: resolvedParentId,
       },
     });
+    // If this is a subtask, update parent status
+    if (created.parentId) {
+      await updateParentTaskStatus(created.parentId);
+    }
     res.status(201).json({ data: created });
   } catch (e) {
     console.error('Task create error:', e);
@@ -113,7 +135,10 @@ router.patch('/:id', async (req, res) => {
         status: status ? (String(status).replace('-', '_') as any) : undefined,
       },
     });
-
+    // If this is a subtask, update parent status
+    if (updated.parentId) {
+      await updateParentTaskStatus(updated.parentId);
+    }
     res.json({ data: updated });
   } catch (e) {
     console.error('Task update error:', e);
@@ -140,6 +165,10 @@ router.patch('/:id/status', async (req, res) => {
       where: { id },
       data: { status: String(status).replace('-', '_') as any },
     });
+    // If this is a subtask, update parent status
+    if (existing.parentId) {
+      await updateParentTaskStatus(existing.parentId);
+    }
     res.json({ data: updated });
   } catch (e) {
     console.error('Task status update error:', e);

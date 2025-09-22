@@ -230,6 +230,26 @@ export function TaskProvider({
     }, 60000);
     return () => clearInterval(interval);
   }, [tasks, notifications]);
+
+  // Automatically update main task status based on subtasks
+  useEffect(() => {
+    tasks.forEach(task => {
+      if (task.subtasks && task.subtasks.length > 0) {
+        const completed = task.subtasks.filter(st => st.status === 'completed').length;
+        let newStatus: TaskStatus = task.status;
+        if (completed === task.subtasks.length) {
+          newStatus = 'completed';
+        } else if (completed > 0) {
+          newStatus = 'in-progress';
+        } else {
+          newStatus = 'todo';
+        }
+        if (task.status !== newStatus) {
+          updateTaskStatus(task.id, newStatus);
+        }
+      }
+    });
+  }, [tasks]);
   return <TaskContext.Provider value={{
     tasks,
     addTask,

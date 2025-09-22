@@ -19,6 +19,18 @@ export function TaskDetailsPage() {
   const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
   const progress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
 
+  // Calculate progress and status based on subtasks
+  let computedStatus: TaskStatus = task.status;
+  if (totalSubtasks > 0) {
+    if (completedSubtasks === totalSubtasks) {
+      computedStatus = 'completed';
+    } else if (completedSubtasks > 0) {
+      computedStatus = 'in-progress';
+    } else {
+      computedStatus = 'todo';
+    }
+  }
+
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (newStatus === 'completed' && task.subtasks && task.subtasks.length > 0) {
       const incomplete = task.subtasks.some(st => st.status !== 'completed');
@@ -91,7 +103,10 @@ export function TaskDetailsPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{task.title}</h2>
             <div className="flex items-center space-x-2 mb-2">
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(task.priority)}`}>{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
-              {getStatusBadge(task.status)}
+              {getStatusBadge(computedStatus)}
+              {totalSubtasks > 0 && computedStatus !== 'completed' && (
+                <span className="ml-2 text-xs text-gray-600 dark:text-gray-300">{progress}%</span>
+              )}
             </div>
             <p className="text-gray-500 dark:text-gray-300 mb-2">{task.description}</p>
             <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-300">
@@ -100,15 +115,7 @@ export function TaskDetailsPage() {
               <span className="flex items-center"><UserIcon className="h-4 w-4 mr-1" /> Department: <span className="ml-1 font-medium">{task.department}</span></span>
             </div>
           </div>
-          <div className="mt-4 md:mt-0 flex flex-col items-end">
-            <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">Change Status</label>
-            <select value={task.status} onChange={e => handleStatusChange(e.target.value as TaskStatus)} className="rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2">
-              <option value="todo">To Do</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-            {warning && <div className="text-xs text-red-500 mt-2">{warning}</div>}
-          </div>
+          {/* Remove manual status change for main task */}
         </div>
       </div>
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mb-6">
