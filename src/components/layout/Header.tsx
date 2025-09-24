@@ -79,6 +79,27 @@ export function Header() {
                 Tasks
               </button>
 
+              {/* Notifications - available to all */}
+              <button
+                onClick={() => {
+                  setIsNotificationsOpen(false);
+                  navigate('/notifications');
+                }}
+                className={`${
+                  location.pathname === '/notifications'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative`}
+              >
+                <BellIcon className="h-4 w-4 mr-2" />
+                Notifications
+                {unreadCount > 0 && (
+                  <span className="ml-2 h-4 w-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
               {/* My Reports - available to all */}
               <button
                 onClick={() => {

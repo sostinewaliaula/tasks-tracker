@@ -35,6 +35,7 @@ type TaskContextType = {
   carryOverTask: (id: string, newDeadline: Date, reason: string) => Promise<void>;
   notifications: Notification[];
   markNotificationAsRead: (id: string) => void;
+  deleteNotification: (id: string) => void;
   getTasksByDepartment: (department: string) => Task[];
   getTasksByUser: (userId: string) => Task[];
   getTasksForCurrentWeek: () => Task[];
@@ -139,6 +140,10 @@ export function TaskProvider({
       ...notification,
       read: true
     } : notification));
+  };
+
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
   const getTasksByDepartment = (department: string) => {
     return tasks.filter(task => task.department === department);
@@ -280,6 +285,7 @@ export function TaskProvider({
     carryOverTask,
     notifications,
     markNotificationAsRead,
+    deleteNotification,
     getTasksByDepartment,
     getTasksByUser,
     getTasksForCurrentWeek,
