@@ -1,13 +1,14 @@
 import React from 'react';
 import { Task, TaskStatus, useTask } from '../../context/TaskContext';
-import { ClockIcon, CheckCircleIcon, CircleIcon, CheckIcon } from 'lucide-react';
+import { ClockIcon, CheckCircleIcon, CircleIcon, ExternalLinkIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 type WeeklyCalendarProps = {
   tasks: Task[];
   onViewAll?: () => void;
 };
 // Compact Task Card for Calendar
 function CompactTaskCard({ task }: { task: Task }) {
-  const { updateTaskStatus } = useTask();
+  const navigate = useNavigate();
 
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
@@ -61,18 +62,21 @@ function CompactTaskCard({ task }: { task: Task }) {
     }
   };
 
-  const handleStatusChange = (newStatus: TaskStatus) => {
-    updateTaskStatus(task.id, newStatus);
+  const handleTaskClick = () => {
+    navigate(`/tasks/${task.id}`);
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+    <div 
+      onClick={handleTaskClick}
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-green-300 dark:hover:border-green-600 transition-all duration-200 overflow-hidden group cursor-pointer"
+    >
       {/* Compact Header */}
-      <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+      <div className="px-3 py-1.5 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 flex-1 min-w-0">
             {getStatusIcon(task.status)}
-            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
               {task.title}
             </h3>
           </div>
@@ -85,55 +89,21 @@ function CompactTaskCard({ task }: { task: Task }) {
                 C
               </span>
             )}
+            <ExternalLinkIcon className="h-3 w-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200 opacity-0 group-hover:opacity-100" />
           </div>
         </div>
       </div>
 
       {/* Compact Content */}
-      <div className="px-3 py-2">
+      <div className="px-3 py-1.5">
         {/* Status and Time */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
             {task.status === 'todo' ? 'To Do' : task.status === 'in-progress' ? 'In Progress' : 'Complete'}
           </span>
           <span className={`text-xs font-medium ${getDeadlineColor(task.deadline)}`}>
             {getDeadlineText(task.deadline)}
           </span>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            {task.status !== 'completed' && (
-              <>
-                {task.status === 'todo' && (
-                  <button 
-                    onClick={() => handleStatusChange('in-progress')} 
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800 transition-colors duration-200"
-                  >
-                    Start
-                  </button>
-                )}
-                <button 
-                  onClick={() => handleStatusChange('completed')} 
-                  className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800 transition-colors duration-200"
-                >
-                  <CheckIcon className="h-3 w-3 mr-1" />
-                  Complete
-                </button>
-              </>
-            )}
-          </div>
-          
-          {/* Carry Over Button */}
-          {(new Date(task.deadline).getTime() < new Date().getTime()) && task.status !== 'completed' && (
-            <a 
-              href={`/tasks/${task.id}`} 
-              className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-green-500 text-white hover:bg-green-600 transition-colors duration-200"
-            >
-              Carry over
-            </a>
-          )}
         </div>
       </div>
     </div>
