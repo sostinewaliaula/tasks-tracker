@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 export function BlockerDashboard() {
   const { tasks } = useTask();
   const { currentUser } = useAuth();
-  const [filter, setFilter] = useState<'all' | 'department' | 'my'>('all');
+  const [filter, setFilter] = useState<'all' | 'department' | 'my' | 'urgent' | 'overdue'>('all');
 
   const blockerTasks = useMemo(() => {
     let filteredTasks = tasks.filter(task => task.status === 'blocker');
@@ -17,10 +17,33 @@ export function BlockerDashboard() {
     );
     filteredTasks = [...filteredTasks, ...subtaskBlockers];
     
+    // Apply role-based filtering
     if (filter === 'department' && currentUser?.department) {
       filteredTasks = filteredTasks.filter(task => task.department === currentUser.department);
     } else if (filter === 'my') {
       filteredTasks = filteredTasks.filter(task => task.createdBy === currentUser?.id);
+    } else if (filter === 'urgent') {
+      filteredTasks = filteredTasks.filter(task => {
+        const daysUntilDeadline = getDaysUntilDeadline(task.deadline);
+        const isUrgent = daysUntilDeadline <= 1 && daysUntilDeadline >= 0;
+        
+        // For employees, only show their own urgent tasks
+        if (currentUser?.role === 'employee') {
+          return isUrgent && task.createdBy === currentUser?.id;
+        }
+        return isUrgent;
+      });
+    } else if (filter === 'overdue') {
+      filteredTasks = filteredTasks.filter(task => {
+        const daysUntilDeadline = getDaysUntilDeadline(task.deadline);
+        const isOverdue = daysUntilDeadline < 0;
+        
+        // For employees, only show their own overdue tasks
+        if (currentUser?.role === 'employee') {
+          return isOverdue && task.createdBy === currentUser?.id;
+        }
+        return isOverdue;
+      });
     }
     
     return filteredTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -48,6 +71,37 @@ export function BlockerDashboard() {
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  const getFilterOptions = () => {
+    const baseOptions = [
+      { value: 'all', label: 'All Blockers', description: 'Show all blocked tasks' }
+    ];
+
+    // Role-based filter options
+    if (currentUser?.role === 'admin') {
+      return [
+        ...baseOptions,
+        { value: 'urgent', label: 'Urgent Blockers', description: 'Tasks due today or tomorrow' },
+        { value: 'overdue', label: 'Overdue Blockers', description: 'Tasks past their deadline' },
+        { value: 'department', label: 'By Department', description: 'Filter by specific department' }
+      ];
+    } else if (currentUser?.role === 'manager') {
+      return [
+        ...baseOptions,
+        { value: 'department', label: 'My Department', description: 'Tasks in your department' },
+        { value: 'urgent', label: 'Urgent Blockers', description: 'Tasks due today or tomorrow' },
+        { value: 'overdue', label: 'Overdue Blockers', description: 'Tasks past their deadline' }
+      ];
+    } else {
+      // Employee role
+      return [
+        ...baseOptions,
+        { value: 'my', label: 'My Blockers', description: 'Tasks I created or assigned to me' },
+        { value: 'urgent', label: 'My Urgent Blockers', description: 'My tasks due today or tomorrow' },
+        { value: 'overdue', label: 'My Overdue Blockers', description: 'My tasks past their deadline' }
+      ];
     }
   };
 
@@ -95,15 +149,47 @@ export function BlockerDashboard() {
               </p>
             </div>
           </div>
-          <div className="flex space-x-2">
+        </div>
+      </div>
+
+      {/* Summary Section */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <AlertCircleIcon className="h-5 w-5 text-red-500" />
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {blockerTasks.length} task{blockerTasks.length !== 1 ? 's' : ''} currently blocked
+              </span>
+              {filter !== 'all' && (
+                <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full">
+                  {getFilterOptions().find(opt => opt.value === filter)?.label}
+                </span>
+              )}
+            </div>
+            {blockerTasks.length > 0 && (
+              <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                <span>
+                  {blockerTasks.filter(task => !task.parentId).length} main task{blockerTasks.filter(task => !task.parentId).length !== 1 ? 's' : ''}
+                </span>
+                <span>
+                  {blockerTasks.filter(task => task.parentId).length} subtask{blockerTasks.filter(task => task.parentId).length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Filter:</span>
             <select
               value={filter}
               onChange={e => setFilter(e.target.value as any)}
               className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
-              <option value="all">All Blockers</option>
-              <option value="department">My Department</option>
-              <option value="my">My Tasks</option>
+              {getFilterOptions().map(option => (
+                <option key={option.value} value={option.value} title={option.description}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>

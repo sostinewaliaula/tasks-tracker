@@ -135,12 +135,15 @@ export function EmployeeDashboard() {
       return count + (task.subtasks?.filter(subtask => subtask.status === 'blocker').length || 0);
     }, 0);
     
-    return {
+    const stats = {
       todo: userTasks.filter(t => t.status === 'todo').length,
       'in-progress': userTasks.filter(t => t.status === 'in-progress').length,
       completed: userTasks.filter(t => t.status === 'completed').length,
       blocker: mainTaskBlockers + subtaskBlockers,
     };
+    
+    console.log('myStats debug:', { mainTaskBlockers, subtaskBlockers, stats, userTasks: userTasks.length });
+    return stats;
   }, [userTasks]);
   
   const overdueCount = useMemo(() => userTasks.filter(t => new Date(t.deadline) < new Date() && t.status !== 'completed').length, [userTasks]);
@@ -479,7 +482,9 @@ export function EmployeeDashboard() {
                             subtask.status === 'blocker' && subtask.createdBy === currentUser?.id
                           ).length || 0);
                         }, 0);
-                        return mainTaskBlockers + subtaskBlockers;
+                        const total = mainTaskBlockers + subtaskBlockers;
+                        console.log('Blocker count debug:', { mainTaskBlockers, subtaskBlockers, total, tasks: tasks.length });
+                        return total;
                       })()}
                     </span>
                   </div>
