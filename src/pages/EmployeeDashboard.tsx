@@ -33,6 +33,89 @@ export function EmployeeDashboard() {
   const userTasks = currentUser ? getTasksByUser(currentUser.id) : [];
   const weeklyTasks = getTasksForCurrentWeek();
   
+  // Debug logging
+  console.log('User tasks:', userTasks);
+  console.log('Weekly tasks:', weeklyTasks);
+  console.log('Current user:', currentUser);
+
+  // Function to create sample tasks for testing
+  const createSampleTasks = async () => {
+    if (!currentUser) return;
+    
+    const sampleTasks = [
+      {
+        title: "Review quarterly reports",
+        description: "Analyze Q4 performance metrics and prepare summary",
+        deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+        priority: "high" as const,
+        status: "todo" as const,
+        department: currentUser.department_id,
+        createdBy: currentUser.id
+      },
+      {
+        title: "Update project documentation",
+        description: "Update API documentation and user guides",
+        deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+        priority: "medium" as const,
+        status: "in-progress" as const,
+        department: currentUser.department_id,
+        createdBy: currentUser.id
+      },
+      {
+        title: "Team meeting preparation",
+        description: "Prepare agenda and materials for weekly team meeting",
+        deadline: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago (overdue)
+        priority: "high" as const,
+        status: "todo" as const,
+        department: currentUser.department_id,
+        createdBy: currentUser.id
+      },
+      {
+        title: "Code review completed",
+        description: "Completed review of pull request #123",
+        deadline: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        priority: "medium" as const,
+        status: "completed" as const,
+        department: currentUser.department_id,
+        createdBy: currentUser.id
+      },
+      {
+        title: "Database optimization",
+        description: "Optimize database queries for better performance",
+        deadline: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        priority: "low" as const,
+        status: "completed" as const,
+        department: currentUser.department_id,
+        createdBy: currentUser.id
+      }
+    ];
+
+    try {
+      for (const task of sampleTasks) {
+        await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            title: task.title,
+            description: task.description,
+            deadline: task.deadline.toISOString(),
+            priority: task.priority,
+            status: task.status,
+            departmentId: null,
+            createdById: parseInt(currentUser.id)
+          })
+        });
+      }
+      // Refresh the page to show new tasks
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating sample tasks:', error);
+    }
+  };
+  
   const myStats = useMemo(() => ({
     todo: userTasks.filter(t => t.status === 'todo').length,
     'in-progress': userTasks.filter(t => t.status === 'in-progress').length,
@@ -184,16 +267,26 @@ export function EmployeeDashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">This Week Overview</h2>
-            <button 
-              onClick={() => navigate('/reports')} 
-              className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:from-[#259d6a] hover:to-[#7c3aed] transition-all duration-200 text-sm font-medium"
-            >
-            View Reports
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </button>
+            <div className="flex items-center space-x-3">
+              {userTasks.length === 0 && (
+                <button 
+                  onClick={createSampleTasks} 
+                  className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
+                >
+                  Create Sample Tasks
+                </button>
+              )}
+              <button 
+                onClick={() => navigate('/reports')} 
+                className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:from-[#259d6a] hover:to-[#7c3aed] transition-all duration-200 text-sm font-medium"
+              >
+                View Reports
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </button>
+            </div>
+          </div>
+          <TaskStats timeframe="week" />
         </div>
-        <TaskStats timeframe="week" />
-      </div>
 
         {/* Main Content Grid */}
         {isLoading ? (
@@ -267,21 +360,46 @@ export function EmployeeDashboard() {
                 </div>
               </div>
               <div className="max-h-64 overflow-y-auto">
-                {nextDeadlines.length ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {nextDeadlines.map(t => (
-                      <li key={t.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate mr-2">
-                            {t.title}
-                          </span>
-                          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                            {new Date(t.deadline).toLocaleDateString()}
-                          </span>
+                {isLoading ? (
+                  <div className="px-6 py-8 text-center">
+                    <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Loading deadlines...</p>
                   </div>
-                </li>
-                    ))}
-            </ul>
+                ) : nextDeadlines.length ? (
+                  <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {nextDeadlines.map(t => {
+                      const deadline = new Date(t.deadline);
+                      const now = new Date();
+                      const diffTime = deadline.getTime() - now.getTime();
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      const isOverdue = diffDays < 0;
+                      const isDueSoon = diffDays <= 1 && diffDays >= 0;
+                      
+                      return (
+                        <li key={t.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate block">
+                                {t.title}
+                              </span>
+                              <span className={`text-xs ${isOverdue ? 'text-red-600' : isDueSoon ? 'text-yellow-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                                {isOverdue ? `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}` : 
+                                 isDueSoon ? 'Due soon' : 
+                                 `Due in ${diffDays} day${diffDays !== 1 ? 's' : ''}`}
+                              </span>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2 ${
+                              isOverdue ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
+                              isDueSoon ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' :
+                              'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}>
+                              {deadline.toLocaleDateString()}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 ) : (
                   <div className="px-6 py-8 text-center">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -289,10 +407,11 @@ export function EmployeeDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming deadlines</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">No upcoming deadlines</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Create some tasks to see them here</p>
                   </div>
                 )}
-          </div>
+              </div>
             </div>
 
             {/* Recently Completed */}
@@ -313,21 +432,40 @@ export function EmployeeDashboard() {
                 </div>
               </div>
               <div className="max-h-64 overflow-y-auto">
-                {recentlyCompleted.length ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {recentlyCompleted.map(t => (
-                      <li key={t.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate mr-2">
-                            {t.title}
-                          </span>
-                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 whitespace-nowrap">
-                            Completed
-                          </span>
+                {isLoading ? (
+                  <div className="px-6 py-8 text-center">
+                    <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Loading completed tasks...</p>
                   </div>
-                </li>
-                    ))}
-            </ul>
+                ) : recentlyCompleted.length ? (
+                  <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {recentlyCompleted.map(t => {
+                      const completedDate = new Date(t.createdAt);
+                      const now = new Date();
+                      const diffTime = now.getTime() - completedDate.getTime();
+                      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                      
+                      return (
+                        <li key={t.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate block">
+                                {t.title}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {diffDays === 0 ? 'Completed today' : 
+                                 diffDays === 1 ? 'Completed yesterday' : 
+                                 `Completed ${diffDays} days ago`}
+                              </span>
+                            </div>
+                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 whitespace-nowrap ml-2">
+                              ✓ Completed
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 ) : (
                   <div className="px-6 py-8 text-center">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -335,7 +473,8 @@ export function EmployeeDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No completed tasks yet</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">No completed tasks yet</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Complete some tasks to see them here</p>
                   </div>
                 )}
               </div>

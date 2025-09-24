@@ -34,14 +34,21 @@ export function Header() {
   const formatRole = (role?: string) => role === 'employee' ? 'User' : (role ? formatDisplayName(role) : '');
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
+          <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <img src={logo} alt="Caava Group" className="h-8 w-auto" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#2e9d74] to-[#8c52ff] rounded-lg flex items-center justify-center">
+                  <img src={logo} alt="Caava Group" className="h-6 w-6" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] bg-clip-text text-transparent">
+                  Tasks Tracker
+                </span>
+              </div>
             </div>
-            <nav className="ml-6 flex space-x-8">
+            <nav className="ml-8 flex space-x-1">
               {/* Dashboard - based on role */}
               <button
                 onClick={() => {
@@ -50,9 +57,9 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname.includes('dashboard')
-                    ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                    ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
                 Dashboard
               </button>
@@ -65,9 +72,9 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname === '/tasks'
-                    ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                    ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
                 Tasks
               </button>
@@ -80,9 +87,9 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname === '/my-reports'
-                    ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                    ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
                 My Reports
               </button>
@@ -96,9 +103,9 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/reports'
-                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
                   Reports
                 </button>
@@ -113,9 +120,9 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/users'
-                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
                   Users
                 </button>
@@ -130,9 +137,9 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/departments'
-                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
                   Departments
                 </button>
@@ -147,9 +154,9 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/settings'
-                      ? 'border-[#2e9d74] text-gray-900 dark:text-gray-100'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
                   Settings
                 </button>
@@ -157,16 +164,18 @@ export function Header() {
             </nav>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {/* Notifications */}
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
               >
-                <BellIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
+                <BellIcon className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-500 rounded-full h-2 w-2 border-2 border-white dark:border-gray-900" />
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    {unreadCount}
+                  </span>
                 )}
               </button>
               {isNotificationsOpen && (
@@ -183,13 +192,17 @@ export function Header() {
             {/* Dark mode toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
               aria-label="Toggle dark mode"
             >
               {darkMode ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.93l-.71-.71M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <div className="w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.93l-.71-.71M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                </div>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" /></svg>
+                <div className="w-5 h-5 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" /></svg>
+                </div>
               )}
             </button>
             {/* Profile menu */}
@@ -219,26 +232,52 @@ function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { nam
   }, []);
   return (
     <div className="relative" ref={ref}>
-      <button onClick={() => setOpen(v => !v)} className="flex items-center space-x-3 px-2 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+      <button 
+        onClick={() => setOpen(v => !v)} 
+        className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
+      >
         <div className="text-left hidden sm:block">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 leading-tight">{name || 'User'}</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-200">{name || 'User'}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{roleLabel}</p>
         </div>
-        <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-          <UserIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#2e9d74] to-[#8c52ff] flex items-center justify-center shadow-sm">
+          <UserIcon className="h-4 w-4 text-white" />
         </div>
+        <svg className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{name || 'User'}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel}</p>
+        <div className="absolute right-0 mt-2 w-64 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-xl z-50 overflow-hidden">
+          <div className="px-4 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-[#2e9d74]/5 to-[#8c52ff]/5">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{name || 'User'}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{roleLabel}</p>
           </div>
-          <div className="py-1">
-            <button onClick={() => { setOpen(false); onProfile(); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">Profile</button>
-            <button onClick={() => { setOpen(false); onSettings(); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">Settings</button>
-            <button onClick={() => { setOpen(false); onLogout(); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 flex items-center">
-              <LogOutIcon className="h-4 w-4 mr-2" /> Logout
+          <div className="py-2">
+            <button 
+              onClick={() => { setOpen(false); onProfile(); }} 
+              className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
+            >
+              <UserIcon className="h-4 w-4 mr-3 text-gray-400 group-hover:text-[#2e9d74] transition-colors duration-200" />
+              Profile
+            </button>
+            <button 
+              onClick={() => { setOpen(false); onSettings(); }} 
+              className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
+            >
+              <svg className="h-4 w-4 mr-3 text-gray-400 group-hover:text-[#2e9d74] transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </button>
+            <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-1"></div>
+            <button 
+              onClick={() => { setOpen(false); onLogout(); }} 
+              className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 flex items-center group"
+            >
+              <LogOutIcon className="h-4 w-4 mr-3 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors duration-200" /> 
+              Logout
             </button>
           </div>
         </div>

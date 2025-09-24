@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTask } from '../../context/TaskContext';
 import { NotificationItem } from './NotificationItem';
+import { BellIcon } from 'lucide-react';
 
 type NotificationDropdownProps = {
   onClose: () => void;
@@ -16,26 +17,85 @@ export function NotificationDropdown({
     markNotificationAsRead
   } = useTask();
 
-  const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  return <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+  // Click outside to close
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return (
+    <div 
+      ref={dropdownRef}
+      className="origin-top-right absolute right-0 mt-2 w-80 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 focus:outline-none z-50 overflow-hidden"
+    >
       <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-        <div className="px-4 py-2 border-b border-gray-200">
-          <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+        {/* Header */}
+        <div className="px-4 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-[#2e9d74]/5 to-[#8c52ff]/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <BellIcon className="h-5 w-5 text-[#2e9d74] dark:text-[#4ade80]" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+            </div>
+            {unreadCount > 0 && (
+              <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full font-medium">
+                {unreadCount} new
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Notifications List */}
         <div className="max-h-96 overflow-y-auto">
-          {sortedNotifications.length > 0 ? sortedNotifications.map(notification => <NotificationItem key={notification.id} notification={notification} onRead={() => markNotificationAsRead(notification.id)} />) : <div className="px-4 py-3 text-sm text-gray-500">
-              No notifications
-            </div>}
+          {sortedNotifications.length > 0 ? (
+            sortedNotifications.map(notification => (
+              <NotificationItem 
+                key={notification.id} 
+                notification={notification} 
+                onRead={() => markNotificationAsRead(notification.id)} 
+              />
+            ))
+          ) : (
+            <div className="px-6 py-8 text-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                <BellIcon className="h-6 w-6 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">No notifications</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">You're all caught up!</p>
+            </div>
+          )}
         </div>
-        <div className="border-t border-gray-200 px-4 py-2 flex items-center justify-between">
-          <button className="text-xs text-blue-600 hover:text-blue-800 font-medium" onClick={onViewAll}>
-            View all
-          </button>
-          <button className="text-xs text-gray-600 hover:text-gray-800 font-medium" onClick={onClose}>
-            Close
-          </button>
+
+        {/* Footer */}
+        <div className="border-t border-gray-200/50 dark:border-gray-700/50 px-4 py-3 bg-gray-50/50 dark:bg-gray-700/30">
+          <div className="flex items-center justify-between">
+            <button 
+              className="text-sm text-[#2e9d74] dark:text-[#4ade80] hover:text-[#259d6a] dark:hover:text-[#22c55e] font-medium transition-colors duration-200" 
+              onClick={onViewAll}
+            >
+              View all
+            </button>
+            <button 
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium transition-colors duration-200" 
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { CheckIcon } from 'lucide-react';
+import { CheckIcon, ClockIcon } from 'lucide-react';
+
 type NotificationItemProps = {
   notification: {
     id: string;
@@ -9,6 +10,7 @@ type NotificationItemProps = {
   };
   onRead: () => void;
 };
+
 export function NotificationItem({
   notification,
   onRead
@@ -27,20 +29,56 @@ export function NotificationItem({
     if (interval > 1) return Math.floor(interval) + ' minutes ago';
     return Math.floor(seconds) + ' seconds ago';
   };
-  return <div className={`px-4 py-3 hover:bg-gray-50 ${notification.read ? 'opacity-75' : ''}`} onClick={notification.read ? undefined : onRead}>
-      <div className="flex justify-between">
-        <p className={`text-sm ${notification.read ? 'text-gray-500' : 'text-gray-900 font-medium'}`}>
-          {notification.message}
-        </p>
-        {!notification.read && <button onClick={e => {
-        e.stopPropagation();
-        onRead();
-      }} className="ml-2 text-blue-600 hover:text-blue-800">
+
+  return (
+    <div 
+      className={`px-4 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer group ${
+        notification.read ? 'opacity-75' : 'bg-gradient-to-r from-blue-50/30 to-transparent dark:from-blue-900/20'
+      }`} 
+      onClick={notification.read ? undefined : onRead}
+    >
+      <div className="flex items-start space-x-3">
+        {/* Notification indicator */}
+        <div className="flex-shrink-0 mt-1">
+          {!notification.read ? (
+            <div className="w-2 h-2 bg-gradient-to-r from-[#2e9d74] to-[#4ade80] rounded-full"></div>
+          ) : (
+            <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm leading-relaxed ${
+            notification.read 
+              ? 'text-gray-600 dark:text-gray-400' 
+              : 'text-gray-900 dark:text-gray-100 font-medium'
+          }`}>
+            {notification.message}
+          </p>
+          
+          <div className="flex items-center mt-2 space-x-2">
+            <ClockIcon className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {timeAgo(notification.createdAt)}
+            </p>
+          </div>
+        </div>
+
+        {/* Action button */}
+        {!notification.read && (
+          <button 
+            onClick={e => {
+              e.stopPropagation();
+              onRead();
+            }} 
+            className="flex-shrink-0 p-1 rounded-full text-[#2e9d74] dark:text-[#4ade80] hover:bg-[#2e9d74]/10 dark:hover:bg-[#4ade80]/10 transition-colors duration-200 opacity-0 group-hover:opacity-100"
+            title="Mark as read"
+          >
             <CheckIcon className="h-4 w-4" />
-          </button>}
+          </button>
+        )}
       </div>
-      <p className="text-xs text-gray-500 mt-1">
-        {timeAgo(notification.createdAt)}
-      </p>
-    </div>;
+    </div>
+  );
 }
