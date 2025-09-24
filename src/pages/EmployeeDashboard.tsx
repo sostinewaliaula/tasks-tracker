@@ -81,6 +81,16 @@ export function EmployeeDashboard() {
         createdBy: currentUser.id
       },
       {
+        title: "Database migration blocked",
+        description: "Waiting for approval from security team",
+        deadline: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day from now
+        priority: "high" as const,
+        status: "blocker" as const,
+        blockerReason: "Security team needs to review migration scripts before proceeding",
+        department: currentUser.department_id,
+        createdBy: currentUser.id
+      },
+      {
         title: "Database optimization",
         description: "Optimize database queries for better performance",
         deadline: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
@@ -117,11 +127,21 @@ export function EmployeeDashboard() {
     }
   };
   
-  const myStats = useMemo(() => ({
-    todo: userTasks.filter(t => t.status === 'todo').length,
-    'in-progress': userTasks.filter(t => t.status === 'in-progress').length,
-    completed: userTasks.filter(t => t.status === 'completed').length,
-  }), [userTasks]);
+  const myStats = useMemo(() => {
+    // Count main task blockers
+    const mainTaskBlockers = userTasks.filter(t => t.status === 'blocker').length;
+    // Count subtask blockers
+    const subtaskBlockers = userTasks.reduce((count, task) => {
+      return count + (task.subtasks?.filter(subtask => subtask.status === 'blocker').length || 0);
+    }, 0);
+    
+    return {
+      todo: userTasks.filter(t => t.status === 'todo').length,
+      'in-progress': userTasks.filter(t => t.status === 'in-progress').length,
+      completed: userTasks.filter(t => t.status === 'completed').length,
+      blocker: mainTaskBlockers + subtaskBlockers,
+    };
+  }, [userTasks]);
   
   const overdueCount = useMemo(() => userTasks.filter(t => new Date(t.deadline) < new Date() && t.status !== 'completed').length, [userTasks]);
   
@@ -200,7 +220,7 @@ export function EmployeeDashboard() {
         </div>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 overflow-hidden relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
             <div className="flex items-center relative z-10">
@@ -265,6 +285,27 @@ export function EmployeeDashboard() {
                 )}
               </div>
         </div>
+          </div>
+
+          {/* Blocker Stats Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            <div className="flex items-center relative z-10">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                <AlertCircleIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked</p>
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                    <span className="ml-2 text-gray-400">Loading...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{myStats.blocker}</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         {/* Analytics Section */}
@@ -429,7 +470,17 @@ export function EmployeeDashboard() {
                   <div className="flex items-center space-x-2">
                     <AlertCircleIcon className="h-5 w-5 text-white" />
                     <span className="text-white font-medium">
-                      {tasks.filter(t => t.status === 'blocker' && t.createdBy === currentUser?.id).length}
+                      {(() => {
+                        // Count main task blockers
+                        const mainTaskBlockers = tasks.filter(t => t.status === 'blocker' && t.createdBy === currentUser?.id).length;
+                        // Count subtask blockers
+                        const subtaskBlockers = tasks.reduce((count, task) => {
+                          return count + (task.subtasks?.filter(subtask => 
+                            subtask.status === 'blocker' && subtask.createdBy === currentUser?.id
+                          ).length || 0);
+                        }, 0);
+                        return mainTaskBlockers + subtaskBlockers;
+                      })()}
                     </span>
                   </div>
                 </div>

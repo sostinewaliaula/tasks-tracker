@@ -168,10 +168,19 @@ export function TaskProvider({
   };
   const getTasksCountByStatus = (department?: string) => {
     const filteredTasks = department ? tasks.filter(task => task.department === department) : tasks;
+    
+    // Count main task blockers
+    const mainTaskBlockers = filteredTasks.filter(task => task.status === 'blocker').length;
+    // Count subtask blockers
+    const subtaskBlockers = filteredTasks.reduce((count, task) => {
+      return count + (task.subtasks?.filter(subtask => subtask.status === 'blocker').length || 0);
+    }, 0);
+    
     return {
       todo: filteredTasks.filter(task => task.status === 'todo').length,
       'in-progress': filteredTasks.filter(task => task.status === 'in-progress').length,
-      completed: filteredTasks.filter(task => task.status === 'completed').length
+      completed: filteredTasks.filter(task => task.status === 'completed').length,
+      blocker: mainTaskBlockers + subtaskBlockers
     };
   };
   const getTasksCountByPriority = (department?: string) => {

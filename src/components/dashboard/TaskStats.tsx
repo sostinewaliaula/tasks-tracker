@@ -17,16 +17,20 @@ export function TaskStats({
   const priorityCounts = getTasksCountByPriority(department);
   const statusData = [{
     name: 'To Do',
-    value: statusCounts.todo,
+    value: statusCounts.todo || 0,
     color: '#CBD5E1'
   }, {
     name: 'In Progress',
-    value: statusCounts['in-progress'],
+    value: statusCounts['in-progress'] || 0,
     color: '#FBBF24'
   }, {
     name: 'Completed',
-    value: statusCounts.completed,
+    value: statusCounts.completed || 0,
     color: '#34D399'
+  }, {
+    name: 'Blocked',
+    value: statusCounts.blocker || 0,
+    color: '#EF4444'
   }];
   const priorityData = [{
     name: 'High',
@@ -42,7 +46,7 @@ export function TaskStats({
     color: '#34D399'
   }];
   const totalTasks = statusData.reduce((sum, item) => sum + item.value, 0);
-  const completionRate = totalTasks > 0 ? Math.round(statusCounts.completed / totalTasks * 100) : 0;
+  const completionRate = totalTasks > 0 ? Math.round((statusCounts.completed || 0) / totalTasks * 100) : 0;
   // Additional data for extended reports page
   const timeframeLabel = timeframe === 'week' ? 'This Week' : timeframe === 'month' ? 'This Month' : 'This Quarter';
   return <div className="space-y-6">
@@ -173,6 +177,62 @@ export function TaskStats({
         </div>
       </div>
 
+      {/* Blocker Statistics Section */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4">
+          <h3 className="text-lg font-semibold text-white">
+            Blocker Analysis
+          </h3>
+          <p className="text-white/90 text-sm mt-1">
+            {(statusCounts.blocker || 0) > 0 ? `${statusCounts.blocker || 0} blocked tasks` : 'No blocked tasks'}
+          </p>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                Total Blocked
+              </dt>
+              <dd className="text-3xl font-bold text-red-600 dark:text-red-400">
+                {statusCounts.blocker || 0}
+              </dd>
+            </div>
+            <div className="text-center">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                Blocker Rate
+              </dt>
+              <dd className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                {totalTasks > 0 ? Math.round((statusCounts.blocker || 0) / totalTasks * 100) : 0}%
+              </dd>
+            </div>
+            <div className="text-center">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                Active Tasks
+              </dt>
+              <dd className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                {(statusCounts.todo || 0) + (statusCounts['in-progress'] || 0)}
+              </dd>
+            </div>
+          </div>
+          
+          {(statusCounts.blocker || 0) > 0 && (
+            <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Blocker Impact
+                </h4>
+              </div>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                {statusCounts.blocker || 0} out of {totalTasks} tasks are currently blocked, 
+                representing {Math.round((statusCounts.blocker || 0) / totalTasks * 100)}% of all tasks. 
+                This may impact project timelines and team productivity.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Summary Section */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -184,32 +244,40 @@ export function TaskStats({
           </p>
         </div>
         <div className="p-6">
-          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="text-center">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                Tasks Created
-              </dt>
+                  Tasks Created
+                </dt>
               <dd className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                {totalTasks}
-              </dd>
-            </div>
+                  {totalTasks}
+                </dd>
+              </div>
             <div className="text-center">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                Tasks Completed
-              </dt>
+                  Tasks Completed
+                </dt>
               <dd className="text-3xl font-bold text-green-600 dark:text-green-400">
-                {statusCounts.completed}
+                  {statusCounts.completed}
+                </dd>
+              </div>
+            <div className="text-center">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                Tasks Blocked
+              </dt>
+              <dd className="text-3xl font-bold text-red-600 dark:text-red-400">
+                {statusCounts.blocker || 0}
               </dd>
             </div>
             <div className="text-center">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                Completion Rate
-              </dt>
+                  Completion Rate
+                </dt>
               <dd className="text-3xl font-bold text-[#2e9d74] dark:text-[#2e9d74]">
-                {completionRate}%
-              </dd>
-            </div>
-          </dl>
+                  {completionRate}%
+                </dd>
+              </div>
+            </dl>
         </div>
       </div>
     </div>;
