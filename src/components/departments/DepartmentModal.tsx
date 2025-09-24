@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useContext, createContext, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XIcon } from 'lucide-react';
+import { useToast } from '../ui/Toast';
 
 interface DepartmentModalProps {
   open: boolean;
@@ -9,30 +10,6 @@ interface DepartmentModalProps {
   parentName?: string;
   primaryDepartments?: { id: number; name: string }[];
   managers?: { id: number; name: string }[];
-}
-
-// Toast context and provider
-const ToastContext = createContext<{ showToast: (msg: string, type?: 'success'|'error') => void } | undefined>(undefined);
-
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toast, setToast] = useState<{ msg: string; type: 'success'|'error' } | null>(null);
-  const showToast = useCallback((msg: string, type: 'success'|'error' = 'success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
-  return (
-    <ToastContext.Provider value={{ showToast }}>
-      {children}
-      {toast && (
-        <div className={`fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.msg}</div>
-      )}
-    </ToastContext.Provider>
-  );
-}
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within a ToastProvider');
-  return ctx;
 }
 
 export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments, managers }: DepartmentModalProps) {

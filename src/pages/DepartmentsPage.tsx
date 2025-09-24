@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
-import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown } from 'lucide-react';
+import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, UserPlus } from 'lucide-react';
 import { DepartmentModal } from '../components/departments/DepartmentModal';
-import { ToastProvider, useToast } from '../components/ui/Toast';
+import { useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
   id: number;
@@ -58,7 +58,7 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager</label>
-            <select value={managerId} onChange={e => setManagerId(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <select value={managerId} onChange={e => setManagerId(e.target.value ? Number(e.target.value) : '')} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
               <option value="">No manager</option>
               {managerOptions.map(u => (
                 <option key={u.id} value={u.id}>{u.name}</option>
@@ -80,11 +80,7 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
 }
 
 export function DepartmentsPage() {
-  return (
-    <ToastProvider>
-      <DepartmentsPageContent />
-    </ToastProvider>
-  );
+  return <DepartmentsPageContent />;
 }
 
 function DepartmentsPageContent() {
@@ -95,8 +91,6 @@ function DepartmentsPageContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [newPrimaryName, setNewPrimaryName] = useState('');
-  const [newSubName, setNewSubName] = useState('');
   const [editName, setEditName] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [assignUser, setAssignUser] = useState('');
@@ -167,16 +161,6 @@ function DepartmentsPageContent() {
   const { showToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; deptId?: number; deptName?: string }>({ open: false });
 
-  const createPrimary = async () => {
-    if (!newPrimaryName.trim()) return;
-    const res = await fetch(`${API_URL}/api/departments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ name: newPrimaryName.trim() }) });
-    if (res.ok) { setNewPrimaryName(''); fetchDepartments(); showToast('Department added', 'success'); } else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to create department', 'error'); }
-  };
-  const createSub = async () => {
-    if (!newSubName.trim() || !selectedId) return;
-    const res = await fetch(`${API_URL}/api/departments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ name: newSubName.trim(), parentId: selectedId }) });
-    if (res.ok) { setNewSubName(''); fetchDepartments(); showToast('Sub-department added', 'success'); } else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to create sub-department', 'error'); }
-  };
   const updateDept = async () => {
     if (!editName.trim() || !selectedId) return;
     try {
@@ -277,62 +261,107 @@ function DepartmentsPageContent() {
   }
 
   const renderTree = (nodes: DepartmentNode[]) => (
-    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div className="space-y-1 p-2">
       {nodes.map((dept) => (
-        <li
-          key={dept.id}
-          className={`px-4 py-3 transition-colors duration-150 cursor-pointer
-            ${selectedId === dept.id
-              ? 'bg-[#e8f5f0] dark:bg-[var(--color-bg-card)]'
-              : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
-          `}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {dept.children && dept.children.length ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const next = new Set(expandedIds);
-                    if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
-                    setExpandedIds(next);
-                  }}
-                  className="mr-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
-                  aria-label={expandedIds.has(dept.id) ? 'Collapse' : 'Expand'}
-                  title={expandedIds.has(dept.id) ? 'Collapse' : 'Expand'}
-                >
-                  {expandedIds.has(dept.id) ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
-                </button>
-              ) : <span className="mr-2 w-4 inline-block"/>}
-              <button onClick={() => setSelectedId(dept.id)} className="flex items-center">
-                <BuildingIcon className="h-5 w-5 text-[#2e9d74] mr-3" />
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 text-left">{dept.name}</p>
-                <span className="ml-2 text-xs text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">{getDepartmentMemberCount(dept, users)} members</span>
-              </button>
-            </div>
-            {currentUser?.role === 'admin' ? (
-              <div className="flex items-center space-x-2">
-                <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
-                  <PencilIcon className="h-4 w-4" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} className="text-red-500 hover:text-red-600" title="Delete">
-                  <TrashIcon className="h-4 w-4" />
-                </button>
+        <div key={dept.id}>
+          <div
+            className={`group relative rounded-xl p-4 transition-all duration-200 cursor-pointer border
+              ${selectedId === dept.id
+                ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800 shadow-md'
+                : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm'
+              }
+            `}
+            onClick={() => setSelectedId(dept.id)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center flex-1">
+                {dept.children && dept.children.length ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const next = new Set(expandedIds);
+                      if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
+                      setExpandedIds(next);
+                    }}
+                    className="mr-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                  >
+                    {expandedIds.has(dept.id) ? 
+                      <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" /> : 
+                      <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    }
+                  </button>
+                ) : (
+                  <div className="w-8 mr-3" />
+                )}
+                
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-4 ${
+                  selectedId === dept.id 
+                    ? 'bg-green-500' 
+                    : 'bg-gray-100 dark:bg-gray-600 group-hover:bg-green-100 dark:group-hover:bg-green-900/20'
+                } transition-colors`}>
+                  <BuildingIcon className={`h-5 w-5 ${
+                    selectedId === dept.id 
+                      ? 'text-white' 
+                      : 'text-gray-500 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400'
+                  } transition-colors`} />
+                </div>
+                
+                <div className="flex-1">
+                  <div className={`font-semibold transition-colors ${
+                    selectedId === dept.id 
+                      ? 'text-green-900 dark:text-green-100' 
+                      : 'text-gray-900 dark:text-gray-100'
+                  }`}>
+                    {dept.name}
+                  </div>
+                  <div className="flex items-center space-x-4 mt-1">
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <UsersIcon className="h-3 w-3 mr-1" />
+                      {getDepartmentMemberCount(dept, users)} members
+                    </div>
+                    {dept.children && dept.children.length > 0 && (
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <BuildingIcon className="h-3 w-3 mr-1" />
+                        {dept.children.length} sub-departments
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            ) : null}
+              
+              {currentUser?.role === 'admin' && (
+                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} 
+                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
+                    title="Edit Department"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} 
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                    title="Delete Department"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          {dept.children && dept.children.length && expandedIds.has(dept.id) ? (
-            <div className="ml-6 mt-2">
+          
+          {dept.children && dept.children.length && expandedIds.has(dept.id) && (
+            <div className="ml-8 mt-2 space-y-1">
               {renderTree(dept.children)}
             </div>
-          ) : null}
-        </li>
+          )}
+        </div>
       ))}
-    </ul>
+    </div>
   );
 
-  return <ToastProvider>
-    <div className="w-full min-h-screen bg-white dark:bg-[var(--color-bg-dark)]">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="md:flex md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
@@ -385,115 +414,265 @@ function DepartmentsPageContent() {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Departments List */}
           <div className="lg:col-span-1">
-            <div className="card">
-              <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium accent-green">Departments</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                    <BuildingIcon className="h-5 w-5 mr-2 text-green-600" />
+                    Departments
+                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <div className="px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                      {departments.length}
+                    </div>
+                  </div>
+                </div>
               </div>
-              {currentUser?.role === 'admin' ? (
-                loading ? <div className="p-4 text-sm text-gray-500 dark:text-gray-300">Loading...</div> : (
-                  departments.length ? renderTree(departments) : <div className="p-4 text-sm text-gray-500 dark:text-gray-300">No departments yet.</div>
-                )
-              ) : (
-                <div className="p-4 text-sm text-gray-500 dark:text-gray-300">No data available.</div>
-              )}
-            </div>
-          </div>
-          <div className="lg:col-span-2">
-            {selectedDept ? <div className="card bg-white dark:bg-[var(--color-bg-card)]">
-                <div className="px-4 py-5 sm:px-6">
-                  <h3 className="text-lg leading-6 font-medium accent-green">{selectedDept.name} Department</h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-300">Department details</p>
-                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">Members: <span className="font-semibold">{getDepartmentMemberCount(selectedDept, users)}</span></p>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-700">
-                  <dl>
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-white dark:bg-gray-800">
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center"><UsersIcon className="h-5 w-5 mr-2 accent-green" />Manager</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:mt-0 sm:col-span-2">{selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId)?.name || '—') : '—'}</dd>
-                    </div>
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-white dark:bg-gray-800">
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center"><UsersIcon className="h-5 w-5 mr-2 accent-green" />Team Size</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:mt-0 sm:col-span-2">—</dd>
-                    </div>
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-white dark:bg-gray-800">
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center"><ClipboardCheckIcon className="h-5 w-5 mr-2 accent-green" />Task Completion Rate</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:mt-0 sm:col-span-2">
-                        <div className="flex items-center">
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 max-w-xs">
-                            <div className="bg-gradient-to-r from-[var(--color-accent-green)] to-[var(--color-accent-purple)] h-2.5 rounded-full" style={{ width: `${deptStats ? deptStats['completed'] : 0}%` }}></div>
-                          </div>
-                          <span className="ml-2">{deptStats ? deptStats['completed'] : 0}%</span>
-                        </div>
-                      </dd>
-                    </div>
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-white dark:bg-gray-800">
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center"><ChartBarIcon className="h-5 w-5 mr-2 accent-green" />Active Tasks by Status</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:mt-0 sm:col-span-2">
-                        {deptStats ? (
-                          <div className="flex items-center space-x-4">
-                            <span className="inline-flex items-center text-xs bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 px-2 py-1 rounded">To Do: {deptStats['todo']}</span>
-                            <span className="inline-flex items-center text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">In Progress: {deptStats['in-progress']}</span>
-                            <span className="inline-flex items-center text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">Completed: {deptStats['completed']}</span>
-                          </div>
-                        ) : '—'}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
+              
+              <div className="max-h-96 overflow-y-auto">
                 {currentUser?.role === 'admin' ? (
-                  <div className="px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg leading-6 font-medium accent-green mb-3">Add User to Department</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} className="border rounded px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700">
-                        <option value="">Select user…</option>
-                        {users.map(u => (
-                          <option key={u.id} value={u.id}>{u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}</option>
-                        ))}
-                      </select>
-                      <input value={assignUser} onChange={(e) => setAssignUser(e.target.value)} placeholder="Enter userId, LDAP UID or email" className="border rounded px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700" />
+                  loading ? (
+                    <div className="p-8 text-center">
+                      <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Loading departments...</p>
+                    </div>
+                  ) : departments.length ? (
+                    renderTree(departments)
+                  ) : (
+                    <div className="p-8 text-center">
+                      <BuildingIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">No departments yet</p>
                       <button
-                        onClick={async () => {
-                          if ((!assignUser.trim() && selectedUserId === '') || !selectedDept) return;
-                          const body: any = {};
-                          if (selectedUserId !== '') body.userId = Number(selectedUserId);
-                          else if (/^\d+$/.test(assignUser.trim())) body.userId = Number(assignUser.trim());
-                          else if (assignUser.includes('@')) body.email = assignUser.trim();
-                          else body.ldapUid = assignUser.trim();
-                          const res = await fetch(`${API_URL}/api/departments/${selectedDept.id}/users`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-                            body: JSON.stringify(body)
-                          });
-                          if (res.ok) {
-                            setAssignUser(''); setSelectedUserId('');
-                            showToast('User assigned to department', 'success');
-                          } else {
-                            const j = await res.json().catch(() => ({}));
-                            showToast(j.error || 'Failed to assign user', 'error');
-                          }
-                        }}
-                        className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded text-sm"
+                        onClick={handleAddDepartment}
+                        className="text-green-600 hover:text-green-700 text-sm font-medium"
                       >
-                        Add User
+                        Create your first department
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Tip: provide numeric user ID, LDAP UID, or email.</p>
+                  )
+                ) : (
+                  <div className="p-8 text-center">
+                    <BuildingIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Access restricted to administrators</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          {/* Department Details */}
+          <div className="lg:col-span-2">
+            {selectedDept ? (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="bg-gradient-to-r from-green-500 to-purple-600 px-6 py-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                        <BuildingIcon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">{selectedDept.name}</h3>
+                        <p className="text-white/90 text-sm">Department Overview</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">{getDepartmentMemberCount(selectedDept, users)}</div>
+                      <div className="text-white/80 text-sm">Team Members</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Department Stats Cards */}
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                          <UsersIcon className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                            {selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId)?.name || '—') : '—'}
+                          </div>
+                          <div className="text-sm text-blue-700 dark:text-blue-300">Department Manager</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl border border-green-200 dark:border-green-800">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                          <UsersIcon className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <div className="text-lg font-bold text-green-900 dark:text-green-100">
+                            {getDepartmentMemberCount(selectedDept, users)}
+                          </div>
+                          <div className="text-sm text-green-700 dark:text-green-300">Team Members</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
+                          <ClipboardCheckIcon className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                            {deptStats ? deptStats['completed'] : 0}%
+                          </div>
+                          <div className="text-sm text-purple-700 dark:text-purple-300">Completion Rate</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Task Completion Progress</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{deptStats ? deptStats['completed'] : 0}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
+                        style={{ width: `${deptStats ? deptStats['completed'] : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {/* Task Status Overview */}
+                  {deptStats && (
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                        <ChartBarIcon className="h-5 w-5 mr-2 text-green-600" />
+                        Task Status Overview
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">{deptStats['todo'] || 0}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">To Do</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{deptStats['in-progress'] || 0}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">In Progress</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{deptStats['completed'] || 0}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">Completed</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* User Assignment Section */}
+                {currentUser?.role === 'admin' ? (
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-6 border-t border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-3">
+                        <UserPlus className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Add User to Department</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Assign users to this department</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Select User</label>
+                        <select 
+                          value={selectedUserId} 
+                          onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} 
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        >
+                          <option value="">Choose a user...</option>
+                          {users.map(u => (
+                            <option key={u.id} value={u.id}>{u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Or Enter Details</label>
+                        <input 
+                          value={assignUser} 
+                          onChange={(e) => setAssignUser(e.target.value)} 
+                          placeholder="User ID, LDAP UID, or email" 
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                        />
+                      </div>
+                      
+                      <div className="flex items-end">
+                        <button
+                          onClick={async () => {
+                            if ((!assignUser.trim() && selectedUserId === '') || !selectedDept) return;
+                            const body: any = {};
+                            if (selectedUserId !== '') body.userId = Number(selectedUserId);
+                            else if (/^\d+$/.test(assignUser.trim())) body.userId = Number(assignUser.trim());
+                            else if (assignUser.includes('@')) body.email = assignUser.trim();
+                            else body.ldapUid = assignUser.trim();
+                            const res = await fetch(`${API_URL}/api/departments/${selectedDept.id}/users`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+                              body: JSON.stringify(body)
+                            });
+                            if (res.ok) {
+                              setAssignUser(''); setSelectedUserId('');
+                              showToast('User assigned to department', 'success');
+                            } else {
+                              const j = await res.json().catch(() => ({}));
+                              showToast(j.error || 'Failed to assign user', 'error');
+                            }
+                          }}
+                          className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-3 rounded-xl text-sm font-medium shadow-lg hover:shadow-xl transition-all"
+                        >
+                          Add User
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                      <div className="flex items-start">
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-white text-xs">i</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">Assignment Tips</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            You can assign users by selecting from the dropdown, or by entering their User ID, LDAP UID, or email address.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : null}
-              </div> : <div className="card">
-                <div className="px-4 py-5 sm:px-6 text-center">
-                  <BuildingIcon className="h-12 w-12 accent-green mx-auto mb-4" />
-                  <h3 className="text-lg leading-6 font-medium accent-green">Select a Department</h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-300 mx-auto">Click on a department from the list to view its details.</p>
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="p-12 text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-purple-100 dark:from-green-900/20 dark:to-purple-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <BuildingIcon className="h-10 w-10 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">Select a Department</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    Choose a department from the list to view detailed information, manage team members, and track progress.
+                  </p>
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-400 dark:text-gray-500">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Click on any department to get started</span>
+                  </div>
                 </div>
-              </div>}
+              </div>
+            )}
           </div>
         </div>
       </div>
       <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
       <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={[...managers, ...(editModal.dept?.managerId ? managers.find(m => m.id === editModal.dept?.managerId) ? [] : [{ id: editModal.dept.managerId, name: users.find(u => u.id === editModal.dept?.managerId)?.name || `User ${editModal.dept.managerId}` }] : [])]} onSave={handleEditSave} loading={editLoading} />
     </div>
-  </ToastProvider>;
+  );
 }

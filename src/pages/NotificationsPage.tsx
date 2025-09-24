@@ -135,8 +135,8 @@ export function NotificationsPage() {
             <div className="flex items-center space-x-4">
               <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 flex items-center">
                 <FilterIcon className="h-5 w-5 mr-2 text-green-500" />
-                Filter Notifications
-              </h3>
+              Filter Notifications
+            </h3>
               {filteredNotifications.length > 0 && (
                 <div className="flex items-center space-x-2">
                   <input
@@ -171,7 +171,7 @@ export function NotificationsPage() {
             <li key={notification.id} className={`px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ${
               notification.read ? 'opacity-75' : 'bg-gradient-to-r from-blue-50/30 to-transparent dark:from-blue-900/20'
             }`}>
-              <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between">
                 <div className="min-w-0 flex-1 flex items-start space-x-3">
                   <input
                     type="checkbox"
@@ -200,8 +200,8 @@ export function NotificationsPage() {
                         </span>
                       )}
                     </div>
+                    </div>
                   </div>
-                </div>
                 <div className="ml-4 flex-shrink-0 flex space-x-2">
                   {!notification.read && (
                     <button 
@@ -209,7 +209,7 @@ export function NotificationsPage() {
                       onClick={() => markNotificationAsRead(notification.id)} 
                       className="text-green-500 dark:text-green-400 hover:bg-green-500/10 dark:hover:bg-green-400/10 px-2 py-1 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                     >
-                      Mark as read
+                        Mark as read
                     </button>
                   )}
                   <button 
@@ -219,8 +219,8 @@ export function NotificationsPage() {
                   >
                     <XIcon className="h-4 w-4" />
                   </button>
+                  </div>
                 </div>
-              </div>
             </li>
           )) : (
             <li className="px-4 py-12 text-center">

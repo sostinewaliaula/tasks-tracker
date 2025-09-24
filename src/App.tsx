@@ -10,6 +10,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { UsersPage } from './pages/UsersPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
+import { ManagerDepartmentsPage } from './pages/ManagerDepartmentsPage';
 import { LoginPage } from './pages/LoginPage';
 import { SystemSettingsPage } from './pages/SystemSettingsPage';
 import { UserSettingsPage } from './pages/UserSettingsPage';
@@ -70,8 +71,16 @@ function AppContent() {
           <Route
             path="/departments"
             element={
-              <RBAC allowedRoles={['manager', 'admin']}>
+              <RBAC allowedRoles={['admin']}>
                 <DepartmentsPage />
+              </RBAC>
+            }
+          />
+          <Route
+            path="/manager-departments"
+            element={
+              <RBAC allowedRoles={['manager', 'admin']}>
+                <ManagerDepartmentsPage />
               </RBAC>
             }
           />

@@ -214,7 +214,7 @@ export function Header() {
               )}
 
               {/* Departments - managers and admins only */}
-              {(isManager || isAdmin) && (
+              {isAdmin && (
                 <button
                   onClick={() => {
                     setIsNotificationsOpen(false);
@@ -228,6 +228,24 @@ export function Header() {
                 >
                   <BuildingIcon className="h-4 w-4 mr-2" />
                   Departments
+                </button>
+              )}
+
+              {/* Manager Departments - managers and admins only */}
+              {(isManager || isAdmin) && (
+                <button
+                  onClick={() => {
+                    setIsNotificationsOpen(false);
+                    navigate('/manager-departments');
+                  }}
+                  className={`${
+                    location.pathname === '/manager-departments'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <BuildingIcon className="h-4 w-4 mr-2" />
+                  {isAdmin ? 'Manager Departments' : 'Departments'}
                 </button>
               )}
 
@@ -438,8 +456,8 @@ export function Header() {
                 </button>
               )}
 
-              {/* Departments - managers and admins only */}
-              {(isManager || isAdmin) && (
+              {/* Departments - admin only */}
+              {isAdmin && (
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
@@ -454,6 +472,25 @@ export function Header() {
                 >
                   <BuildingIcon className="h-4 w-4 mr-2" />
                   Departments
+                </button>
+              )}
+
+              {/* Manager Departments - managers and admins only */}
+              {(isManager || isAdmin) && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotificationsOpen(false);
+                    navigate('/manager-departments');
+                  }}
+                  className={`${
+                    location.pathname === '/manager-departments'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <BuildingIcon className="h-4 w-4 mr-2" />
+                  {isAdmin ? 'Manager Departments' : 'Departments'}
                 </button>
               )}
 

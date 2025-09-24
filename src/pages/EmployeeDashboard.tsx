@@ -136,9 +136,9 @@ export function EmployeeDashboard() {
     }, 0);
     
     const stats = {
-      todo: userTasks.filter(t => t.status === 'todo').length,
-      'in-progress': userTasks.filter(t => t.status === 'in-progress').length,
-      completed: userTasks.filter(t => t.status === 'completed').length,
+    todo: userTasks.filter(t => t.status === 'todo').length,
+    'in-progress': userTasks.filter(t => t.status === 'in-progress').length,
+    completed: userTasks.filter(t => t.status === 'completed').length,
       blocker: mainTaskBlockers + subtaskBlockers,
     };
     
@@ -296,21 +296,21 @@ export function EmployeeDashboard() {
             <div className="flex items-center relative z-10">
               <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-4 shadow-sm">
                 <AlertCircleIcon className="w-6 h-6 text-white" />
-              </div>
+            </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked</p>
                 {isLoading ? (
                   <div className="flex items-center">
                     <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
                     <span className="ml-2 text-gray-400">Loading...</span>
-                  </div>
+            </div>
                 ) : (
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">{myStats.blocker}</p>
                 )}
-              </div>
-            </div>
+        </div>
           </div>
         </div>
+      </div>
         {/* Analytics Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -388,24 +388,24 @@ export function EmployeeDashboard() {
           </div>
                 )}
               </div>
-            </div>
+          </div>
 
             {/* Next Deadlines */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="bg-gradient-to-r from-green-500 to-purple-600 px-6 py-4">
                   <div className="flex items-center justify-between">
-                  <div>
+              <div>
                     <h3 className="text-lg font-semibold text-white">Next Deadlines</h3>
                     <p className="text-white/90 text-sm">Upcoming tasks due soon</p>
-                  </div>
+              </div>
                   <button 
                     onClick={() => navigate('/tasks')} 
                     className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/20 text-white hover:bg-white/30 transition-colors duration-200 text-sm font-medium"
                   >
-                    View All
+                View All
                     <ArrowRight className="h-4 w-4 ml-1" />
-                  </button>
-                </div>
+              </button>
+            </div>
               </div>
               <div className="max-h-64 overflow-y-auto">
                 {isLoading ? (
@@ -414,7 +414,7 @@ export function EmployeeDashboard() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Loading deadlines...</p>
                   </div>
                 ) : nextDeadlines.length ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                     {nextDeadlines.map(t => {
                       const deadline = new Date(t.deadline);
                       const now = new Date();
@@ -425,7 +425,7 @@ export function EmployeeDashboard() {
                       
                       return (
                         <li key={t.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                          <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate block">
                                 {t.title}
@@ -502,15 +502,15 @@ export function EmployeeDashboard() {
                   <div>
                     <h3 className="text-lg font-semibold text-white">Recently Completed</h3>
                     <p className="text-white/90 text-sm">Your recent achievements</p>
-                  </div>
+          </div>
                   <button 
                     onClick={() => navigate('/tasks')} 
                     className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/20 text-white hover:bg-white/30 transition-colors duration-200 text-sm font-medium"
                   >
-                    View All
+                View All
                     <ArrowRight className="h-4 w-4 ml-1" />
-                  </button>
-                </div>
+              </button>
+            </div>
               </div>
               <div className="max-h-64 overflow-y-auto">
                 {isLoading ? (
@@ -519,7 +519,7 @@ export function EmployeeDashboard() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Loading completed tasks...</p>
                   </div>
                 ) : recentlyCompleted.length ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                     {recentlyCompleted.map(t => {
                       const completedDate = new Date(t.createdAt);
                       const now = new Date();
@@ -528,7 +528,7 @@ export function EmployeeDashboard() {
                       
                       return (
                         <li key={t.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                          <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate block">
                                 {t.title}
@@ -559,8 +559,8 @@ export function EmployeeDashboard() {
                   </div>
                 )}
               </div>
-            </div>
           </div>
+        </div>
         </div>
         )}
       </div>
