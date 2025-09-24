@@ -4,6 +4,7 @@ import { TaskProvider } from './context/TaskContext';
 import { AuthProvider } from './context/AuthContext';
 import { EmployeeDashboard } from './pages/EmployeeDashboard';
 import { ManagerDashboard } from './pages/ManagerDashboard';
+import { AdminDashboard } from './pages/AdminDashboard';
 import { TasksPage } from './pages/TasksPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
@@ -90,6 +91,14 @@ function AppContent() {
           />
 
           {/* Admin Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <RBAC allowedRoles={['admin']}>
+                <AdminDashboard />
+              </RBAC>
+            }
+          />
           <Route
             path="/settings"
             element={
