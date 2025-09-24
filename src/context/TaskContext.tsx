@@ -1,7 +1,7 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { useAuth } from './AuthContext';
 export type TaskPriority = 'high' | 'medium' | 'low';
-export type TaskStatus = 'todo' | 'in-progress' | 'completed';
+export type TaskStatus = 'todo' | 'in-progress' | 'completed' | 'blocker';
 export type Task = {
   id: string;
   title: string;
@@ -9,6 +9,7 @@ export type Task = {
   deadline: Date;
   priority: TaskPriority;
   status: TaskStatus;
+  blockerReason?: string;
   createdBy: string;
   department: string;
   createdAt: Date;
@@ -31,7 +32,7 @@ type TaskContextType = {
   tasks: Task[];
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>) => Promise<string>;
   addSubtask: (parentId: string, task: Omit<Task, 'id' | 'createdAt' | 'parentId' | 'subtasks'>) => Promise<void>;
-  updateTaskStatus: (id: string, status: TaskStatus) => void;
+  updateTaskStatus: (id: string, status: TaskStatus, blockerReason?: string) => void;
   carryOverTask: (id: string, newDeadline: Date, reason: string) => Promise<void>;
   notifications: Notification[];
   markNotificationAsRead: (id: string) => void;
@@ -92,20 +93,21 @@ export function TaskProvider({
         deadline: task.deadline,
         priority: task.priority,
         status: task.status,
+        blockerReason: task.blockerReason,
         parentId: Number(parentId)
       })
     });
     if (!resp.ok) throw new Error('Failed to create subtask');
     await reloadTasks();
   };
-  const updateTaskStatus = async (id: string, status: TaskStatus) => {
+  const updateTaskStatus = async (id: string, status: TaskStatus, blockerReason?: string) => {
     const resp = await fetch(`/api/tasks/${id}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status, blockerReason })
     });
     if (!resp.ok) throw new Error('Failed to update status');
     await reloadTasks();
@@ -198,6 +200,7 @@ export function TaskProvider({
       deadline: new Date(t.deadline),
       priority: t.priority,
       status: String(t.status).replace('_', '-') as TaskStatus,
+      blockerReason: t.blockerReason || undefined,
       createdBy: String(t.createdById ?? t.createdBy?.id ?? ''),
       department: t.department?.name ?? '',
       createdAt: new Date(t.createdAt),

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTask, TaskStatus, TaskPriority, Task } from '../context/TaskContext';
 import { TaskForm } from '../components/tasks/TaskForm';
+import { SubtaskBlockerManagement } from '../components/tasks/SubtaskBlockerManagement';
 import { 
   PlusIcon, 
   FilterIcon, 
@@ -378,29 +379,43 @@ export function TasksPage() {
                     </h4>
                     <div className="space-y-2">
                       {task.subtasks.map(subtask => (
-                        <div key={subtask.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                          <button
-                            onClick={() => updateTaskStatus(subtask.id, subtask.status === 'completed' ? 'todo' : 'completed')}
-                            className="flex-shrink-0"
-                          >
-                            {getStatusIcon(subtask.status)}
-                          </button>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {subtask.title}
-                            </h5>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {subtask.description}
-                            </p>
+                        <div key={subtask.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                          <div className="flex items-center space-x-3 p-3">
+                            <button
+                              onClick={() => updateTaskStatus(subtask.id, subtask.status === 'completed' ? 'todo' : 'completed')}
+                              className="flex-shrink-0"
+                            >
+                              {getStatusIcon(subtask.status)}
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {subtask.title}
+                              </h5>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {subtask.description}
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(subtask.priority)}`}>
+                                {subtask.priority.charAt(0).toUpperCase() + subtask.priority.slice(1)}
+                              </span>
+                              {subtask.status === 'blocker' && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                  Blocked
+                                </span>
+                              )}
+                              <span className={`text-xs font-medium ${formatDeadline(subtask.deadline).color}`}>
+                                {formatDeadline(subtask.deadline).text}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(subtask.priority)}`}>
-                              {subtask.priority.charAt(0).toUpperCase() + subtask.priority.slice(1)}
-                            </span>
-                            <span className={`text-xs font-medium ${formatDeadline(subtask.deadline).color}`}>
-                              {formatDeadline(subtask.deadline).text}
-                            </span>
-                          </div>
+                          
+                          {/* Subtask Blocker Management */}
+                          <SubtaskBlockerManagement 
+                            subtask={subtask} 
+                            onUpdateStatus={updateTaskStatus}
+                            canManage={true}
+                          />
                         </div>
                       ))}
                     </div>

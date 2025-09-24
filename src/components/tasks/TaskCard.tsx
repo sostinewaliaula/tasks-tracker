@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Task, TaskStatus, useTask } from '../../context/TaskContext';
-import { ClockIcon, CheckCircleIcon, CircleIcon, CheckIcon } from 'lucide-react';
+import { ClockIcon, CheckCircleIcon, CircleIcon, CheckIcon, AlertCircleIcon } from 'lucide-react';
 type TaskCardProps = {
   task: Task;
 };
@@ -50,6 +50,8 @@ export function TaskCard({
         return <ClockIcon className="h-5 w-5 text-yellow-500" />;
       case 'completed':
         return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
+      case 'blocker':
+        return <AlertCircleIcon className="h-5 w-5 text-red-500" />;
     }
   };
   const getStatusText = (status: TaskStatus) => {
@@ -60,6 +62,8 @@ export function TaskCard({
         return 'In Progress';
       case 'completed':
         return 'Completed';
+      case 'blocker':
+        return 'Blocked';
     }
   };
   const getPriorityColor = (priority: string) => {
@@ -117,6 +121,11 @@ export function TaskCard({
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(task.priority)}`}>
               {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
             </span>
+            {task.status === 'blocker' && (
+              <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                Blocked
+              </span>
+            )}
             {task.isCarriedOver && (
               <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                 Carried over
@@ -133,6 +142,23 @@ export function TaskCard({
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
             {task.description}
           </p>
+        )}
+
+        {/* Blocker Reason */}
+        {task.status === 'blocker' && task.blockerReason && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-3">
+            <div className="flex items-start space-x-2">
+              <AlertCircleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-red-800 dark:text-red-200 mb-1">
+                  Blocker Reason:
+                </p>
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  {task.blockerReason}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Status and Time Info */}

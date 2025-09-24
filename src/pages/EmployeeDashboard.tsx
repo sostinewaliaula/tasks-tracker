@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
 import { WeeklyCalendar } from '../components/dashboard/WeeklyCalendar';
 import { TaskStats } from '../components/dashboard/TaskStats';
-import { BellIcon, ArrowRight, Loader2 } from 'lucide-react';
+import { BlockerDashboard } from '../components/dashboard/BlockerDashboard';
+import { BellIcon, ArrowRight, Loader2, AlertCircleIcon } from 'lucide-react';
 export function EmployeeDashboard() {
   const {
     currentUser
@@ -415,6 +416,27 @@ export function EmployeeDashboard() {
                   </div>
                 )}
           </div>
+            </div>
+
+            {/* Blocked Tasks */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Blocked Tasks</h3>
+                    <p className="text-white/90 text-sm">Tasks that need attention</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <AlertCircleIcon className="h-5 w-5 text-white" />
+                    <span className="text-white font-medium">
+                      {tasks.filter(t => t.status === 'blocker' && t.createdBy === currentUser?.id).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <BlockerDashboard />
+              </div>
             </div>
 
             {/* Recently Completed */}

@@ -152,7 +152,7 @@ router.patch('/:id', async (req, res) => {
 router.patch('/:id/status', async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { status } = req.body || {};
+    const { status, blockerReason } = req.body || {};
     const user = (req as any).user as { id: number; role: 'admin' | 'manager' | 'employee' };
     if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid id' });
     if (!status) return res.status(400).json({ error: 'status is required' });
@@ -165,7 +165,10 @@ router.patch('/:id/status', async (req, res) => {
 
     const updated = await prisma.task.update({
       where: { id },
-      data: { status: String(status).replace('-', '_') as any },
+      data: { 
+        status: String(status).replace('-', '_') as any,
+        blockerReason: status === 'blocker' ? String(blockerReason ?? '') : (status !== 'blocker' ? null : undefined),
+      },
     });
     // If this is a subtask, update parent status
     if (existing.parentId) {

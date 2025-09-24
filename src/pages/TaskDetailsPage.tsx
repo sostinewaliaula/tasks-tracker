@@ -2,6 +2,8 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTask, TaskStatus, TaskPriority } from '../context/TaskContext';
 import { useToast } from '../components/departments/DepartmentModal';
+import { BlockerManagement } from '../components/tasks/BlockerManagement';
+import { SubtaskBlockerManagement } from '../components/tasks/SubtaskBlockerManagement';
 import { 
   XIcon, 
   ClockIcon, 
@@ -137,6 +139,8 @@ export function TaskDetailsPage() {
         return <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">In Progress</span>;
       case 'completed':
         return <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Completed</span>;
+      case 'blocker':
+        return <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Blocked</span>;
     }
   };
 
@@ -239,6 +243,13 @@ export function TaskDetailsPage() {
             </div>
           </div>
 
+          {/* Blocker Management */}
+          <BlockerManagement 
+            task={task} 
+            onUpdateStatus={updateTaskStatus}
+            canManage={true} // For now, allow all users to manage blockers
+          />
+
           {/* Task Information Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
@@ -326,43 +337,58 @@ export function TaskDetailsPage() {
           {task.subtasks && task.subtasks.length > 0 ? (
             <div className="space-y-4">
               {task.subtasks.map(subtask => (
-                <div key={subtask.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => updateTaskStatus(subtask.id, subtask.status === 'completed' ? 'todo' : 'completed')}
-                    className="flex-shrink-0 hover:scale-110 transition-transform duration-200"
-                  >
-                    {getStatusIcon(subtask.status)}
-                  </button>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                      {subtask.title}
-                    </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      {subtask.description}
-                    </p>
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(subtask.priority)}`}>
-                        {subtask.priority.charAt(0).toUpperCase() + subtask.priority.slice(1)}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Due {formatDate(subtask.deadline)}
-                      </span>
+                <div key={subtask.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="flex items-center space-x-4 p-4">
+                    <button
+                      onClick={() => updateTaskStatus(subtask.id, subtask.status === 'completed' ? 'todo' : 'completed')}
+                      className="flex-shrink-0 hover:scale-110 transition-transform duration-200"
+                    >
+                      {getStatusIcon(subtask.status)}
+                    </button>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                        {subtask.title}
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        {subtask.description}
+                      </p>
+                      <div className="flex items-center space-x-3">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(subtask.priority)}`}>
+                          {subtask.priority.charAt(0).toUpperCase() + subtask.priority.slice(1)}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Due {formatDate(subtask.deadline)}
+                        </span>
+                        {subtask.status === 'blocker' && (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                            Blocked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <select 
+                        value={subtask.status} 
+                        onChange={e => updateTaskStatus(subtask.id, e.target.value as TaskStatus)} 
+                        className="text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      >
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="blocker">Blocked</option>
+                      </select>
+                      {getStatusBadge(subtask.status)}
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
-                    <select 
-                      value={subtask.status} 
-                      onChange={e => updateTaskStatus(subtask.id, e.target.value as TaskStatus)} 
-                      className="text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    >
-                      <option value="todo">To Do</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                    {getStatusBadge(subtask.status)}
-                  </div>
+                  {/* Subtask Blocker Management */}
+                  <SubtaskBlockerManagement 
+                    subtask={subtask} 
+                    onUpdateStatus={updateTaskStatus}
+                    canManage={true}
+                  />
                 </div>
               ))}
             </div>

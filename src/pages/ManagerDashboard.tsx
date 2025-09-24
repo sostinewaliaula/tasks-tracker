@@ -4,7 +4,8 @@ import { useTask } from '../context/TaskContext';
 import { TaskList } from '../components/tasks/TaskList';
 import { TaskStats } from '../components/dashboard/TaskStats';
 import { WeeklyCalendar } from '../components/dashboard/WeeklyCalendar';
-import { CalendarIcon, ListIcon, ChartBarIcon, Loader2 } from 'lucide-react';
+import { BlockerDashboard } from '../components/dashboard/BlockerDashboard';
+import { CalendarIcon, ListIcon, ChartBarIcon, Loader2, AlertCircleIcon } from 'lucide-react';
 export function ManagerDashboard() {
   const {
     currentUser
@@ -14,7 +15,7 @@ export function ManagerDashboard() {
     getTasksForCurrentWeek,
     tasks
   } = useTask();
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'stats'>('stats');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'stats' | 'blockers'>('stats');
   const [isLoading, setIsLoading] = useState(true);
 
   // Format display name like in Header component
@@ -116,6 +117,18 @@ export function ManagerDashboard() {
               <CalendarIcon className="h-5 w-5 mr-2" />
               Calendar
             </button>
+            <button 
+              type="button" 
+              onClick={() => setViewMode('blockers')} 
+              className={`relative inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                viewMode === 'blockers' 
+                  ? 'bg-gradient-to-r from-red-500 to-red-400 text-white shadow-md' 
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <AlertCircleIcon className="h-5 w-5 mr-2" />
+              Blockers
+            </button>
           </div>
         </div>
 
@@ -133,6 +146,7 @@ export function ManagerDashboard() {
               {viewMode === 'list' && <TaskList tasks={departmentTasks} />}
               {viewMode === 'calendar' && <WeeklyCalendar tasks={weeklyTasks} />}
               {viewMode === 'stats' && <TaskStats department={currentUser?.department} />}
+              {viewMode === 'blockers' && <BlockerDashboard />}
             </>
           )}
         </div>

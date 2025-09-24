@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTask, TaskPriority } from '../../context/TaskContext';
 
-type TaskStatus = 'todo' | 'in-progress' | 'completed';
+type TaskStatus = 'todo' | 'in-progress' | 'completed' | 'blocker';
 import { 
   XIcon, 
   PlusIcon, 
@@ -10,6 +10,7 @@ import {
   FlagIcon, 
   ListIcon, 
   TrashIcon,
+  AlertCircleIcon,
   CheckCircleIcon,
   ClockIcon,
   CircleIcon
@@ -36,6 +37,7 @@ export function TaskForm({
   const [deadline, setDeadline] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [status, setStatus] = useState<TaskStatus>('todo');
+  const [blockerReason, setBlockerReason] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +51,7 @@ export function TaskForm({
       deadline: new Date(deadline),
       priority,
       status,
+      blockerReason: status === 'blocker' ? blockerReason : undefined,
       createdBy: currentUser.id,
       department: currentUser.department
     });
@@ -124,6 +127,8 @@ export function TaskForm({
         return <ClockIcon className="h-4 w-4 text-yellow-500" />;
       case 'completed':
         return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+      case 'blocker':
+        return <AlertCircleIcon className="h-4 w-4 text-red-500" />;
     }
   };
 
@@ -205,9 +210,10 @@ export function TaskForm({
                   value={status} 
                   onChange={e => setStatus(e.target.value as TaskStatus)}
                 >
-                <option value="todo">To Do</option>
+                  <option value="todo">To Do</option>
                   <option value="in-progress">In Progress</option>
-                <option value="completed">Completed</option>
+                  <option value="completed">Completed</option>
+                  <option value="blocker">Blocker</option>
               </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   {getStatusIcon(status)}
@@ -267,6 +273,24 @@ export function TaskForm({
             </div>
           </div>
 
+          {/* Blocker Reason - Full Width */}
+          {status === 'blocker' && (
+            <div>
+              <label htmlFor="blockerReason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <AlertCircleIcon className="h-4 w-4 inline mr-2 text-red-500" />
+                Blocker Reason *
+              </label>
+              <input 
+                type="text" 
+                id="blockerReason" 
+                required={status === 'blocker'} 
+                className="w-full px-4 py-3 border border-red-300 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="Explain why this task is blocked..."
+                value={blockerReason} 
+                onChange={e => setBlockerReason(e.target.value)} 
+              />
+            </div>
+          )}
 
           {/* Subtasks - Full Width */}
           <div>
