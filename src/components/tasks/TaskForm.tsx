@@ -11,9 +11,7 @@ import {
   ListIcon, 
   TrashIcon,
   AlertCircleIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  CircleIcon
+  ChevronDownIcon
 } from 'lucide-react';
 
 type TaskFormProps = {
@@ -108,29 +106,6 @@ export function TaskForm({
     setSubtasks(prev => prev.filter((_, i) => i !== index));
   };
 
-  const getPriorityColor = (priority: TaskPriority) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'low':
-        return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'todo':
-        return <CircleIcon className="h-4 w-4 text-gray-400" />;
-      case 'in-progress':
-        return <ClockIcon className="h-4 w-4 text-yellow-500" />;
-      case 'completed':
-        return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
-      case 'blocker':
-        return <AlertCircleIcon className="h-4 w-4 text-red-500" />;
-    }
-  };
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[90vh] max-h-[800px]">
@@ -206,7 +181,7 @@ export function TaskForm({
               <div className="relative">
                 <select 
                   id="status" 
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none text-sm"
+                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none text-sm"
                   value={status} 
                   onChange={e => setStatus(e.target.value as TaskStatus)}
                 >
@@ -216,7 +191,7 @@ export function TaskForm({
                   <option value="blocker">Blocker</option>
               </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  {getStatusIcon(status)}
+                  <ChevronDownIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
             </div>
               </div>
               </div>
@@ -230,7 +205,7 @@ export function TaskForm({
               <div className="relative">
                 <select 
                   id="priority" 
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none text-sm"
+                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none text-sm"
                   value={priority} 
                   onChange={e => setPriority(e.target.value as TaskPriority)}
                 >
@@ -239,9 +214,7 @@ export function TaskForm({
                   <option value="low">Low</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(priority)}`}>
-                    {priority.charAt(0).toUpperCase()}
-                  </span>
+                  <ChevronDownIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                 </div>
               </div>
             </div>
@@ -326,7 +299,7 @@ export function TaskForm({
                 {subtasks.map((subtask, idx) => (
                   <div key={`${subtask}-${idx}`} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center space-x-2">
-                      <CircleIcon className="h-4 w-4 text-gray-400" />
+                      <ListIcon className="h-4 w-4 text-gray-400" />
                       <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{subtask}</span>
                     </div>
                     <button

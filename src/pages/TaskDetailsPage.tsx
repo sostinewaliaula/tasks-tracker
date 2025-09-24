@@ -18,7 +18,9 @@ import {
   EditIcon,
   TrashIcon,
   ListIcon,
-  TrendingUpIcon
+  TrendingUpIcon,
+  ChevronDownIcon,
+  FlagIcon
 } from 'lucide-react';
 
 export function TaskDetailsPage() {
@@ -413,54 +415,92 @@ export function TaskDetailsPage() {
 
       {/* Add Subtask Modal */}
       {showAddSubtask && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-xl shadow-xl p-6 mx-4">
-            <div className="flex justify-between items-center mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">New Subtask</h4>
-              <button 
-                onClick={() => setShowAddSubtask(false)} 
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors duration-200"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
-                <input 
-                  value={subtaskTitle} 
-                  onChange={e => setSubtaskTitle(e.target.value)} 
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" 
-                  placeholder="Enter subtask title..."
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                <textarea 
-                  value={subtaskDescription} 
-                  onChange={e => setSubtaskDescription(e.target.value)} 
-                  rows={3} 
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  placeholder="Enter subtask description..."
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
-                <select 
-                  value={subtaskPriority} 
-                  onChange={e => setSubtaskPriority(e.target.value as TaskPriority)} 
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[80vh] max-h-[600px] mx-4">
+            {/* Fixed Header */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <PlusIcon className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Subtask</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Add a subtask to break down this task</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowAddSubtask(false)} 
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
                 >
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </select>
+                  <XIcon className="h-5 w-5" />
+                </button>
               </div>
-              
-              <div className="flex justify-end space-x-3 pt-4">
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-5">
+                {/* Title */}
+                <div>
+                  <label htmlFor="subtaskTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <ListIcon className="h-4 w-4 inline mr-2" />
+                    Subtask Title *
+                  </label>
+                  <input 
+                    id="subtaskTitle"
+                    type="text"
+                    value={subtaskTitle} 
+                    onChange={e => setSubtaskTitle(e.target.value)} 
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm" 
+                    placeholder="Enter subtask title..."
+                  />
+                </div>
+                
+                {/* Description */}
+                <div>
+                  <label htmlFor="subtaskDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <EditIcon className="h-4 w-4 inline mr-2" />
+                    Description
+                  </label>
+                  <textarea 
+                    id="subtaskDescription"
+                    value={subtaskDescription} 
+                    onChange={e => setSubtaskDescription(e.target.value)} 
+                    rows={3} 
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm resize-none"
+                    placeholder="Enter subtask description..."
+                  />
+                </div>
+                
+                {/* Priority */}
+                <div>
+                  <label htmlFor="subtaskPriority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <FlagIcon className="h-4 w-4 inline mr-2" />
+                    Priority
+                  </label>
+                  <div className="relative">
+                    <select 
+                      id="subtaskPriority"
+                      value={subtaskPriority} 
+                      onChange={e => setSubtaskPriority(e.target.value as TaskPriority)} 
+                      className="w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none text-sm"
+                    >
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDownIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Fixed Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex-shrink-0">
+              <div className="flex justify-end space-x-3">
                 <button 
                   onClick={() => setShowAddSubtask(false)} 
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask, Task } from '../context/TaskContext';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { AlertCircleIcon, ClockIcon } from 'lucide-react';
 import { UserExportButton } from '../components/reports/UserExportButton';
 
 export function UserReportsPage() {
@@ -34,6 +35,85 @@ export function UserReportsPage() {
     const carried = userTasks.filter(t => t.isCarriedOver).length;
     return { total, completed, overdue, carried, completionRate: total ? Math.round((completed / total) * 100) : 0 };
   }, [userTasks]);
+
+  // Blocker Analytics for User Reports
+  const blockerAnalytics = useMemo(() => {
+    if (!currentUser) return {
+      total: 0,
+      urgent: 0,
+      overdue: 0,
+      longTerm: 0,
+      priorityBreakdown: {},
+      ageDistribution: { '0-1d': 0, '1-3d': 0, '3-7d': 0, '7d+': 0 },
+      averageResolutionTime: 0,
+      mainTasks: 0,
+      subtasks: 0
+    };
+
+    // Include subtask blockers for the user
+    const allUserBlockers = [
+      ...userTasks.filter(task => task.status === 'blocker'),
+      ...userTasks.flatMap(task => task.subtasks?.filter(subtask => subtask.status === 'blocker') || [])
+    ];
+
+    const now = new Date();
+    const getDaysUntilDeadline = (deadline: Date) => {
+      return Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    };
+
+    const getBlockerAge = (createdAt: Date) => {
+      const diffInHours = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+      return diffInHours < 24 ? Math.floor(diffInHours) : Math.floor(diffInHours / 24);
+    };
+
+    // Categorize blockers
+    const urgentBlockers = allUserBlockers.filter(task => {
+      const days = getDaysUntilDeadline(task.deadline);
+      return days <= 1 && days >= 0;
+    });
+
+    const overdueBlockers = allUserBlockers.filter(task => {
+      const days = getDaysUntilDeadline(task.deadline);
+      return days < 0;
+    });
+
+    const longTermBlockers = allUserBlockers.filter(task => {
+      const age = getBlockerAge(task.createdAt);
+      return age > 7;
+    });
+
+    // Priority breakdown
+    const priorityBreakdown = allUserBlockers.reduce((acc, task) => {
+      acc[task.priority] = (acc[task.priority] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Age distribution
+    const ageDistribution = allUserBlockers.reduce((acc, task) => {
+      const age = getBlockerAge(task.createdAt);
+      if (age <= 1) acc['0-1d']++;
+      else if (age <= 3) acc['1-3d']++;
+      else if (age <= 7) acc['3-7d']++;
+      else acc['7d+']++;
+      return acc;
+    }, { '0-1d': 0, '1-3d': 0, '3-7d': 0, '7d+': 0 });
+
+    // Average resolution time
+    const averageResolutionTime = allUserBlockers.length > 0 ? 
+      Math.round(allUserBlockers.reduce((sum, task) => sum + getBlockerAge(task.createdAt), 0) / allUserBlockers.length) : 0;
+
+    return {
+      total: allUserBlockers.length,
+      urgent: urgentBlockers.length,
+      overdue: overdueBlockers.length,
+      longTerm: longTermBlockers.length,
+      priorityBreakdown,
+      ageDistribution,
+      averageResolutionTime,
+      mainTasks: allUserBlockers.filter(task => !task.parentId).length,
+      subtasks: allUserBlockers.filter(task => task.parentId).length
+    };
+  }, [userTasks, currentUser]);
 
   const trendData = useMemo(() => {
     const makeKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
@@ -147,6 +227,145 @@ export function UserReportsPage() {
       <div className="card"><div className="px-4 py-5 sm:p-6"><p className="text-sm text-gray-500">Completed</p><p className="mt-1 text-2xl font-semibold text-green-600">{kpis.completed}</p></div></div>
       <div className="card"><div className="px-4 py-5 sm:p-6"><p className="text-sm text-gray-500">Overdue</p><p className="mt-1 text-2xl font-semibold text-red-600">{kpis.overdue}</p></div></div>
       <div className="card"><div className="px-4 py-5 sm:p-6"><p className="text-sm text-gray-500">Carried Over</p><p className="mt-1 text-2xl font-semibold text-purple-600">{kpis.carried}</p></div></div>
+    </div>
+
+    {/* Blocker Analytics Section */}
+    <div className="mb-6">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Blocker Analytics</h2>
+      
+      {/* Blocker Summary Cards */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-6">
+        <div className="card">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                  <AlertCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Blockers</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{blockerAnalytics.total}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                  <ClockIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Urgent Blockers</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{blockerAnalytics.urgent}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                  <AlertCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Overdue Blockers</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{blockerAnalytics.overdue}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                  <ClockIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Avg Resolution</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{blockerAnalytics.averageResolutionTime}d</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Blocker Breakdowns */}
+      {blockerAnalytics.total > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Priority Breakdown */}
+          <div className="card">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Priority Breakdown</h3>
+              <div className="space-y-3">
+                {Object.entries(blockerAnalytics.priorityBreakdown).map(([priority, count]) => (
+                  <div key={priority} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        priority === 'high' ? 'bg-red-500' :
+                        priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                      }`}></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">{priority}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Task Type Breakdown */}
+          <div className="card">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Task Type Breakdown</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Main Tasks</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{blockerAnalytics.mainTasks}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Subtasks</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{blockerAnalytics.subtasks}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Age Distribution Chart */}
+      {blockerAnalytics.total > 0 && (
+        <div className="card mb-6">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Blocker Age Distribution</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={Object.entries(blockerAnalytics.ageDistribution).map(([range, count]) => ({
+                  name: range,
+                  value: count,
+                  color: range === '7d+' ? '#EF4444' : range === '3-7d' ? '#F59E0B' : '#10B981'
+                }))}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#EF4444" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
     <div className="card mb-6">

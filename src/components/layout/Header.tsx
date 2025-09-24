@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BellIcon, LogOutIcon, UserIcon, SettingsIcon } from 'lucide-react';
+import { BellIcon, LogOutIcon, UserIcon, SettingsIcon, LayoutDashboardIcon, CheckSquareIcon, BarChart3Icon, UsersIcon, BuildingIcon, ShieldIcon } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../components/auth/RBAC';
@@ -61,6 +61,7 @@ export function Header() {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
+                <LayoutDashboardIcon className="h-4 w-4 mr-2" />
                 Dashboard
               </button>
 
@@ -76,7 +77,24 @@ export function Header() {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
+                <CheckSquareIcon className="h-4 w-4 mr-2" />
                 Tasks
+              </button>
+
+              {/* My Reports - available to all */}
+              <button
+                onClick={() => {
+                  setIsNotificationsOpen(false);
+                  navigate('/my-reports');
+                }}
+                className={`${
+                  location.pathname === '/my-reports'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <BarChart3Icon className="h-4 w-4 mr-2" />
+                My Reports
               </button>
 
               {/* Notifications - available to all */}
@@ -116,21 +134,6 @@ export function Header() {
                 Settings
               </button>
 
-              {/* My Reports - available to all */}
-              <button
-                onClick={() => {
-                  setIsNotificationsOpen(false);
-                  navigate('/my-reports');
-                }}
-                className={`${
-                  location.pathname === '/my-reports'
-                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
-              >
-                My Reports
-              </button>
-
               {/* Reports - managers and admins only */}
               {(isManager || isAdmin) && (
                 <button
@@ -144,6 +147,7 @@ export function Header() {
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
+                  <BarChart3Icon className="h-4 w-4 mr-2" />
                   Reports
                 </button>
               )}
@@ -161,6 +165,7 @@ export function Header() {
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
+                  <UsersIcon className="h-4 w-4 mr-2" />
                   Users
                 </button>
               )}
@@ -178,6 +183,7 @@ export function Header() {
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
+                  <BuildingIcon className="h-4 w-4 mr-2" />
                   Departments
                 </button>
               )}
@@ -195,6 +201,7 @@ export function Header() {
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
+                  <ShieldIcon className="h-4 w-4 mr-2" />
                   Settings
                 </button>
               )}
