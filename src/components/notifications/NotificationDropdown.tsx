@@ -43,10 +43,10 @@ export function NotificationDropdown({
     >
       <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
         {/* Header */}
-        <div className="px-4 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-[#2e9d74]/5 to-[#8c52ff]/5">
+        <div className="px-4 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-green-500/5 to-purple-600/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <BellIcon className="h-5 w-5 text-[#2e9d74] dark:text-[#4ade80]" />
+              <BellIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
             </div>
             {unreadCount > 0 && (
@@ -82,7 +82,7 @@ export function NotificationDropdown({
         <div className="border-t border-gray-200/50 dark:border-gray-700/50 px-4 py-3 bg-gray-50/50 dark:bg-gray-700/30">
           <div className="flex items-center justify-between">
             <button 
-              className="text-sm text-[#2e9d74] dark:text-[#4ade80] hover:text-[#259d6a] dark:hover:text-[#22c55e] font-medium transition-colors duration-200" 
+              className="text-sm text-green-500 dark:text-green-400 hover:text-green-600 dark:hover:text-green-300 font-medium transition-colors duration-200" 
               onClick={onViewAll}
             >
               View all

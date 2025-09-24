@@ -90,7 +90,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Primary Department</label>
                 <select
-                  className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   value={selectedParentId ?? ''}
                   onChange={e => setSelectedParentId(e.target.value ? Number(e.target.value) : null)}
                   required
@@ -106,7 +106,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager (optional)</label>
                 <select
-                  className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   value={selectedManagerId ?? ''}
                   onChange={e => setSelectedManagerId(e.target.value ? Number(e.target.value) : null)}
                 >
@@ -121,7 +121,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Department Name</label>
               <input
                 type="text"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder={parentId ? 'e.g., Platform' : 'e.g., Turnkey'}
@@ -132,7 +132,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
                 Add
               </button>

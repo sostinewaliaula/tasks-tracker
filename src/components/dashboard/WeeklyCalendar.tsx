@@ -55,7 +55,7 @@ export function WeeklyCalendar({
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
   };
   return <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] px-6 py-5 text-white">
+      <div className="bg-gradient-to-r from-green-500 to-purple-600 px-6 py-5 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-semibold">
@@ -82,7 +82,7 @@ export function WeeklyCalendar({
             {/* Day Header */}
             <div className={`px-4 py-3 text-center font-semibold border-b border-gray-200 dark:border-gray-700 ${
               isToday(date) 
-                ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white' 
+                ? 'bg-gradient-to-r from-green-500 to-green-400 text-white' 
                 : 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
             }`}> 
               <div className="text-sm">

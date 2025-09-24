@@ -120,7 +120,7 @@ export function TasksPage() {
           <button
             type="button"
             onClick={() => setIsAddingTask(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             New Task
@@ -169,7 +169,7 @@ export function TasksPage() {
                 name="search"
                 id="search"
                 placeholder="Search tasks..."
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.search}
                 onChange={handleSearchChange}
               />
@@ -182,7 +182,7 @@ export function TasksPage() {
               <select
                 id="status"
                 name="status"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.status}
                 onChange={handleStatusFilterChange}
               >
@@ -200,7 +200,7 @@ export function TasksPage() {
               <select
                 id="priority"
                 name="priority"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.priority}
                 onChange={handlePriorityFilterChange}
               >
@@ -219,7 +219,7 @@ export function TasksPage() {
                 type="date"
                 id="dateFrom"
                 name="dateFrom"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.dateFrom}
                 onChange={handleDateFromChange}
               />
@@ -233,7 +233,7 @@ export function TasksPage() {
                 type="date"
                 id="dateTo"
                 name="dateTo"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={filters.dateTo}
                 onChange={handleDateToChange}
               />
@@ -247,7 +247,7 @@ export function TasksPage() {
                 <select
                   id="sort"
                   name="sort"
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-l-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm rounded-l-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   value={sortBy}
                   onChange={e => handleSort(e.target.value as any)}
                 >

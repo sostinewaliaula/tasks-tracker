@@ -47,7 +47,7 @@ export function ManagerDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] rounded-2xl p-8 text-white shadow-lg">
+          <div className="bg-gradient-to-r from-green-500 to-purple-600 rounded-2xl p-8 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">
@@ -85,7 +85,7 @@ export function ManagerDashboard() {
               onClick={() => setViewMode('stats')} 
               className={`relative inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 viewMode === 'stats' 
-                  ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md' 
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -97,7 +97,7 @@ export function ManagerDashboard() {
               onClick={() => setViewMode('list')} 
               className={`relative inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 viewMode === 'list' 
-                  ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md' 
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -109,7 +109,7 @@ export function ManagerDashboard() {
               onClick={() => setViewMode('calendar')} 
               className={`relative inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 viewMode === 'calendar' 
-                  ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md' 
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >

@@ -158,7 +158,7 @@ export function TeamPerformance({ department, timeframe }: TeamPerformanceProps)
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] h-2.5 rounded-full" style={{
+                          <div className="bg-gradient-to-r from-green-500 to-purple-600 h-2.5 rounded-full" style={{
                         width: `${employee.efficiency}%`
                       }}></div>
                         </div>

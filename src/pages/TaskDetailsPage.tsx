@@ -160,7 +160,7 @@ export function TaskDetailsPage() {
               <span className="text-gray-600 dark:text-gray-300">{completedSubtasks}/{totalSubtasks} completed</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2.5">
-              <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+              <div className="bg-gradient-to-r from-green-500 to-purple-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
             </div>
           </div>
         )}

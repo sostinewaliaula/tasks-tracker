@@ -50,7 +50,7 @@ export function NotificationsPage() {
           </p>
         </div>
         <div className="mt-4 flex md:mt-0 md:ml-4">
-          <button type="button" onClick={handleMarkAllAsRead} disabled={!unreadCount} className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${unreadCount ? 'bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]`}>
+          <button type="button" onClick={handleMarkAllAsRead} disabled={!unreadCount} className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${unreadCount ? 'bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}>
             <CheckIcon className="h-5 w-5 mr-2" />
             Mark All as Read
           </button>
@@ -64,7 +64,7 @@ export function NotificationsPage() {
               Filter Notifications
             </h3>
             <div className="mt-3 sm:mt-0">
-              <select id="filter" name="filter" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md" value={filter} onChange={e => setFilter(e.target.value as 'all' | 'unread' | 'read')}>
+              <select id="filter" name="filter" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm rounded-md" value={filter} onChange={e => setFilter(e.target.value as 'all' | 'unread' | 'read')}>
                 <option value="all">All Notifications</option>
                 <option value="unread">Unread Only</option>
                 <option value="read">Read Only</option>
@@ -90,7 +90,7 @@ export function NotificationsPage() {
                     </div>
                   </div>
                   <div className="ml-4 flex-shrink-0 flex">
-                    {!notification.read && <button type="button" onClick={() => markNotificationAsRead(notification.id)} className="bg-white rounded-md text-sm font-medium text-[#2e9d74] hover:text-[#228a63] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
+                    {!notification.read && <button type="button" onClick={() => markNotificationAsRead(notification.id)} className="bg-white rounded-md text-sm font-medium text-[#2e9d74] hover:text-[#228a63] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         Mark as read
                       </button>}
                   </div>

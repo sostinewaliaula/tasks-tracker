@@ -42,7 +42,7 @@ export function AdminDashboard() {
           <div 
             className={`px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 ${
               selectedId === dept.id 
-                ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md' 
+                ? 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md' 
                 : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`} 
             onClick={() => setSelectedId(dept.id)}
@@ -67,7 +67,7 @@ export function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] rounded-2xl p-8 text-white shadow-lg">
+          <div className="bg-gradient-to-r from-green-500 to-purple-600 rounded-2xl p-8 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2 flex items-center">
@@ -91,7 +91,7 @@ export function AdminDashboard() {
           {/* Departments Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="bg-gradient-to-r from-[#2e9d74] to-[#4ade80] px-6 py-4">
+              <div className="bg-gradient-to-r from-green-500 to-green-400 px-6 py-4">
                 <h3 className="text-lg font-semibold text-white">Departments</h3>
                 <p className="text-white/90 text-sm">Select a department to view details</p>
               </div>
@@ -152,7 +152,7 @@ export function AdminDashboard() {
                       <dd className="text-sm text-gray-900 dark:text-gray-100">
                         <div className="flex items-center">
                           <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 max-w-xs">
-                            <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] h-2.5 rounded-full" style={{ width: '75%' }}></div>
+                            <div className="bg-gradient-to-r from-green-500 to-purple-600 h-2.5 rounded-full" style={{ width: '75%' }}></div>
                           </div>
                           <span className="ml-3 font-medium">75%</span>
                         </div>

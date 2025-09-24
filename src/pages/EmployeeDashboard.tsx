@@ -146,7 +146,7 @@ export function EmployeeDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] rounded-2xl p-8 text-white shadow-lg">
+          <div className="bg-gradient-to-r from-green-500 to-purple-600 rounded-2xl p-8 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">
@@ -278,7 +278,7 @@ export function EmployeeDashboard() {
               )}
               <button 
                 onClick={() => navigate('/reports')} 
-                className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:from-[#259d6a] hover:to-[#7c3aed] transition-all duration-200 text-sm font-medium"
+                className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-green-500 to-purple-600 hover:from-green-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium"
               >
                 View Reports
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -307,7 +307,7 @@ export function EmployeeDashboard() {
             <div className="space-y-6">
             {/* Notifications */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="bg-gradient-to-r from-[#2e9d74] to-[#4ade80] px-6 py-4">
+              <div className="bg-gradient-to-r from-green-500 to-green-400 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <BellIcon className="h-5 w-5 text-white mr-2" />

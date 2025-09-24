@@ -162,10 +162,10 @@ export function TaskDetailModal({
                           <div className="text-xs text-red-500 mt-2">{warning}</div>
                         )}
                         {task.status !== 'completed' && <div className="flex space-x-2">
-                            {task.status === 'todo' && <button onClick={() => handleStatusChange('in-progress')} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-[#2e9d74] bg-[#e8f5f0] hover:bg-[#d1ebe3] dark:bg-[#22332c] dark:hover:bg-[#1a2821] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
+                            {task.status === 'todo' && <button onClick={() => handleStatusChange('in-progress')} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-[#2e9d74] bg-[#e8f5f0] hover:bg-[#d1ebe3] dark:bg-[#22332c] dark:hover:bg-[#1a2821] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Start
                               </button>}
-                            <button onClick={() => handleStatusChange('completed')} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
+                            <button onClick={() => handleStatusChange('completed')} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                               <CheckIcon className="h-4 w-4 mr-1" />
                               Complete
                             </button>
@@ -189,7 +189,7 @@ export function TaskDetailModal({
                             <span className="text-gray-600 dark:text-gray-300">{completedSubtasks}/{totalSubtasks} completed</span>
                           </div>
                           <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2.5">
-                            <div className="bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                            <div className="bg-gradient-to-r from-green-500 to-purple-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
                           </div>
                         </div>
                       )}
@@ -222,7 +222,7 @@ export function TaskDetailModal({
             </div>
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white dark:bg-gray-900 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onClick={onClose}>
+            <button type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white dark:bg-gray-900 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onClick={onClose}>
               Close
             </button>
           </div>

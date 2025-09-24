@@ -99,7 +99,7 @@ export function SystemSettingsPage() {
           <p className="mt-1 text-sm text-gray-500">Configure LDAP integration and role permissions.</p>
         </div>
         <div className="mt-4 flex md:mt-0 md:ml-4">
-          <button onClick={handleSave} disabled={currentUser?.role !== 'superadmin'} className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${currentUser?.role === 'superadmin' ? 'bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]`}>
+          <button onClick={handleSave} disabled={currentUser?.role !== 'superadmin'} className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${currentUser?.role === 'superadmin' ? 'bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}>
             <SaveIcon className="h-5 w-5 mr-2" />
             Save Changes
           </button>
@@ -116,12 +116,12 @@ export function SystemSettingsPage() {
           <div className="px-4 py-5 sm:p-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Host</label>
-              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.host} onChange={e => setLdap({ ...ldap, host: e.target.value })} />
+              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.host} onChange={e => setLdap({ ...ldap, host: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Port</label>
-                <input disabled={currentUser?.role !== 'superadmin'} type="number" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.port} onChange={e => setLdap({ ...ldap, port: Number(e.target.value) })} />
+                <input disabled={currentUser?.role !== 'superadmin'} type="number" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.port} onChange={e => setLdap({ ...ldap, port: Number(e.target.value) })} />
               </div>
               <div className="flex items-end">
                 <label className="inline-flex items-center text-sm text-gray-700">
@@ -132,21 +132,21 @@ export function SystemSettingsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Base DN</label>
-              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.baseDN} onChange={e => setLdap({ ...ldap, baseDN: e.target.value })} />
+              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.baseDN} onChange={e => setLdap({ ...ldap, baseDN: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Bind DN</label>
-                <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.bindDN} onChange={e => setLdap({ ...ldap, bindDN: e.target.value })} />
+                <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.bindDN} onChange={e => setLdap({ ...ldap, bindDN: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Bind Password</label>
-                <input disabled={currentUser?.role !== 'superadmin'} type="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.bindPassword} onChange={e => setLdap({ ...ldap, bindPassword: e.target.value })} />
+                <input disabled={currentUser?.role !== 'superadmin'} type="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.bindPassword} onChange={e => setLdap({ ...ldap, bindPassword: e.target.value })} />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">User Filter</label>
-              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.userFilter} onChange={e => setLdap({ ...ldap, userFilter: e.target.value })} />
+              <input disabled={currentUser?.role !== 'superadmin'} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" value={ldap.userFilter} onChange={e => setLdap({ ...ldap, userFilter: e.target.value })} />
               <p className="text-xs text-gray-500 mt-1">Use {'{{email}}'} placeholder for login input.</p>
             </div>
             <div className="flex items-center justify-between pt-2">
@@ -156,7 +156,7 @@ export function SystemSettingsPage() {
               <button
                 onClick={handleLdapSync}
                 disabled={isSyncing || (currentUser?.role !== 'admin')}
-                className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium border ${isSyncing || (currentUser?.role !== 'admin') ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'border-transparent text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90'}`}
+                className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium border ${isSyncing || (currentUser?.role !== 'admin') ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'border-transparent text-white bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90'}`}
               >
                 {isSyncing ? 'Syncing…' : 'Sync Users from LDAP'}
               </button>
@@ -202,7 +202,7 @@ export function SystemSettingsPage() {
             {/* Add new permission */}
             <div className="flex items-center space-x-2">
               <KeyIcon className="h-4 w-4 text-gray-500" />
-              <input disabled={currentUser?.role !== 'superadmin'} placeholder="Add permission key (e.g., manage_system)" className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" onKeyDown={e => {
+              <input disabled={currentUser?.role !== 'superadmin'} placeholder="Add permission key (e.g., manage_system)" className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm disabled:bg-gray-100" onKeyDown={e => {
                 if (e.key === 'Enter') {
                   const val = (e.target as HTMLInputElement).value.trim();
                   if (!val) return;

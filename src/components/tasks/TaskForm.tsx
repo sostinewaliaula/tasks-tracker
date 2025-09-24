@@ -79,7 +79,7 @@ export function TaskForm({
           <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
             Create New Task
           </h3>
-          <button type="button" onClick={onCancel} className="inline-flex items-center p-1.5 border border-transparent rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
+          <button type="button" onClick={onCancel} className="inline-flex items-center p-1.5 border border-transparent rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
             <XIcon className="h-5 w-5" />
           </button>
         </div>
@@ -89,7 +89,7 @@ export function TaskForm({
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Title
               </label>
-              <input type="text" name="title" id="title" required className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={title} onChange={e => setTitle(e.target.value)} />
+              <input type="text" name="title" id="title" required className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={title} onChange={e => setTitle(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -99,7 +99,7 @@ export function TaskForm({
                 <input
                   type="text"
                   placeholder="Add a subtask title"
-                  className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   value={subtaskDraft}
                   onChange={e => setSubtaskDraft(e.target.value)}
                 />
@@ -127,7 +127,7 @@ export function TaskForm({
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Status
               </label>
-              <select id="status" name="status" className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={status} onChange={e => setStatus(e.target.value as any)}>
+              <select id="status" name="status" className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={status} onChange={e => setStatus(e.target.value as any)}>
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
                 <option value="completed">Completed</option>
@@ -139,7 +139,7 @@ export function TaskForm({
                 <label htmlFor="blockerReason" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Blocker Reason
                 </label>
-                <input type="text" id="blockerReason" name="blockerReason" required={status === 'blocker'} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={blockerReason} onChange={e => setBlockerReason(e.target.value)} />
+                <input type="text" id="blockerReason" name="blockerReason" required={status === 'blocker'} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={blockerReason} onChange={e => setBlockerReason(e.target.value)} />
               </div>
             )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -147,7 +147,7 @@ export function TaskForm({
                 <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Deadline (This Week)
                 </label>
-                <input type="date" name="deadline" id="deadline" required min={min} max={max} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={deadline} onChange={e => setDeadline(e.target.value)} />
+                <input type="date" name="deadline" id="deadline" required min={min} max={max} className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={deadline} onChange={e => setDeadline(e.target.value)} />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                   Tasks must be completed within this week (Monday-Friday)
                 </p>
@@ -156,7 +156,7 @@ export function TaskForm({
                 <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Priority
                 </label>
-                <select id="priority" name="priority" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={priority} onChange={e => setPriority(e.target.value as TaskPriority)}>
+                <select id="priority" name="priority" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-green-500 focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={priority} onChange={e => setPriority(e.target.value as TaskPriority)}>
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
                   <option value="low">Low</option>
@@ -165,10 +165,10 @@ export function TaskForm({
             </div>
           </div>
           <div className="mt-5 sm:flex sm:flex-row-reverse">
-            <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] text-base font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74] sm:ml-3 sm:w-auto sm:text-sm">
+            <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-green-500 to-purple-600 text-base font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
               Create Task
             </button>
-            <button type="button" onClick={onCancel} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white dark:bg-gray-900 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74] sm:mt-0 sm:w-auto sm:text-sm">
+            <button type="button" onClick={onCancel} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white dark:bg-gray-900 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:w-auto sm:text-sm">
               Cancel
             </button>
           </div>

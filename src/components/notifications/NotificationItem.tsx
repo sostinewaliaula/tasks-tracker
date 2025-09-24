@@ -41,7 +41,7 @@ export function NotificationItem({
         {/* Notification indicator */}
         <div className="flex-shrink-0 mt-1">
           {!notification.read ? (
-            <div className="w-2 h-2 bg-gradient-to-r from-[#2e9d74] to-[#4ade80] rounded-full"></div>
+            <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-purple-600 rounded-full"></div>
           ) : (
             <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
           )}
@@ -72,7 +72,7 @@ export function NotificationItem({
               e.stopPropagation();
               onRead();
             }} 
-            className="flex-shrink-0 p-1 rounded-full text-[#2e9d74] dark:text-[#4ade80] hover:bg-[#2e9d74]/10 dark:hover:bg-[#4ade80]/10 transition-colors duration-200 opacity-0 group-hover:opacity-100"
+            className="flex-shrink-0 p-1 rounded-full text-green-500 dark:text-green-400 hover:bg-green-500/10 dark:hover:bg-green-400/10 transition-colors duration-200 opacity-0 group-hover:opacity-100"
             title="Mark as read"
           >
             <CheckIcon className="h-4 w-4" />

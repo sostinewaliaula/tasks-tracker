@@ -42,7 +42,7 @@ export function LoginPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2e9d74] via-[#4a9d74] to-[#8c52ff] dark:from-[#0f172a] dark:via-[#0b1220] dark:to-[#111827] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-500 via-green-600 to-purple-600 dark:from-[#0f172a] dark:via-[#0b1220] dark:to-[#111827] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20 dark:opacity-10">
         <div className="absolute inset-0" style={{
@@ -153,7 +153,7 @@ export function LoginPage() {
             {/* Sign In Button */}
             <button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] text-white py-3 px-4 rounded-lg font-medium hover:from-[#258a5f] hover:to-[#7a47e6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74] transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-green-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
             >
               Sign In
             </button>

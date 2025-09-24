@@ -186,7 +186,7 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: AnyTask[]; fi
     }
   };
   return <div className="relative inline-block text-left">
-    <button type="button" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]" onClick={() => setOpen(v => !v)}>
+    <button type="button" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" onClick={() => setOpen(v => !v)}>
       <DownloadIcon className="h-5 w-5 mr-2" />
       Export
       <ChevronDownIcon className="h-5 w-5 ml-2" />

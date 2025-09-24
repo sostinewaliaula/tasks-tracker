@@ -94,7 +94,7 @@ export function TaskStats({
       {/* Charts Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#2e9d74] to-[#4ade80] px-6 py-4">
+          <div className="bg-gradient-to-r from-green-500 to-green-400 px-6 py-4">
             <h3 className="text-lg font-semibold text-white">
               Task Status Overview
             </h3>
@@ -133,7 +133,7 @@ export function TaskStats({
         </div>
         
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#8c52ff] to-[#a855f7] px-6 py-4">
+          <div className="bg-gradient-to-r from-purple-600 to-purple-500 px-6 py-4">
             <h3 className="text-lg font-semibold text-white">
               Priority Distribution
             </h3>

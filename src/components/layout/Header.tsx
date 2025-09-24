@@ -40,10 +40,10 @@ export function Header() {
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#2e9d74] to-[#8c52ff] rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center">
                   <img src={logo} alt="Caava Group" className="h-6 w-6" />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-[#2e9d74] to-[#8c52ff] bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-green-500 to-purple-600 bg-clip-text text-transparent">
                   Tasks Tracker
                 </span>
               </div>
@@ -57,7 +57,7 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname.includes('dashboard')
-                    ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
@@ -72,7 +72,7 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname === '/tasks'
-                    ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
@@ -87,7 +87,7 @@ export function Header() {
                 }}
                 className={`${
                   location.pathname === '/my-reports'
-                    ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
               >
@@ -103,7 +103,7 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/reports'
-                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
@@ -120,7 +120,7 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/users'
-                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
@@ -137,7 +137,7 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/departments'
-                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
@@ -154,7 +154,7 @@ export function Header() {
                   }}
                   className={`${
                     location.pathname === '/settings'
-                      ? 'bg-gradient-to-r from-[#2e9d74] to-[#4ade80] text-white shadow-md'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
@@ -240,7 +240,7 @@ function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { nam
           <p className="text-sm font-medium text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-200">{name || 'User'}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{roleLabel}</p>
         </div>
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#2e9d74] to-[#8c52ff] flex items-center justify-center shadow-sm">
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-purple-600 flex items-center justify-center shadow-sm">
           <UserIcon className="h-4 w-4 text-white" />
         </div>
         <svg className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,7 +249,7 @@ function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { nam
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-64 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-xl z-50 overflow-hidden">
-          <div className="px-4 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-[#2e9d74]/5 to-[#8c52ff]/5">
+          <div className="px-4 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-green-500/5 to-purple-600/5">
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{name || 'User'}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{roleLabel}</p>
           </div>
@@ -258,14 +258,14 @@ function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { nam
               onClick={() => { setOpen(false); onProfile(); }} 
               className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
             >
-              <UserIcon className="h-4 w-4 mr-3 text-gray-400 group-hover:text-[#2e9d74] transition-colors duration-200" />
+              <UserIcon className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200" />
               Profile
             </button>
             <button 
               onClick={() => { setOpen(false); onSettings(); }} 
               className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
             >
-              <svg className="h-4 w-4 mr-3 text-gray-400 group-hover:text-[#2e9d74] transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
