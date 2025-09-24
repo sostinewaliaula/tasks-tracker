@@ -16,6 +16,176 @@ export function ReportsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+
+  const handleExport = (filteredTasks: any[], format: string, dateRange: string, statuses: string[]) => {
+    // Create export data
+    const exportData = filteredTasks.map(task => ({
+      'Task ID': task.id,
+      'Title': task.title,
+      'Description': task.description,
+      'Status': task.status,
+      'Department': task.department,
+      'Created By': task.createdBy,
+      'Deadline': new Date(task.deadline).toLocaleDateString(),
+      'Blocker Reason': task.blockerReason || '',
+      'Subtasks Count': task.subtasks?.length || 0
+    }));
+
+    if (format === 'CSV') {
+      // Convert to CSV
+      const headers = Object.keys(exportData[0] || {});
+      const csvContent = [
+        headers.join(','),
+        ...exportData.map(row => 
+          headers.map(header => {
+            const value = row[header] || '';
+            // Escape commas and quotes in CSV
+            return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+              ? `"${value.replace(/"/g, '""')}"` 
+              : value;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Download CSV
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `tasks-export-${dateRange}-${format.toLowerCase()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (format === 'Excel') {
+      // For Excel, we'll create a simple CSV that can be opened in Excel
+      const headers = Object.keys(exportData[0] || {});
+      const csvContent = [
+        headers.join('\t'),
+        ...exportData.map(row => 
+          headers.map(header => row[header] || '').join('\t')
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `tasks-export-${dateRange}-${format.toLowerCase()}.xls`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (format === 'PDF') {
+      // For PDF, we'll create a simple HTML table and use browser print
+      const tableHtml = `
+        <html>
+          <head>
+            <title>Tasks Export - ${dateRange}</title>
+            <style>
+              @page { size: A4 portrait; margin: 20mm; }
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+              th { background-color: #2e9d74; color: white; font-weight: bold; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .summary { margin-bottom: 20px; }
+              tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Tasks Export Report</h1>
+              <p>Date Range: ${dateRange}</p>
+              <p>Statuses: ${statuses.join(', ')}</p>
+              <p>Total Tasks: ${exportData.length}</p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  ${Object.keys(exportData[0] || {}).map(header => `<th>${header}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${exportData.map(row => 
+                  `<tr>${Object.values(row).map(value => `<td>${value || ''}</td>`).join('')}</tr>`
+                ).join('')}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(tableHtml);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 250);
+      }
+    } else if (format === 'Word') {
+      const wordHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Tasks Export - ${dateRange}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .title { font-size: 24px; font-weight: bold; color: #2e9d74; margin-bottom: 10px; }
+            .summary { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+            .summary-item { margin: 5px 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #2e9d74; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">Tasks Export Report</div>
+            <div>Generated on ${new Date().toLocaleDateString()}</div>
+          </div>
+          
+          <div class="summary">
+            <div class="summary-item"><strong>Date Range:</strong> ${dateRange}</div>
+            <div class="summary-item"><strong>Statuses:</strong> ${statuses.join(', ')}</div>
+            <div class="summary-item"><strong>Total Tasks:</strong> ${exportData.length}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                ${Object.keys(exportData[0] || {}).map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${exportData.map(row => 
+                `<tr>${Object.values(row).map(value => `<td>${value || ''}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      const blob = new Blob([wordHtml], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tasks-export-${dateRange.toLowerCase().replace(/\s+/g, '-')}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    alert(`Export completed! ${exportData.length} tasks exported as ${format} for ${dateRange}`);
+  };
+
   if (!currentUser) {
     return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="card">
@@ -226,7 +396,10 @@ export function ReportsPage() {
           </p>
         </div>
         <div className="mt-4 flex md:mt-0 md:ml-4">
-          <ExportOptions />
+          <ExportOptions 
+            tasks={tasks} 
+            onExport={handleExport} 
+          />
         </div>
       </div>
       <div className="card mb-6">
