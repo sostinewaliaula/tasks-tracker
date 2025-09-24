@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BellIcon, LogOutIcon, UserIcon, SettingsIcon, LayoutDashboardIcon, CheckSquareIcon, BarChart3Icon, UsersIcon, BuildingIcon, ShieldIcon } from 'lucide-react';
+import { BellIcon, LogOutIcon, UserIcon, SettingsIcon, LayoutDashboardIcon, CheckSquareIcon, BarChart3Icon, UsersIcon, BuildingIcon, ShieldIcon, MenuIcon, XIcon } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../components/auth/RBAC';
@@ -10,6 +10,7 @@ import { useDarkMode } from '../../context/DarkModeContext';
 
 export function Header() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { notifications } = useTask();
   const { logout, currentUser } = useAuth();
   const { isAdmin, isManager } = usePermissions();
@@ -17,6 +18,24 @@ export function Header() {
   const location = useLocation();
   const unreadCount = notifications.filter(n => !n.read).length;
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
+    }
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
   const formatDisplayName = (name?: string) => {
     if (!name) return '';
     const cleaned = name.replace(/[._]+/g, ' ').trim();
@@ -37,18 +56,41 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
+          {/* Left side - Mobile menu button and Logo/Brand */}
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <img src={logo} alt="Caava Group" className="h-6 w-6" />
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-green-500 to-purple-600 bg-clip-text text-transparent">
-                  Tasks Tracker
-                </span>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 mr-2"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? (
+                <XIcon className="h-6 w-6" />
+              ) : (
+                <MenuIcon className="h-6 w-6" />
+              )}
+            </button>
+
+            {/* Logo and Brand - Clickable */}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsNotificationsOpen(false);
+                navigate(isManager ? '/manager/dashboard' : '/dashboard');
+              }}
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200 group"
+              aria-label="Go to dashboard"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                <img src={logo} alt="Caava Group" className="h-6 w-6" />
               </div>
-            </div>
-            <nav className="ml-8 flex space-x-1">
+              <span className="text-xl font-bold bg-gradient-to-r from-green-500 to-purple-600 bg-clip-text text-transparent group-hover:from-green-600 group-hover:to-purple-700 transition-all duration-200">
+                Tasks Tracker
+              </span>
+            </button>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:ml-8 lg:flex lg:space-x-1">
               {/* Dashboard - based on role */}
               <button
                 onClick={() => {
@@ -208,6 +250,7 @@ export function Header() {
             </nav>
           </div>
 
+          {/* Right side controls */}
           <div className="flex items-center space-x-2">
             {/* Notifications */}
             <div className="relative">
@@ -261,6 +304,179 @@ export function Header() {
             />
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-16 left-4 z-50" ref={mobileMenuRef}>
+            <div className="px-3 pt-3 pb-3 space-y-1 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-fit min-w-48">
+              {/* Dashboard */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsNotificationsOpen(false);
+                  navigate(isManager ? '/manager/dashboard' : '/dashboard');
+                }}
+                className={`${
+                  location.pathname.includes('dashboard')
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <LayoutDashboardIcon className="h-4 w-4 mr-2" />
+                Dashboard
+              </button>
+
+              {/* Tasks */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsNotificationsOpen(false);
+                  navigate('/tasks');
+                }}
+                className={`${
+                  location.pathname === '/tasks'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <CheckSquareIcon className="h-4 w-4 mr-2" />
+                Tasks
+              </button>
+
+              {/* My Reports */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsNotificationsOpen(false);
+                  navigate('/my-reports');
+                }}
+                className={`${
+                  location.pathname === '/my-reports'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <BarChart3Icon className="h-4 w-4 mr-2" />
+                My Reports
+              </button>
+
+              {/* Notifications */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsNotificationsOpen(false);
+                  navigate('/notifications');
+                }}
+                className={`${
+                  location.pathname === '/notifications'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <BellIcon className="h-4 w-4 mr-2" />
+                Notifications
+                {unreadCount > 0 && (
+                  <span className="ml-2 h-4 w-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* User Settings */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsNotificationsOpen(false);
+                  navigate('/user-settings');
+                }}
+                className={`${
+                  location.pathname === '/user-settings'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                Settings
+              </button>
+
+              {/* Reports - managers and admins only */}
+              {(isManager || isAdmin) && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotificationsOpen(false);
+                    navigate('/reports');
+                  }}
+                  className={`${
+                    location.pathname === '/reports'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <BarChart3Icon className="h-4 w-4 mr-2" />
+                  Reports
+                </button>
+              )}
+
+              {/* Users - admin only */}
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotificationsOpen(false);
+                    navigate('/users');
+                  }}
+                  className={`${
+                    location.pathname === '/users'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <UsersIcon className="h-4 w-4 mr-2" />
+                  Users
+                </button>
+              )}
+
+              {/* Departments - managers and admins only */}
+              {(isManager || isAdmin) && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotificationsOpen(false);
+                    navigate('/departments');
+                  }}
+                  className={`${
+                    location.pathname === '/departments'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <BuildingIcon className="h-4 w-4 mr-2" />
+                  Departments
+                </button>
+              )}
+
+              {/* System Settings - admin only */}
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotificationsOpen(false);
+                    navigate('/settings');
+                  }}
+                  className={`${
+                    location.pathname === '/settings'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <ShieldIcon className="h-4 w-4 mr-2" />
+                  System Settings
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
