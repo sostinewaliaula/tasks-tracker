@@ -15,6 +15,7 @@ import authRouter from './routes/auth';
 import departmentsRouter from './routes/departments';
 import usersRouter from './routes/users';
 import tasksRouter from './routes/tasks';
+import userRouter from './routes/user';
 import { authMiddleware } from './middleware/auth';
 
 const app = express();
@@ -32,11 +33,20 @@ app.use('/api/departments', departmentsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/reports', reportsRouter);
+app.use('/api/user', userRouter);
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {
         const user = await prisma.user.findUnique({
-            where: { id: (req as any).user.id }
+            where: { id: (req as any).user.id },
+            include: {
+                department: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
         });
         
         if (!user) {
@@ -50,7 +60,22 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
                 email: user.email,
                 role: user.role,
                 department_id: user.departmentId?.toString() || '',
-                ldap_uid: user.ldapUid
+                department: user.department?.name || '',
+                ldap_uid: user.ldapUid,
+                phone: user.phone,
+                bio: user.bio,
+                language: user.language,
+                timezone: user.timezone,
+                darkMode: user.darkMode,
+                emailNotifications: user.emailNotifications,
+                taskAssigned: user.taskAssigned,
+                taskCompleted: user.taskCompleted,
+                taskOverdue: user.taskOverdue,
+                taskDeadline: user.taskDeadline,
+                weeklyReport: user.weeklyReport,
+                showEmail: user.showEmail,
+                showPhone: user.showPhone,
+                showBio: user.showBio
             }
         });
     } catch (error) {

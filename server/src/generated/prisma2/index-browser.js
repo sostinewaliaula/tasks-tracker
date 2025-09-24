@@ -127,6 +127,20 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   role: 'role',
   departmentId: 'departmentId',
+  phone: 'phone',
+  bio: 'bio',
+  language: 'language',
+  timezone: 'timezone',
+  darkMode: 'darkMode',
+  emailNotifications: 'emailNotifications',
+  taskAssigned: 'taskAssigned',
+  taskCompleted: 'taskCompleted',
+  taskOverdue: 'taskOverdue',
+  taskDeadline: 'taskDeadline',
+  weeklyReport: 'weeklyReport',
+  showEmail: 'showEmail',
+  showPhone: 'showPhone',
+  showBio: 'showBio',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -172,7 +186,11 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
   ldapUid: 'ldapUid',
   email: 'email',
-  name: 'name'
+  name: 'name',
+  phone: 'phone',
+  bio: 'bio',
+  language: 'language',
+  timezone: 'timezone'
 };
 
 exports.Prisma.DepartmentOrderByRelevanceFieldEnum = {

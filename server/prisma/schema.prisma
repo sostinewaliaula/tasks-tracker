@@ -32,6 +32,29 @@ model User {
   department   Department? @relation(fields: [departmentId], references: [id])
   managingDepartments Department[] @relation("DepartmentManager")
   tasksCreated Task[]
+  
+  // Profile fields
+  phone        String?
+  bio          String?
+  
+  // Preferences
+  language     String      @default("en")
+  timezone     String      @default("UTC")
+  darkMode     Boolean     @default(false)
+  
+  // Notification preferences
+  emailNotifications Boolean @default(true)
+  taskAssigned       Boolean @default(true)
+  taskCompleted      Boolean @default(true)
+  taskOverdue        Boolean @default(true)
+  taskDeadline       Boolean @default(true)
+  weeklyReport       Boolean @default(true)
+  
+  // Privacy settings
+  showEmail    Boolean     @default(true)
+  showPhone    Boolean     @default(false)
+  showBio      Boolean     @default(true)
+  
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BellIcon, LogOutIcon, UserIcon } from 'lucide-react';
+import { BellIcon, LogOutIcon, UserIcon, SettingsIcon } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../components/auth/RBAC';
@@ -98,6 +98,22 @@ export function Header() {
                     {unreadCount}
                   </span>
                 )}
+              </button>
+
+              {/* User Settings - available to all */}
+              <button
+                onClick={() => {
+                  setIsNotificationsOpen(false);
+                  navigate('/user-settings');
+                }}
+                className={`${
+                  location.pathname === '/user-settings'
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+              >
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                Settings
               </button>
 
               {/* My Reports - available to all */}
@@ -233,6 +249,8 @@ export function Header() {
               onLogout={() => { logout(); navigate('/login'); }}
               onProfile={() => navigate('/profile')}
               onSettings={() => navigate('/settings')}
+              onUserSettings={() => navigate('/user-settings')}
+              isAdmin={isAdmin}
             />
           </div>
         </div>
@@ -241,7 +259,7 @@ export function Header() {
   );
 }
 
-function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onSettings: () => void; }) {
+function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings, onUserSettings, isAdmin }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onSettings: () => void; onUserSettings: () => void; isAdmin: boolean; }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -283,15 +301,26 @@ function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings }: { nam
               Profile
             </button>
             <button 
-              onClick={() => { setOpen(false); onSettings(); }} 
+              onClick={() => { setOpen(false); onUserSettings(); }} 
               className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
             >
               <svg className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Settings
+              User Settings
             </button>
+            {isAdmin && (
+              <button 
+                onClick={() => { setOpen(false); onSettings(); }} 
+                className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
+              >
+                <svg className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                System Settings
+              </button>
+            )}
             <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-1"></div>
             <button 
               onClick={() => { setOpen(false); onLogout(); }} 

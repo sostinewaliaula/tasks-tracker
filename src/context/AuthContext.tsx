@@ -5,14 +5,30 @@ type User = {
   name: string;
   role: 'admin' | 'manager' | 'employee';
   department_id: string;
+  department: string;
   email: string;
   ldap_uid: string;
+  phone?: string;
+  bio?: string;
+  language: string;
+  timezone: string;
+  darkMode: boolean;
+  emailNotifications: boolean;
+  taskAssigned: boolean;
+  taskCompleted: boolean;
+  taskOverdue: boolean;
+  taskDeadline: boolean;
+  weeklyReport: boolean;
+  showEmail: boolean;
+  showPhone: boolean;
+  showBio: boolean;
 };
 
 type AuthContextType = {
   currentUser: User | null;
   login: (username: string, password: string) => Promise<User>;
   logout: () => void;
+  updateUser: (user: User) => void;
   isAuthenticated: boolean;
   token?: string | null;
 };
@@ -68,6 +84,10 @@ export function AuthProvider({
       localStorage.removeItem('auth_token');
     };
 
+  const updateUser = (user: User) => {
+    setCurrentUser(user);
+  };
+
     // Effect to check token validity on mount and set up interceptor
     React.useEffect(() => {
       if (token) {
@@ -97,6 +117,7 @@ export function AuthProvider({
           currentUser,
           login,
           logout,
+          updateUser,
           isAuthenticated: !!currentUser,
           token
         }}

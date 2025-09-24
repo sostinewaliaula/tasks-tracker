@@ -11,6 +11,7 @@ import { UsersPage } from './pages/UsersPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { LoginPage } from './pages/LoginPage';
 import { SystemSettingsPage } from './pages/SystemSettingsPage';
+import { UserSettingsPage } from './pages/UserSettingsPage';
 import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { Header } from './components/layout/Header';
 import { RBAC } from './components/auth/RBAC';
@@ -82,6 +83,12 @@ function AppContent() {
             }
           />
           
+          {/* User Settings - Available to all authenticated users */}
+          <Route
+            path="/user-settings"
+            element={<UserSettingsPage />}
+          />
+
           {/* Admin Routes */}
           <Route
             path="/settings"

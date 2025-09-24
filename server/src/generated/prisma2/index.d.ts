@@ -1207,6 +1207,20 @@ export namespace Prisma {
     name: string | null
     role: $Enums.Role | null
     departmentId: number | null
+    phone: string | null
+    bio: string | null
+    language: string | null
+    timezone: string | null
+    darkMode: boolean | null
+    emailNotifications: boolean | null
+    taskAssigned: boolean | null
+    taskCompleted: boolean | null
+    taskOverdue: boolean | null
+    taskDeadline: boolean | null
+    weeklyReport: boolean | null
+    showEmail: boolean | null
+    showPhone: boolean | null
+    showBio: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1218,6 +1232,20 @@ export namespace Prisma {
     name: string | null
     role: $Enums.Role | null
     departmentId: number | null
+    phone: string | null
+    bio: string | null
+    language: string | null
+    timezone: string | null
+    darkMode: boolean | null
+    emailNotifications: boolean | null
+    taskAssigned: boolean | null
+    taskCompleted: boolean | null
+    taskOverdue: boolean | null
+    taskDeadline: boolean | null
+    weeklyReport: boolean | null
+    showEmail: boolean | null
+    showPhone: boolean | null
+    showBio: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1229,6 +1257,20 @@ export namespace Prisma {
     name: number
     role: number
     departmentId: number
+    phone: number
+    bio: number
+    language: number
+    timezone: number
+    darkMode: number
+    emailNotifications: number
+    taskAssigned: number
+    taskCompleted: number
+    taskOverdue: number
+    taskDeadline: number
+    weeklyReport: number
+    showEmail: number
+    showPhone: number
+    showBio: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -1252,6 +1294,20 @@ export namespace Prisma {
     name?: true
     role?: true
     departmentId?: true
+    phone?: true
+    bio?: true
+    language?: true
+    timezone?: true
+    darkMode?: true
+    emailNotifications?: true
+    taskAssigned?: true
+    taskCompleted?: true
+    taskOverdue?: true
+    taskDeadline?: true
+    weeklyReport?: true
+    showEmail?: true
+    showPhone?: true
+    showBio?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1263,6 +1319,20 @@ export namespace Prisma {
     name?: true
     role?: true
     departmentId?: true
+    phone?: true
+    bio?: true
+    language?: true
+    timezone?: true
+    darkMode?: true
+    emailNotifications?: true
+    taskAssigned?: true
+    taskCompleted?: true
+    taskOverdue?: true
+    taskDeadline?: true
+    weeklyReport?: true
+    showEmail?: true
+    showPhone?: true
+    showBio?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1274,6 +1344,20 @@ export namespace Prisma {
     name?: true
     role?: true
     departmentId?: true
+    phone?: true
+    bio?: true
+    language?: true
+    timezone?: true
+    darkMode?: true
+    emailNotifications?: true
+    taskAssigned?: true
+    taskCompleted?: true
+    taskOverdue?: true
+    taskDeadline?: true
+    weeklyReport?: true
+    showEmail?: true
+    showPhone?: true
+    showBio?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1372,6 +1456,20 @@ export namespace Prisma {
     name: string
     role: $Enums.Role
     departmentId: number | null
+    phone: string | null
+    bio: string | null
+    language: string
+    timezone: string
+    darkMode: boolean
+    emailNotifications: boolean
+    taskAssigned: boolean
+    taskCompleted: boolean
+    taskOverdue: boolean
+    taskDeadline: boolean
+    weeklyReport: boolean
+    showEmail: boolean
+    showPhone: boolean
+    showBio: boolean
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -1402,6 +1500,20 @@ export namespace Prisma {
     name?: boolean
     role?: boolean
     departmentId?: boolean
+    phone?: boolean
+    bio?: boolean
+    language?: boolean
+    timezone?: boolean
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     department?: boolean | User$departmentArgs<ExtArgs>
@@ -1419,11 +1531,25 @@ export namespace Prisma {
     name?: boolean
     role?: boolean
     departmentId?: boolean
+    phone?: boolean
+    bio?: boolean
+    language?: boolean
+    timezone?: boolean
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ldapUid" | "email" | "name" | "role" | "departmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ldapUid" | "email" | "name" | "role" | "departmentId" | "phone" | "bio" | "language" | "timezone" | "darkMode" | "emailNotifications" | "taskAssigned" | "taskCompleted" | "taskOverdue" | "taskDeadline" | "weeklyReport" | "showEmail" | "showPhone" | "showBio" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     department?: boolean | User$departmentArgs<ExtArgs>
     managingDepartments?: boolean | User$managingDepartmentsArgs<ExtArgs>
@@ -1445,6 +1571,20 @@ export namespace Prisma {
       name: string
       role: $Enums.Role
       departmentId: number | null
+      phone: string | null
+      bio: string | null
+      language: string
+      timezone: string
+      darkMode: boolean
+      emailNotifications: boolean
+      taskAssigned: boolean
+      taskCompleted: boolean
+      taskOverdue: boolean
+      taskDeadline: boolean
+      weeklyReport: boolean
+      showEmail: boolean
+      showPhone: boolean
+      showBio: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -1825,6 +1965,20 @@ export namespace Prisma {
     readonly name: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
     readonly departmentId: FieldRef<"User", 'Int'>
+    readonly phone: FieldRef<"User", 'String'>
+    readonly bio: FieldRef<"User", 'String'>
+    readonly language: FieldRef<"User", 'String'>
+    readonly timezone: FieldRef<"User", 'String'>
+    readonly darkMode: FieldRef<"User", 'Boolean'>
+    readonly emailNotifications: FieldRef<"User", 'Boolean'>
+    readonly taskAssigned: FieldRef<"User", 'Boolean'>
+    readonly taskCompleted: FieldRef<"User", 'Boolean'>
+    readonly taskOverdue: FieldRef<"User", 'Boolean'>
+    readonly taskDeadline: FieldRef<"User", 'Boolean'>
+    readonly weeklyReport: FieldRef<"User", 'Boolean'>
+    readonly showEmail: FieldRef<"User", 'Boolean'>
+    readonly showPhone: FieldRef<"User", 'Boolean'>
+    readonly showBio: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -4558,6 +4712,20 @@ export namespace Prisma {
     name: 'name',
     role: 'role',
     departmentId: 'departmentId',
+    phone: 'phone',
+    bio: 'bio',
+    language: 'language',
+    timezone: 'timezone',
+    darkMode: 'darkMode',
+    emailNotifications: 'emailNotifications',
+    taskAssigned: 'taskAssigned',
+    taskCompleted: 'taskCompleted',
+    taskOverdue: 'taskOverdue',
+    taskDeadline: 'taskDeadline',
+    weeklyReport: 'weeklyReport',
+    showEmail: 'showEmail',
+    showPhone: 'showPhone',
+    showBio: 'showBio',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -4618,7 +4786,11 @@ export namespace Prisma {
   export const UserOrderByRelevanceFieldEnum: {
     ldapUid: 'ldapUid',
     email: 'email',
-    name: 'name'
+    name: 'name',
+    phone: 'phone',
+    bio: 'bio',
+    language: 'language',
+    timezone: 'timezone'
   };
 
   export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -4668,6 +4840,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -4685,13 +4864,6 @@ export namespace Prisma {
    * Reference to a field of type 'TaskStatus'
    */
   export type EnumTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -4715,6 +4887,20 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
     departmentId?: IntNullableFilter<"User"> | number | null
+    phone?: StringNullableFilter<"User"> | string | null
+    bio?: StringNullableFilter<"User"> | string | null
+    language?: StringFilter<"User"> | string
+    timezone?: StringFilter<"User"> | string
+    darkMode?: BoolFilter<"User"> | boolean
+    emailNotifications?: BoolFilter<"User"> | boolean
+    taskAssigned?: BoolFilter<"User"> | boolean
+    taskCompleted?: BoolFilter<"User"> | boolean
+    taskOverdue?: BoolFilter<"User"> | boolean
+    taskDeadline?: BoolFilter<"User"> | boolean
+    weeklyReport?: BoolFilter<"User"> | boolean
+    showEmail?: BoolFilter<"User"> | boolean
+    showPhone?: BoolFilter<"User"> | boolean
+    showBio?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
@@ -4729,6 +4915,20 @@ export namespace Prisma {
     name?: SortOrder
     role?: SortOrder
     departmentId?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    bio?: SortOrderInput | SortOrder
+    language?: SortOrder
+    timezone?: SortOrder
+    darkMode?: SortOrder
+    emailNotifications?: SortOrder
+    taskAssigned?: SortOrder
+    taskCompleted?: SortOrder
+    taskOverdue?: SortOrder
+    taskDeadline?: SortOrder
+    weeklyReport?: SortOrder
+    showEmail?: SortOrder
+    showPhone?: SortOrder
+    showBio?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     department?: DepartmentOrderByWithRelationInput
@@ -4747,6 +4947,20 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
     departmentId?: IntNullableFilter<"User"> | number | null
+    phone?: StringNullableFilter<"User"> | string | null
+    bio?: StringNullableFilter<"User"> | string | null
+    language?: StringFilter<"User"> | string
+    timezone?: StringFilter<"User"> | string
+    darkMode?: BoolFilter<"User"> | boolean
+    emailNotifications?: BoolFilter<"User"> | boolean
+    taskAssigned?: BoolFilter<"User"> | boolean
+    taskCompleted?: BoolFilter<"User"> | boolean
+    taskOverdue?: BoolFilter<"User"> | boolean
+    taskDeadline?: BoolFilter<"User"> | boolean
+    weeklyReport?: BoolFilter<"User"> | boolean
+    showEmail?: BoolFilter<"User"> | boolean
+    showPhone?: BoolFilter<"User"> | boolean
+    showBio?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
@@ -4761,6 +4975,20 @@ export namespace Prisma {
     name?: SortOrder
     role?: SortOrder
     departmentId?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    bio?: SortOrderInput | SortOrder
+    language?: SortOrder
+    timezone?: SortOrder
+    darkMode?: SortOrder
+    emailNotifications?: SortOrder
+    taskAssigned?: SortOrder
+    taskCompleted?: SortOrder
+    taskOverdue?: SortOrder
+    taskDeadline?: SortOrder
+    weeklyReport?: SortOrder
+    showEmail?: SortOrder
+    showPhone?: SortOrder
+    showBio?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -4780,6 +5008,20 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"User"> | string
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     departmentId?: IntNullableWithAggregatesFilter<"User"> | number | null
+    phone?: StringNullableWithAggregatesFilter<"User"> | string | null
+    bio?: StringNullableWithAggregatesFilter<"User"> | string | null
+    language?: StringWithAggregatesFilter<"User"> | string
+    timezone?: StringWithAggregatesFilter<"User"> | string
+    darkMode?: BoolWithAggregatesFilter<"User"> | boolean
+    emailNotifications?: BoolWithAggregatesFilter<"User"> | boolean
+    taskAssigned?: BoolWithAggregatesFilter<"User"> | boolean
+    taskCompleted?: BoolWithAggregatesFilter<"User"> | boolean
+    taskOverdue?: BoolWithAggregatesFilter<"User"> | boolean
+    taskDeadline?: BoolWithAggregatesFilter<"User"> | boolean
+    weeklyReport?: BoolWithAggregatesFilter<"User"> | boolean
+    showEmail?: BoolWithAggregatesFilter<"User"> | boolean
+    showPhone?: BoolWithAggregatesFilter<"User"> | boolean
+    showBio?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -4987,6 +5229,20 @@ export namespace Prisma {
     email?: string | null
     name: string
     role?: $Enums.Role
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     department?: DepartmentCreateNestedOneWithoutUsersInput
@@ -5001,6 +5257,20 @@ export namespace Prisma {
     name: string
     role?: $Enums.Role
     departmentId?: number | null
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     managingDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
@@ -5012,6 +5282,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: DepartmentUpdateOneWithoutUsersNestedInput
@@ -5026,6 +5310,20 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     managingDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
@@ -5039,6 +5337,20 @@ export namespace Prisma {
     name: string
     role?: $Enums.Role
     departmentId?: number | null
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5048,6 +5360,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5059,6 +5385,20 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5323,6 +5663,11 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -5377,6 +5722,20 @@ export namespace Prisma {
     name?: SortOrder
     role?: SortOrder
     departmentId?: SortOrder
+    phone?: SortOrder
+    bio?: SortOrder
+    language?: SortOrder
+    timezone?: SortOrder
+    darkMode?: SortOrder
+    emailNotifications?: SortOrder
+    taskAssigned?: SortOrder
+    taskCompleted?: SortOrder
+    taskOverdue?: SortOrder
+    taskDeadline?: SortOrder
+    weeklyReport?: SortOrder
+    showEmail?: SortOrder
+    showPhone?: SortOrder
+    showBio?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5393,6 +5752,20 @@ export namespace Prisma {
     name?: SortOrder
     role?: SortOrder
     departmentId?: SortOrder
+    phone?: SortOrder
+    bio?: SortOrder
+    language?: SortOrder
+    timezone?: SortOrder
+    darkMode?: SortOrder
+    emailNotifications?: SortOrder
+    taskAssigned?: SortOrder
+    taskCompleted?: SortOrder
+    taskOverdue?: SortOrder
+    taskDeadline?: SortOrder
+    weeklyReport?: SortOrder
+    showEmail?: SortOrder
+    showPhone?: SortOrder
+    showBio?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5404,6 +5777,20 @@ export namespace Prisma {
     name?: SortOrder
     role?: SortOrder
     departmentId?: SortOrder
+    phone?: SortOrder
+    bio?: SortOrder
+    language?: SortOrder
+    timezone?: SortOrder
+    darkMode?: SortOrder
+    emailNotifications?: SortOrder
+    taskAssigned?: SortOrder
+    taskCompleted?: SortOrder
+    taskOverdue?: SortOrder
+    taskDeadline?: SortOrder
+    weeklyReport?: SortOrder
+    showEmail?: SortOrder
+    showPhone?: SortOrder
+    showBio?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5489,6 +5876,14 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -5582,11 +5977,6 @@ export namespace Prisma {
     in?: $Enums.TaskStatus[]
     notIn?: $Enums.TaskStatus[]
     not?: NestedEnumTaskStatusFilter<$PrismaModel> | $Enums.TaskStatus
-  }
-
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -5707,14 +6097,6 @@ export namespace Prisma {
     _max?: NestedEnumTaskStatusFilter<$PrismaModel>
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -5773,6 +6155,10 @@ export namespace Prisma {
 
   export type EnumRoleFieldUpdateOperationsInput = {
     set?: $Enums.Role
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -6059,10 +6445,6 @@ export namespace Prisma {
     set?: $Enums.TaskStatus
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
@@ -6182,6 +6564,11 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -6293,6 +6680,14 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -6319,11 +6714,6 @@ export namespace Prisma {
     in?: $Enums.TaskStatus[]
     notIn?: $Enums.TaskStatus[]
     not?: NestedEnumTaskStatusFilter<$PrismaModel> | $Enums.TaskStatus
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -6355,14 +6745,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTaskStatusFilter<$PrismaModel>
     _max?: NestedEnumTaskStatusFilter<$PrismaModel>
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6643,6 +7025,20 @@ export namespace Prisma {
     email?: string | null
     name: string
     role?: $Enums.Role
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     department?: DepartmentCreateNestedOneWithoutUsersInput
@@ -6656,6 +7052,20 @@ export namespace Prisma {
     name: string
     role?: $Enums.Role
     departmentId?: number | null
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6671,6 +7081,20 @@ export namespace Prisma {
     email?: string | null
     name: string
     role?: $Enums.Role
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     managingDepartments?: DepartmentCreateNestedManyWithoutManagerInput
@@ -6683,6 +7107,20 @@ export namespace Prisma {
     email?: string | null
     name: string
     role?: $Enums.Role
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     managingDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
@@ -6810,6 +7248,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: DepartmentUpdateOneWithoutUsersNestedInput
@@ -6823,6 +7275,20 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6854,6 +7320,20 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
     departmentId?: IntNullableFilter<"User"> | number | null
+    phone?: StringNullableFilter<"User"> | string | null
+    bio?: StringNullableFilter<"User"> | string | null
+    language?: StringFilter<"User"> | string
+    timezone?: StringFilter<"User"> | string
+    darkMode?: BoolFilter<"User"> | boolean
+    emailNotifications?: BoolFilter<"User"> | boolean
+    taskAssigned?: BoolFilter<"User"> | boolean
+    taskCompleted?: BoolFilter<"User"> | boolean
+    taskOverdue?: BoolFilter<"User"> | boolean
+    taskDeadline?: BoolFilter<"User"> | boolean
+    weeklyReport?: BoolFilter<"User"> | boolean
+    showEmail?: BoolFilter<"User"> | boolean
+    showPhone?: BoolFilter<"User"> | boolean
+    showBio?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
   }
@@ -6879,6 +7359,20 @@ export namespace Prisma {
     email?: string | null
     name: string
     role?: $Enums.Role
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     department?: DepartmentCreateNestedOneWithoutUsersInput
@@ -6892,6 +7386,20 @@ export namespace Prisma {
     name: string
     role?: $Enums.Role
     departmentId?: number | null
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     managingDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
@@ -7033,6 +7541,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: DepartmentUpdateOneWithoutUsersNestedInput
@@ -7046,6 +7568,20 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     departmentId?: NullableIntFieldUpdateOperationsInput | number | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     managingDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
@@ -7271,6 +7807,20 @@ export namespace Prisma {
     email?: string | null
     name: string
     role?: $Enums.Role
+    phone?: string | null
+    bio?: string | null
+    language?: string
+    timezone?: string
+    darkMode?: boolean
+    emailNotifications?: boolean
+    taskAssigned?: boolean
+    taskCompleted?: boolean
+    taskOverdue?: boolean
+    taskDeadline?: boolean
+    weeklyReport?: boolean
+    showEmail?: boolean
+    showPhone?: boolean
+    showBio?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -7327,6 +7877,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     managingDepartments?: DepartmentUpdateManyWithoutManagerNestedInput
@@ -7339,6 +7903,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     managingDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
@@ -7351,6 +7929,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    darkMode?: BoolFieldUpdateOperationsInput | boolean
+    emailNotifications?: BoolFieldUpdateOperationsInput | boolean
+    taskAssigned?: BoolFieldUpdateOperationsInput | boolean
+    taskCompleted?: BoolFieldUpdateOperationsInput | boolean
+    taskOverdue?: BoolFieldUpdateOperationsInput | boolean
+    taskDeadline?: BoolFieldUpdateOperationsInput | boolean
+    weeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    showEmail?: BoolFieldUpdateOperationsInput | boolean
+    showPhone?: BoolFieldUpdateOperationsInput | boolean
+    showBio?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
