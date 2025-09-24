@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/Toast';
 import { ShieldIcon, SettingsIcon, KeyIcon, ServerIcon, SaveIcon } from 'lucide-react';
 
 type LdapSettings = {
@@ -20,6 +21,7 @@ type RolePermissions = {
 
 export function SystemSettingsPage() {
   const { currentUser } = useAuth();
+  const { showToast } = useToast();
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [ldap, setLdap] = useState<LdapSettings>({
@@ -44,7 +46,7 @@ export function SystemSettingsPage() {
     console.log('Saving LDAP settings', ldap);
     // eslint-disable-next-line no-console
     console.log('Saving Role permissions', permissions);
-    alert('Settings saved (mock). Backend integration pending.');
+    showToast('Settings saved (mock). Backend integration pending.', 'info');
   };
 
   const handleLdapSync = async () => {
@@ -71,8 +73,10 @@ export function SystemSettingsPage() {
       }
       const synced = data?.synced ?? 0;
       setSyncMessage(`Synced ${synced} users from LDAP.`);
+      showToast(`Synced ${synced} users from LDAP.`, 'success');
     } catch (e: any) {
       setSyncMessage(e?.message || 'Sync failed');
+      showToast(e?.message || 'Sync failed', 'error');
     } finally {
       setIsSyncing(false);
     }

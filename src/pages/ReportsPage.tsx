@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
+import { useToast } from '../components/ui/Toast';
 import { DEPARTMENTS } from '../constants/departments';
 import { TaskStats } from '../components/dashboard/TaskStats';
 import { TeamPerformance } from '../components/reports/TeamPerformance';
@@ -11,6 +12,7 @@ import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tool
 export function ReportsPage() {
   const { currentUser } = useAuth();
   const { tasks } = useTask();
+  const { showToast } = useToast();
   const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('week');
   const [reportType, setReportType] = useState<'overview' | 'team' | 'trends' | 'blockers'>('overview');
   const [dateFrom, setDateFrom] = useState('');
@@ -183,7 +185,7 @@ export function ReportsPage() {
       URL.revokeObjectURL(url);
     }
 
-    alert(`Export completed! ${exportData.length} tasks exported as ${format} for ${dateRange}`);
+    showToast(`Export completed! ${exportData.length} tasks exported as ${format} for ${dateRange}`, 'success');
   };
 
   if (!currentUser) {

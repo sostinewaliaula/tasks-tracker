@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDarkMode } from '../context/DarkModeContext';
+import { useToast } from '../components/ui/Toast';
 import { 
   UserIcon, 
   SettingsIcon, 
@@ -42,6 +43,7 @@ type PrivacySettings = {
 export function UserSettingsPage() {
   const { currentUser, updateUser } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -145,8 +147,10 @@ export function UserSettingsPage() {
       const updatedUser = await response.json();
       updateUser(updatedUser);
       setSaveMessage('Profile updated successfully!');
+      showToast('Profile updated successfully!', 'success');
     } catch (error) {
       setSaveMessage('Failed to update profile. Please try again.');
+      showToast('Failed to update profile. Please try again.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -176,8 +180,10 @@ export function UserSettingsPage() {
       }
 
       setSaveMessage('Preferences saved successfully!');
+      showToast('Preferences saved successfully!', 'success');
     } catch (error) {
       setSaveMessage('Failed to save preferences. Please try again.');
+      showToast('Failed to save preferences. Please try again.', 'error');
     } finally {
       setIsSaving(false);
     }

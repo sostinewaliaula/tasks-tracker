@@ -1,4 +1,5 @@
 import React, { useState, createContext, useContext } from 'react';
+import { useToast } from '../components/ui/Toast';
 
 type User = {
   id: string;
@@ -42,6 +43,16 @@ export function AuthProvider({
 }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
+  
+  // Optional toast - only use if available
+  let showToast: ((message: string, type?: 'success' | 'error' | 'warning' | 'info', duration?: number) => void) | null = null;
+  try {
+    const toastContext = useToast();
+    showToast = toastContext.showToast;
+  } catch (error) {
+    // Toast provider not available, continue without toasts
+    showToast = null;
+  }
 
   const login = async (username: string, password: string): Promise<User> => {
     try {
@@ -71,9 +82,11 @@ export function AuthProvider({
       const me = await meRes.json();
       const fetchedUser: User = me.user;
       setCurrentUser(fetchedUser);
+      showToast?.('Login successful! Welcome back.', 'success');
       return fetchedUser;
     } catch (error) {
       console.error('Login error:', error);
+      showToast?.('Login failed. Please check your credentials.', 'error');
       throw new Error('Authentication failed');
     }
   };
@@ -82,6 +95,7 @@ export function AuthProvider({
       setCurrentUser(null);
       setToken(null);
       localStorage.removeItem('auth_token');
+      showToast?.('Logged out successfully!', 'info');
     };
 
   const updateUser = (user: User) => {

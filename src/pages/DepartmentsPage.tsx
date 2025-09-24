@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
 import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown } from 'lucide-react';
-import { DepartmentModal, ToastProvider, useToast } from '../components/departments/DepartmentModal';
+import { DepartmentModal } from '../components/departments/DepartmentModal';
+import { ToastProvider, useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
   id: number;

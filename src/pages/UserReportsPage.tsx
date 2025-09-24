@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask, Task } from '../context/TaskContext';
+import { useToast } from '../components/ui/Toast';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { AlertCircleIcon, ClockIcon } from 'lucide-react';
 import { UserExportButton } from '../components/reports/UserExportButton';
@@ -8,6 +9,7 @@ import { UserExportButton } from '../components/reports/UserExportButton';
 export function UserReportsPage() {
   const { currentUser } = useAuth();
   const { tasks } = useTask();
+  const { showToast } = useToast();
   const [timeframe, setTimeframe] = useState<'week' | 'month'>('week');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');

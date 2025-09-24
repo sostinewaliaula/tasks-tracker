@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTask, TaskStatus, TaskPriority } from '../context/TaskContext';
-import { useToast } from '../components/departments/DepartmentModal';
+import { useToast } from '../components/ui/Toast';
 import { BlockerManagement } from '../components/tasks/BlockerManagement';
 import { SubtaskBlockerManagement } from '../components/tasks/SubtaskBlockerManagement';
 import { 

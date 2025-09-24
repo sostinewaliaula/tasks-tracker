@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { DownloadIcon, ChevronDownIcon, CalendarIcon, FilterIcon } from 'lucide-react';
 import logoUrl from '../../assets/logo.png';
 import { jsPDF } from 'jspdf';
+import { useToast } from '../ui/Toast';
 
 export type ExportableTask = {
   title: string;
@@ -54,6 +55,7 @@ function flattenWithSubtasks(input: AnyTask[]): ExportableTask[] {
 }
 
 export function UserExportButton({ tasks, filenameBase }: { tasks: AnyTask[]; filenameBase: string; }) {
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['todo', 'in-progress', 'completed', 'blocker']);
   const [customDateFrom, setCustomDateFrom] = useState('');
@@ -169,13 +171,17 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: AnyTask[]; fi
     if (format === 'csv') {
       const csv = toCsv(flat);
       downloadText(`${newFilenameBase}.csv`, csv, 'text/csv;charset=utf-8');
+      showToast(`CSV export completed! ${flat.length} tasks exported.`, 'success');
     } else if (format === 'json') {
-    const json = JSON.stringify(flat, null, 2);
+      const json = JSON.stringify(flat, null, 2);
       downloadText(`${newFilenameBase}.json`, json, 'application/json;charset=utf-8');
+      showToast(`JSON export completed! ${flat.length} tasks exported.`, 'success');
     } else if (format === 'pdf') {
       doPdfWithTasks(flat, newFilenameBase);
+      showToast(`PDF export completed! ${flat.length} tasks exported.`, 'success');
     } else if (format === 'word') {
       doWordWithTasks(flat, newFilenameBase);
+      showToast(`Word export completed! ${flat.length} tasks exported.`, 'success');
     }
     
     setOpen(false);

@@ -1,5 +1,6 @@
-import React, { useEffect, useState, createContext, useContext } from 'react';
+import React, { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { useToast } from '../components/ui/Toast';
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskStatus = 'todo' | 'in-progress' | 'completed' | 'blocker';
 export type Task = {
@@ -56,86 +57,129 @@ export function TaskProvider({
   const { token } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  
+  // Optional toast - only use if available
+  let showToast: ((message: string, type?: 'success' | 'error' | 'warning' | 'info', duration?: number) => void) | null = null;
+  try {
+    const toastContext = useToast();
+    showToast = toastContext.showToast;
+  } catch (error) {
+    // Toast provider not available, continue without toasts
+    showToast = null;
+  }
   const addTask = async (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>) => {
-    const resp = await fetch('/api/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        deadline: task.deadline,
-        priority: task.priority,
-        status: task.status,
-        departmentId: task.department ? undefined : undefined,
-        createdById: Number.isNaN(Number(task.createdBy)) ? undefined : Number(task.createdBy),
-        parentId: task.parentId ?? null
-      })
-    });
-    if (!resp.ok) throw new Error('Failed to create task');
-    const data = await resp.json();
-    const newId = String(data?.data?.id ?? '');
-    await reloadTasks();
-    return newId;
+    try {
+      const resp = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          title: task.title,
+          description: task.description,
+          deadline: task.deadline,
+          priority: task.priority,
+          status: task.status,
+          departmentId: task.department ? undefined : undefined,
+          createdById: Number.isNaN(Number(task.createdBy)) ? undefined : Number(task.createdBy),
+          parentId: task.parentId ?? null
+        })
+      });
+      if (!resp.ok) throw new Error('Failed to create task');
+      const data = await resp.json();
+      const newId = String(data?.data?.id ?? '');
+      await reloadTasks();
+      showToast?.('Task created successfully!', 'success');
+      return newId;
+    } catch (error) {
+      showToast?.('Failed to create task. Please try again.', 'error');
+      throw error;
+    }
   };
   const addSubtask = async (parentId: string, task: Omit<Task, 'id' | 'createdAt' | 'parentId' | 'subtasks'>) => {
-    const resp = await fetch('/api/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        deadline: task.deadline,
-        priority: task.priority,
-        status: task.status,
-        blockerReason: task.blockerReason,
-        parentId: Number(parentId)
-      })
-    });
-    if (!resp.ok) throw new Error('Failed to create subtask');
-    await reloadTasks();
+    try {
+      const resp = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          title: task.title,
+          description: task.description,
+          deadline: task.deadline,
+          priority: task.priority,
+          status: task.status,
+          blockerReason: task.blockerReason,
+          parentId: Number(parentId)
+        })
+      });
+      if (!resp.ok) throw new Error('Failed to create subtask');
+      await reloadTasks();
+      showToast?.('Subtask created successfully!', 'success');
+    } catch (error) {
+      showToast?.('Failed to create subtask. Please try again.', 'error');
+      throw error;
+    }
   };
   const updateTaskStatus = async (id: string, status: TaskStatus, blockerReason?: string) => {
-    const resp = await fetch(`/api/tasks/${id}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ status, blockerReason })
-    });
-    if (!resp.ok) throw new Error('Failed to update status');
-    await reloadTasks();
-    if (status === 'completed') {
+    try {
+      const resp = await fetch(`/api/tasks/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status, blockerReason })
+      });
+      if (!resp.ok) throw new Error('Failed to update status');
+      await reloadTasks();
+      
       const task = tasks.find(t => t.id === id);
-      if (task) {
-        const newNotification: Notification = {
-          id: Date.now().toString(),
-          message: `Task '${task.title}' has been completed`,
-          read: false,
-          createdAt: new Date(),
-          relatedTaskId: id
-        };
-        setNotifications(prev => [...prev, newNotification]);
+      const statusMessages = {
+        'todo': 'Task moved to To Do',
+        'in-progress': 'Task started',
+        'completed': 'Task completed successfully!',
+        'blocker': 'Task marked as blocked'
+      };
+      
+      showToast?.(statusMessages[status] || 'Task status updated', 'success');
+      
+      if (status === 'completed') {
+        if (task) {
+          const newNotification: Notification = {
+            id: Date.now().toString(),
+            message: `Task '${task.title}' has been completed`,
+            read: false,
+            createdAt: new Date(),
+            relatedTaskId: id
+          };
+          setNotifications(prev => [...prev, newNotification]);
+        }
       }
+    } catch (error) {
+      showToast?.('Failed to update task status. Please try again.', 'error');
+      throw error;
     }
   };
   const carryOverTask = async (id: string, newDeadline: Date, reason: string) => {
-    const resp = await fetch(`/api/tasks/${id}/carryover`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ newDeadline, reason })
-    });
-    if (!resp.ok) throw new Error('Failed to carry over task');
-    await reloadTasks();
+    try {
+      const resp = await fetch(`/api/tasks/${id}/carryover`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ newDeadline, reason })
+      });
+      if (!resp.ok) throw new Error('Failed to carry over task');
+      await reloadTasks();
+      showToast?.('Task carried over successfully!', 'success');
+    } catch (error) {
+      showToast?.('Failed to carry over task. Please try again.', 'error');
+      throw error;
+    }
   };
   const markNotificationAsRead = (id: string) => {
     setNotifications(prev => prev.map(notification => notification.id === id ? {

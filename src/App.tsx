@@ -19,7 +19,7 @@ import { useAuth } from './context/AuthContext';
 import { DarkModeProvider } from './context/DarkModeContext';
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
 import { UserReportsPage } from './pages/UserReportsPage';
-import { ToastProvider } from './components/departments/DepartmentModal';
+import { ToastProvider } from './components/ui/Toast';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -126,11 +126,11 @@ export function App() {
   return (
     <DarkModeProvider>
       <AuthProvider>
-        <TaskProvider>
-          <ToastProvider>
+        <ToastProvider>
+          <TaskProvider>
             <AppContent />
-          </ToastProvider>
-        </TaskProvider>
+          </TaskProvider>
+        </ToastProvider>
       </AuthProvider>
     </DarkModeProvider>
   );
