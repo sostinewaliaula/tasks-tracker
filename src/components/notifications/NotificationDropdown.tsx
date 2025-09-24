@@ -13,7 +13,7 @@ export function NotificationDropdown({
   onViewAll
 }: NotificationDropdownProps) {
   const {
-    notifications,
+    getUserNotifications,
     markNotificationAsRead
   } = useTask();
 
@@ -33,6 +33,7 @@ export function NotificationDropdown({
     };
   }, [onClose]);
 
+  const notifications = getUserNotifications();
   const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const unreadCount = notifications.filter(n => !n.read).length;
 

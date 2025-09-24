@@ -28,6 +28,8 @@ type Notification = {
   read: boolean;
   createdAt: Date;
   relatedTaskId?: string;
+  userId: string;
+  type?: 'task_completed' | 'task_assigned' | 'task_overdue' | 'task_deadline' | 'general';
 };
 type TaskContextType = {
   tasks: Task[];
@@ -36,6 +38,7 @@ type TaskContextType = {
   updateTaskStatus: (id: string, status: TaskStatus, blockerReason?: string) => void;
   carryOverTask: (id: string, newDeadline: Date, reason: string) => Promise<void>;
   notifications: Notification[];
+  getUserNotifications: () => Notification[];
   markNotificationAsRead: (id: string) => void;
   deleteNotification: (id: string) => void;
   getTasksByDepartment: (department: string) => Task[];
@@ -54,9 +57,9 @@ export function TaskProvider({
 }: {
   children: ReactNode;
 }) {
-  const { token } = useAuth();
+  const { token, currentUser } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Optional toast - only use if available
   let showToast: ((message: string, type?: 'success' | 'error' | 'warning' | 'info', duration?: number) => void) | null = null;
@@ -148,14 +151,25 @@ export function TaskProvider({
       
       if (status === 'completed') {
         if (task) {
-          const newNotification: Notification = {
-            id: Date.now().toString(),
-            message: `Task '${task.title}' has been completed`,
-            read: false,
-            createdAt: new Date(),
-            relatedTaskId: id
-          };
-          setNotifications(prev => [...prev, newNotification]);
+          try {
+            const resp = await fetch('/api/notifications', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({
+                message: `Task '${task.title}' has been completed`,
+                type: 'task_completed',
+                relatedTaskId: parseInt(id)
+              })
+            });
+            if (resp.ok) {
+              await reloadNotifications();
+            }
+          } catch (error) {
+            console.error('Error creating notification:', error);
+          }
         }
       }
     } catch (error) {
@@ -181,15 +195,49 @@ export function TaskProvider({
       throw error;
     }
   };
-  const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => prev.map(notification => notification.id === id ? {
-      ...notification,
-      read: true
-    } : notification));
+  const markNotificationAsRead = async (id: string) => {
+    try {
+      const resp = await fetch(`/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!resp.ok) throw new Error('Failed to mark notification as read');
+      
+      // Update local state
+      setNotifications(prev => prev.map(notification => notification.id === id ? {
+        ...notification,
+        read: true
+      } : notification));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  const deleteNotification = async (id: string) => {
+    try {
+      const resp = await fetch(`/api/notifications/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!resp.ok) throw new Error('Failed to delete notification');
+      
+      // Update local state
+      setNotifications(prev => prev.filter(notification => notification.id !== id));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  // Get user-specific notifications
+  const getUserNotifications = (): Notification[] => {
+    if (!currentUser) return [];
+    return notifications.filter(notification => notification.userId === currentUser.id);
   };
   const getTasksByDepartment = (department: string) => {
     return tasks.filter(task => task.department === department);
@@ -268,47 +316,83 @@ export function TaskProvider({
     setTasks(mapped);
   };
 
+  const reloadNotifications = async () => {
+    if (!token) return;
+    try {
+      const resp = await fetch('/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!resp.ok) throw new Error('Failed to fetch notifications');
+      const data = await resp.json();
+      setNotifications(data.notifications.map((n: any) => ({
+        id: n.id.toString(),
+        message: n.message,
+        read: n.read,
+        createdAt: new Date(n.createdAt),
+        relatedTaskId: n.relatedTaskId?.toString(),
+        userId: n.userId.toString(),
+        type: n.type
+      })));
+    } catch (error) {
+      console.error('Error reloading notifications:', error);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       reloadTasks();
+      reloadNotifications();
     } else {
       setTasks([]);
+      setNotifications([]);
     }
   }, [token]);
 
   // Add deadline reminder notifications
   useEffect(() => {
-    const checkForDeadlines = () => {
+    const checkForDeadlines = async () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
       const dayAfterTomorrow = new Date(tomorrow);
       dayAfterTomorrow.setDate(tomorrow.getDate() + 1);
-      tasks.forEach(task => {
+      
+      for (const task of tasks) {
         if (task.status !== 'completed') {
           const taskDeadline = new Date(task.deadline);
           taskDeadline.setHours(0, 0, 0, 0);
           if (taskDeadline.getTime() === tomorrow.getTime()) {
             const hasNotification = notifications.some(n => n.relatedTaskId === task.id && n.message.includes('due tomorrow'));
             if (!hasNotification) {
-              const newNotification: Notification = {
-                id: Date.now().toString() + task.id,
-                message: `Reminder: '${task.title}' is due tomorrow`,
-                read: false,
-                createdAt: new Date(),
-                relatedTaskId: task.id
-              };
-              setNotifications(prev => [...prev, newNotification]);
+              try {
+                const resp = await fetch('/api/notifications', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                  },
+                  body: JSON.stringify({
+                    message: `Reminder: '${task.title}' is due tomorrow`,
+                    type: 'task_deadline',
+                    relatedTaskId: parseInt(task.id)
+                  })
+                });
+                if (resp.ok) {
+                  await reloadNotifications();
+                }
+              } catch (error) {
+                console.error('Error creating deadline notification:', error);
+              }
             }
           }
         }
-      });
+      }
     };
     checkForDeadlines();
     const interval = setInterval(() => {
       const now = new Date();
       if (now.getHours() === 9 && now.getMinutes() === 0) {
-        checkForDeadlines();
+        checkForDeadlines().catch(console.error);
       }
     }, 60000);
     return () => clearInterval(interval);
@@ -340,6 +424,7 @@ export function TaskProvider({
     updateTaskStatus,
     carryOverTask,
     notifications,
+    getUserNotifications,
     markNotificationAsRead,
     deleteNotification,
     getTasksByDepartment,

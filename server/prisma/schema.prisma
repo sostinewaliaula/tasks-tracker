@@ -32,6 +32,7 @@ model User {
   department   Department? @relation(fields: [departmentId], references: [id])
   managingDepartments Department[] @relation("DepartmentManager")
   tasksCreated Task[]
+  notifications Notification[]
   
   // Profile fields
   phone        String?
@@ -107,10 +108,34 @@ model Task {
   parentId     Int?
   parent       Task?       @relation("TaskSubtasks", fields: [parentId], references: [id])
   subtasks     Task[]      @relation("TaskSubtasks")
+  notifications Notification[]
 
   // Carryover fields
   isCarriedOver           Boolean    @default(false)
   carryOverReason         String?
   carriedOverFromDeadline DateTime?
   carriedOverAt           DateTime?
+}
+
+enum NotificationType {
+  task_completed
+  task_assigned
+  task_overdue
+  task_deadline
+  general
+}
+
+model Notification {
+  id            Int              @id @default(autoincrement())
+  message       String
+  read          Boolean          @default(false)
+  type          NotificationType @default(general)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  userId        Int
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedTaskId Int?
+  relatedTask   Task?            @relation(fields: [relatedTaskId], references: [id], onDelete: SetNull)
 }

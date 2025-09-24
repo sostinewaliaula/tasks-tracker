@@ -173,6 +173,17 @@ exports.Prisma.TaskScalarFieldEnum = {
   carriedOverAt: 'carriedOverAt'
 };
 
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  message: 'message',
+  read: 'read',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  relatedTaskId: 'relatedTaskId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -203,6 +214,10 @@ exports.Prisma.TaskOrderByRelevanceFieldEnum = {
   blockerReason: 'blockerReason',
   carryOverReason: 'carryOverReason'
 };
+
+exports.Prisma.NotificationOrderByRelevanceFieldEnum = {
+  message: 'message'
+};
 exports.Role = exports.$Enums.Role = {
   admin: 'admin',
   manager: 'manager',
@@ -222,10 +237,19 @@ exports.TaskStatus = exports.$Enums.TaskStatus = {
   blocker: 'blocker'
 };
 
+exports.NotificationType = exports.$Enums.NotificationType = {
+  task_completed: 'task_completed',
+  task_assigned: 'task_assigned',
+  task_overdue: 'task_overdue',
+  task_deadline: 'task_deadline',
+  general: 'general'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Department: 'Department',
-  Task: 'Task'
+  Task: 'Task',
+  Notification: 'Notification'
 };
 
 /**

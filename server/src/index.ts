@@ -16,6 +16,7 @@ import departmentsRouter from './routes/departments';
 import usersRouter from './routes/users';
 import tasksRouter from './routes/tasks';
 import userRouter from './routes/user';
+import notificationsRouter from './routes/notifications';
 import { authMiddleware } from './middleware/auth';
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/user', userRouter);
+app.use('/api/notifications', notificationsRouter);
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {

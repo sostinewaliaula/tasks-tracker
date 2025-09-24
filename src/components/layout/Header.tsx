@@ -11,11 +11,12 @@ import { useDarkMode } from '../../context/DarkModeContext';
 export function Header() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { notifications } = useTask();
+  const { getUserNotifications } = useTask();
   const { logout, currentUser } = useAuth();
   const { isAdmin, isManager } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
+  const notifications = getUserNotifications();
   const unreadCount = notifications.filter(n => !n.read).length;
   const { darkMode, toggleDarkMode } = useDarkMode();
   const mobileMenuRef = useRef<HTMLDivElement>(null);

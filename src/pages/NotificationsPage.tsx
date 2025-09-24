@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { BellIcon, CheckIcon, TrashIcon, FilterIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon } from 'lucide-react';
 export function NotificationsPage() {
   const {
-    notifications,
+    getUserNotifications,
     markNotificationAsRead,
     deleteNotification
   } = useTask();
@@ -13,6 +13,9 @@ export function NotificationsPage() {
   } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
+  // Get user-specific notifications
+  const notifications = getUserNotifications();
+  
   // Sort notifications by date (newest first)
   const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   // Apply filter
