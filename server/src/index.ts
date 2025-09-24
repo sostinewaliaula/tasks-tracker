@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { sendMail } from './lib/mailer';
 import './lib/scheduler';
 import reportsRouter from './routes/reports';
+import { prisma } from './lib/prisma';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,8 +33,30 @@ app.use('/api/users', usersRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/reports', reportsRouter);
 
-app.get('/api/auth/me', authMiddleware, (req, res) => {
-    res.json({ user: (req as any).user });
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: (req as any).user.id }
+        });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json({ 
+            user: {
+                id: user.id.toString(),
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                department_id: user.departmentId?.toString() || '',
+                ldap_uid: user.ldapUid
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/api/test-email', async (req, res) => {

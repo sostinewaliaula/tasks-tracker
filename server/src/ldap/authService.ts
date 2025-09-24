@@ -46,28 +46,35 @@ class AuthService {
     }
 
     private async findOrCreateUser(ldapUser: LDAPUser) {
+        console.log('LDAP User data:', ldapUser); // Debug log
         const existing = await prisma.user.findUnique({ where: { ldapUid: ldapUser.uid } });
         const defaultEmailDomain = process.env.LDAP_DEFAULT_EMAIL_DOMAIN || 'turnkeyafrica.com';
         const resolvedEmail = ldapUser.email ?? `${ldapUser.uid}@${defaultEmailDomain}`;
 
+        const userData = {
+            name: ldapUser.name ?? ldapUser.uid,
+            email: resolvedEmail,
+        };
+        console.log('User data to store:', userData); // Debug log
+
         if (existing) {
-            return prisma.user.update({
+            const updated = await prisma.user.update({
                 where: { id: existing.id },
-                data: {
-                    name: ldapUser.name ?? ldapUser.uid,
-                    email: resolvedEmail,
-                },
+                data: userData,
             });
+            console.log('Updated user:', updated); // Debug log
+            return updated;
         }
 
-        return prisma.user.create({
+        const created = await prisma.user.create({
             data: {
                 ldapUid: ldapUser.uid,
-                name: ldapUser.name ?? ldapUser.uid,
-                email: resolvedEmail,
+                ...userData,
                 role: 'employee',
             },
         });
+        console.log('Created user:', created); // Debug log
+        return created;
     }
 
     private generateToken(user: any): string {

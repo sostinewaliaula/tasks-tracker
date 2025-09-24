@@ -103,42 +103,88 @@ export function TaskCard({
   const handleStatusChange = (newStatus: TaskStatus) => {
     updateTaskStatus(task.id, newStatus);
   };
-  return <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-800">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          {getStatusIcon(task.status)}
-          <p className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">{task.title}</p>
-          <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(task.priority)}`}>
-            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-          </span>
-          {task.isCarriedOver && (
-            <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Carried over</span>
-          )}
-        </div>
-        <div className="flex items-center">
-          <span className={`text-sm ${timeLeft ? timerColor : getDeadlineColor(task.deadline)} dark:text-gray-300`}>
-            {timeLeft ? timeLeft : getDeadlineText(task.deadline)}
-          </span>
-          {(new Date(task.deadline).getTime() < new Date().getTime()) && task.status !== 'completed' && (
-            <a href={`/tasks/${task.id}`} className="ml-3 inline-flex items-center px-2 py-1 rounded text-xs bg-[#2e9d74] text-white hover:opacity-90">Carry over</a>
-          )}
+  return <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+      {/* Task Header */}
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            {getStatusIcon(task.status)}
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+              {task.title}
+            </h3>
+          </div>
+          <div className="flex items-center space-x-2 ml-2">
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(task.priority)}`}>
+              {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+            </span>
+            {task.isCarriedOver && (
+              <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                Carried over
+              </span>
+            )}
+          </div>
         </div>
       </div>
-      <div className="mt-2 sm:flex sm:justify-between">
-        <div className="sm:flex">
-          <p className="text-sm text-gray-500 dark:text-gray-300">{task.description}</p>
+
+      {/* Task Content */}
+      <div className="px-4 py-3">
+        {/* Description */}
+        {task.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+            {task.description}
+          </p>
+        )}
+
+        {/* Status and Time Info */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              Status:
+            </span>
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              {getStatusText(task.status)}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <span className={`text-xs font-medium ${timeLeft ? timerColor : getDeadlineColor(task.deadline)}`}>
+              {timeLeft ? timeLeft : getDeadlineText(task.deadline)}
+            </span>
+          </div>
         </div>
-        <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0">
-          <p>Status: {getStatusText(task.status)}</p>
-          {task.status !== 'completed' && <div className="ml-4">
-              {task.status === 'todo' && <button onClick={() => handleStatusChange('in-progress')} className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-[#2e9d74] bg-[#e8f5f0] hover:bg-[#d1ebe3] dark:bg-[#22332c] dark:hover:bg-[#1a2821] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74]">
-                  Start
-                </button>}
-              <button onClick={() => handleStatusChange('completed')} className="ml-2 inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 dark:text-green-200 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                <CheckIcon className="h-4 w-4 mr-1" />
-                Complete
-              </button>
-            </div>}
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            {task.status !== 'completed' && (
+              <>
+                {task.status === 'todo' && (
+                  <button 
+                    onClick={() => handleStatusChange('in-progress')} 
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-[#2e9d74] bg-[#e8f5f0] hover:bg-[#d1ebe3] dark:bg-[#22332c] dark:hover:bg-[#1a2821] transition-colors duration-200"
+                  >
+                    Start
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleStatusChange('completed')} 
+                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-green-700 dark:text-green-200 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 transition-colors duration-200"
+                >
+                  <CheckIcon className="h-3 w-3 mr-1" />
+                  Complete
+                </button>
+              </>
+            )}
+          </div>
+          
+          {/* Carry Over Button */}
+          {(new Date(task.deadline).getTime() < new Date().getTime()) && task.status !== 'completed' && (
+            <a 
+              href={`/tasks/${task.id}`} 
+              className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-[#2e9d74] text-white hover:bg-[#259d6a] transition-colors duration-200"
+            >
+              Carry over
+            </a>
+          )}
         </div>
       </div>
     </div>;
