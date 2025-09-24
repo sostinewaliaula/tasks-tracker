@@ -72,30 +72,32 @@ function CompactTaskCard({ task }: { task: Task }) {
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-green-300 dark:hover:border-green-600 transition-all duration-200 overflow-hidden group cursor-pointer"
     >
       {/* Compact Header */}
-      <div className="px-3 py-1.5 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 flex-1 min-w-0">
+      <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+        <div className="space-y-1">
+          <div className="flex items-start space-x-2">
             {getStatusIcon(task.status)}
-            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
+            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200 leading-tight flex-1">
               {task.title}
             </h3>
           </div>
-          <div className="flex items-center space-x-1 ml-2">
-            <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${getPriorityColor(task.priority)}`}>
-              {task.priority.charAt(0).toUpperCase()}
-            </span>
-            {task.isCarriedOver && (
-              <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
-                C
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1">
+              <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${getPriorityColor(task.priority)}`}>
+                {task.priority.charAt(0).toUpperCase()}
               </span>
-            )}
+              {task.isCarriedOver && (
+                <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
+                  C
+                </span>
+              )}
+            </div>
             <ExternalLinkIcon className="h-3 w-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200 opacity-0 group-hover:opacity-100" />
           </div>
         </div>
       </div>
 
       {/* Compact Content */}
-      <div className="px-3 py-1.5">
+      <div className="px-3 py-2">
         {/* Status and Time */}
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
