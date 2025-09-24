@@ -1,10 +1,145 @@
 import React from 'react';
-import { Task } from '../../context/TaskContext';
-import { TaskCard } from '../tasks/TaskCard';
+import { Task, TaskStatus, useTask } from '../../context/TaskContext';
+import { ClockIcon, CheckCircleIcon, CircleIcon, CheckIcon } from 'lucide-react';
 type WeeklyCalendarProps = {
   tasks: Task[];
   onViewAll?: () => void;
 };
+// Compact Task Card for Calendar
+function CompactTaskCard({ task }: { task: Task }) {
+  const { updateTaskStatus } = useTask();
+
+  const getStatusIcon = (status: TaskStatus) => {
+    switch (status) {
+      case 'todo':
+        return <CircleIcon className="h-3 w-3 text-gray-400" />;
+      case 'in-progress':
+        return <ClockIcon className="h-3 w-3 text-yellow-500" />;
+      case 'completed':
+        return <CheckCircleIcon className="h-3 w-3 text-green-500" />;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200';
+    }
+  };
+
+  const getDeadlineText = (deadline: Date) => {
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = deadlineDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) {
+      return 'Overdue';
+    } else if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return '1d left';
+    } else {
+      return `${diffDays}d left`;
+    }
+  };
+
+  const getDeadlineColor = (deadline: Date) => {
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = deadlineDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) {
+      return 'text-red-600';
+    } else if (diffDays <= 1) {
+      return 'text-yellow-600';
+    } else {
+      return 'text-green-600';
+    }
+  };
+
+  const handleStatusChange = (newStatus: TaskStatus) => {
+    updateTaskStatus(task.id, newStatus);
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+      {/* Compact Header */}
+      <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            {getStatusIcon(task.status)}
+            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+              {task.title}
+            </h3>
+          </div>
+          <div className="flex items-center space-x-1 ml-2">
+            <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${getPriorityColor(task.priority)}`}>
+              {task.priority.charAt(0).toUpperCase()}
+            </span>
+            {task.isCarriedOver && (
+              <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
+                C
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Compact Content */}
+      <div className="px-3 py-2">
+        {/* Status and Time */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            {task.status === 'todo' ? 'To Do' : task.status === 'in-progress' ? 'In Progress' : 'Complete'}
+          </span>
+          <span className={`text-xs font-medium ${getDeadlineColor(task.deadline)}`}>
+            {getDeadlineText(task.deadline)}
+          </span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1">
+            {task.status !== 'completed' && (
+              <>
+                {task.status === 'todo' && (
+                  <button 
+                    onClick={() => handleStatusChange('in-progress')} 
+                    className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800 transition-colors duration-200"
+                  >
+                    Start
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleStatusChange('completed')} 
+                  className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800 transition-colors duration-200"
+                >
+                  <CheckIcon className="h-3 w-3 mr-1" />
+                  Complete
+                </button>
+              </>
+            )}
+          </div>
+          
+          {/* Carry Over Button */}
+          {(new Date(task.deadline).getTime() < new Date().getTime()) && task.status !== 'completed' && (
+            <a 
+              href={`/tasks/${task.id}`} 
+              className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-green-500 text-white hover:bg-green-600 transition-colors duration-200"
+            >
+              Carry over
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function WeeklyCalendar({
   tasks,
   onViewAll
@@ -80,39 +215,50 @@ export function WeeklyCalendar({
         {tasksByDay.map(({ date, tasks }, index) => (
           <div key={date.toISOString()} className={`relative ${index !== 4 ? 'md:border-r border-gray-200 dark:border-gray-700' : ''}`}>
             {/* Day Header */}
-            <div className={`px-4 py-3 text-center font-semibold border-b border-gray-200 dark:border-gray-700 ${
+            <div className={`px-3 py-2 text-center font-semibold border-b border-gray-200 dark:border-gray-700 ${
               isToday(date) 
                 ? 'bg-gradient-to-r from-green-500 to-green-400 text-white' 
                 : 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
             }`}> 
-              <div className="text-sm">
-                {formatDate(date)}
+              <div className="flex items-center justify-between">
+                <div className="text-xs">
+                  {formatDate(date)}
+                </div>
+                {tasks.length > 0 && (
+                  <div className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    isToday(date) 
+                      ? 'bg-white/20 text-white' 
+                      : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200'
+                  }`}>
+                    {tasks.length}
+                  </div>
+                )}
               </div>
               {isToday(date) && (
-                <div className="text-xs font-bold mt-1 opacity-90">
+                <div className="text-xs font-bold mt-0.5 opacity-90">
                   Today
                 </div>
               )}
             </div>
             
             {/* Tasks Container */}
-            <div className="min-h-[300px] max-h-[500px] overflow-y-auto">
+            <div className="min-h-[250px] max-h-[600px] overflow-y-auto">
               {tasks.length > 0 ? (
-                <div className="space-y-2 p-3">
+                <div className="space-y-1.5 p-2">
                   {tasks.map(task => (
                     <div key={task.id} className="relative">
-                      <TaskCard task={task} />
+                      <CompactTaskCard task={task} />
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full min-h-[200px] p-4 text-center">
-                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-2">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                     No tasks scheduled
                   </p>
                 </div>

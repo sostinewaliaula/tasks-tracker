@@ -200,10 +200,11 @@ export function EmployeeDashboard() {
 
         {/* Quick Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            <div className="flex items-center relative z-10">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
@@ -221,10 +222,11 @@ export function EmployeeDashboard() {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            <div className="flex items-center relative z-10">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -242,10 +244,11 @@ export function EmployeeDashboard() {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            <div className="flex items-center relative z-10">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
@@ -260,7 +263,7 @@ export function EmployeeDashboard() {
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">{overdueCount}</p>
                 )}
               </div>
-            </div>
+        </div>
           </div>
         </div>
         {/* Analytics Section */}
@@ -280,13 +283,13 @@ export function EmployeeDashboard() {
                 onClick={() => navigate('/reports')} 
                 className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-green-500 to-purple-600 hover:from-green-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium"
               >
-                View Reports
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </button>
+            View Reports
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </button>
             </div>
-          </div>
-          <TaskStats timeframe="week" />
         </div>
+        <TaskStats timeframe="week" />
+      </div>
 
         {/* Main Content Grid */}
         {isLoading ? (
@@ -300,11 +303,11 @@ export function EmployeeDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Calendar Section */}
             <div className="lg:col-span-2">
-              <WeeklyCalendar tasks={weeklyTasks} onViewAll={() => navigate('/tasks')} />
-            </div>
+          <WeeklyCalendar tasks={weeklyTasks} onViewAll={() => navigate('/tasks')} />
+        </div>
             
             {/* Sidebar */}
-            <div className="space-y-6">
+        <div className="space-y-6">
             {/* Notifications */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="bg-gradient-to-r from-green-500 to-green-400 px-6 py-4">
@@ -344,7 +347,7 @@ export function EmployeeDashboard() {
 
             {/* Next Deadlines */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-4">
+              <div className="bg-gradient-to-r from-green-500 to-purple-600 px-6 py-4">
                   <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-white">Next Deadlines</h3>
@@ -395,11 +398,11 @@ export function EmployeeDashboard() {
                             }`}>
                               {deadline.toLocaleDateString()}
                             </span>
-                          </div>
-                        </li>
+                  </div>
+                </li>
                       );
                     })}
-                  </ul>
+            </ul>
                 ) : (
                   <div className="px-6 py-8 text-center">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -411,7 +414,7 @@ export function EmployeeDashboard() {
                     <p className="text-xs text-gray-400 dark:text-gray-500">Create some tasks to see them here</p>
                   </div>
                 )}
-              </div>
+          </div>
             </div>
 
             {/* Recently Completed */}
@@ -461,11 +464,11 @@ export function EmployeeDashboard() {
                             <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 whitespace-nowrap ml-2">
                               ✓ Completed
                             </span>
-                          </div>
-                        </li>
+                  </div>
+                </li>
                       );
                     })}
-                  </ul>
+            </ul>
                 ) : (
                   <div className="px-6 py-8 text-center">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
