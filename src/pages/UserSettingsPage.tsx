@@ -49,7 +49,7 @@ export function UserSettingsPage() {
   // Add loading state and error handling
   if (!currentUser) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
@@ -195,7 +195,7 @@ export function UserSettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
@@ -218,9 +218,11 @@ export function UserSettingsPage() {
         </div>
       )}
 
-      <div className="space-y-8">
-        {/* Profile Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        {/* Left Column */}
+        <div className="space-y-8">
+          {/* Profile Information */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
               <UserIcon className="h-5 w-5 mr-2 text-green-500" />
@@ -416,6 +418,10 @@ export function UserSettingsPage() {
             </div>
           </div>
         </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-8">
 
         {/* Privacy Settings */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -574,6 +580,7 @@ export function UserSettingsPage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
