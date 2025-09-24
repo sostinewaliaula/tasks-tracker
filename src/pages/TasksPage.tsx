@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTask, TaskStatus, TaskPriority, Task } from '../context/TaskContext';
 import { TaskForm } from '../components/tasks/TaskForm';
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 
 export function TasksPage() {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { tasks, updateTaskStatus } = useTask();
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -282,14 +284,17 @@ export function TasksPage() {
       <div className="space-y-4">
         {sortedTasks.length > 0 ? (
           sortedTasks.map(task => (
-            <div key={task.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div key={task.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
               {/* Main Task */}
               <div className="p-6">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1 min-w-0">
+                  <div 
+                    className="flex items-start space-x-3 flex-1 min-w-0 cursor-pointer"
+                    onClick={() => navigate(`/tasks/${task.id}`)}
+                  >
                     {getStatusIcon(task.status)}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200">
                         {task.title}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
@@ -354,7 +359,7 @@ export function TasksPage() {
                     
                     {/* View Details */}
                     <button
-                      onClick={() => window.open(`/tasks/${task.id}`, '_blank')}
+                      onClick={() => navigate(`/tasks/${task.id}`)}
                       className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
                       title="View details"
                     >
