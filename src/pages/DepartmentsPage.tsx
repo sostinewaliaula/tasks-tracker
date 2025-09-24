@@ -468,10 +468,10 @@ function DepartmentsPageContent() {
                           });
                           if (res.ok) {
                             setAssignUser(''); setSelectedUserId('');
-                            alert('User assigned to department');
+                            showToast('User assigned to department', 'success');
                           } else {
                             const j = await res.json().catch(() => ({}));
-                            alert(j.error || 'Failed to assign user');
+                            showToast(j.error || 'Failed to assign user', 'error');
                           }
                         }}
                         className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded text-sm"

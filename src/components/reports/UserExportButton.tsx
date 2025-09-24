@@ -160,7 +160,7 @@ export function UserExportButton({ tasks, filenameBase }: { tasks: AnyTask[]; fi
     const dateRange = getDateRange(dateType);
     
     if (dateType === 'custom' && (!customDateFrom || !customDateTo)) {
-      alert('Please select both start and end dates for custom range');
+      showToast('Please select both start and end dates for custom range', 'warning');
       return;
     }
 

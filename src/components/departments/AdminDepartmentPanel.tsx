@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../ui/Toast';
 import { BuildingIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import { DepartmentModal } from './DepartmentModal';
 
@@ -12,6 +13,7 @@ type DepartmentNode = {
 
 export function AdminDepartmentPanel() {
   const { currentUser, token } = useAuth() as any;
+  const { showToast } = useToast();
   const [departments, setDepartments] = React.useState<DepartmentNode[]>([]);
   const [managers, setManagers] = React.useState<{ id: number; name: string }[]>([]);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
@@ -70,7 +72,7 @@ export function AdminDepartmentPanel() {
       body: JSON.stringify({ name: newPrimaryName.trim() })
     });
     if (res.ok) { setNewPrimaryName(''); fetchDepartments(); }
-    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to create department'); }
+    else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to create department', 'error'); }
   };
 
   const createSub = async () => {
@@ -81,7 +83,7 @@ export function AdminDepartmentPanel() {
       body: JSON.stringify({ name: newSubName.trim(), parentId: selectedId })
     });
     if (res.ok) { setNewSubName(''); fetchDepartments(); }
-    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to create sub-department'); }
+    else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to create sub-department', 'error'); }
   };
 
   const updateDept = async () => {
@@ -92,7 +94,7 @@ export function AdminDepartmentPanel() {
       body: JSON.stringify({ name: editName.trim() })
     });
     if (res.ok) { setEditName(''); fetchDepartments(); }
-    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to update department'); }
+    else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to update department', 'error'); }
   };
 
   const deleteDept = async (id: number) => {
@@ -102,7 +104,7 @@ export function AdminDepartmentPanel() {
       headers: { Authorization: token ? `Bearer ${token}` : '' },
     });
     if (res.status === 204) { if (selectedId === id) setSelectedId(null); fetchDepartments(); }
-    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to delete department'); }
+    else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to delete department', 'error'); }
   };
 
   const renderTree = (nodes: DepartmentNode[]) => (
@@ -154,7 +156,7 @@ export function AdminDepartmentPanel() {
       body: JSON.stringify(body)
     });
     if (res.ok) { fetchDepartments(); }
-    else { const j = await res.json().catch(() => ({})); alert(j.error || 'Failed to create department'); }
+    else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to create department', 'error'); }
   };
   function findDepartmentById(nodes: DepartmentNode[], id: number): DepartmentNode | undefined {
     for (const node of nodes) {

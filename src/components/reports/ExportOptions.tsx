@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DownloadIcon, ChevronDownIcon, CalendarIcon, FilterIcon, CheckIcon } from 'lucide-react';
+import { useToast } from '../ui/Toast';
 
 type ExportOptionsProps = {
   tasks: any[];
@@ -7,6 +8,7 @@ type ExportOptionsProps = {
 };
 
 export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
+  const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['todo', 'in-progress', 'completed', 'blocker']);
@@ -123,7 +125,7 @@ export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
     const dateRange = getDateRange(dateType);
     
     if (dateType === 'custom' && (!customDateFrom || !customDateTo)) {
-      alert('Please select both start and end dates for custom range');
+      showToast('Please select both start and end dates for custom range', 'warning');
       return;
     }
 
