@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
-import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, UserPlus } from 'lucide-react';
+import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, UserPlus, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
 import { DepartmentModal } from '../components/departments/DepartmentModal';
 import { useToast } from '../components/ui/Toast';
 
@@ -41,39 +41,113 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
   const [name, setName] = useState(department?.name || '');
   const [managerId, setManagerId] = useState<number | ''>(department?.managerId || '');
   const [description, setDescription] = useState(department?.description || '');
+  
   useEffect(() => {
     setName(department?.name || '');
     setManagerId(department?.managerId || '');
     setDescription(department?.description || '');
   }, [department, open]);
+  
   if (!open || !department) return null;
+  
   return (
-    <div className="fixed z-30 inset-0 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Edit Department</h2>
-        <form onSubmit={e => { e.preventDefault(); onSave({ name, managerId: managerId ? Number(managerId) : null, description }); }}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Department Name</label>
-            <input value={name} onChange={e => setName(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+    <div className="fixed z-50 inset-0 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen pt-16 px-4 pb-16 text-center sm:p-0">
+        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div className="absolute inset-0 bg-black bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-80"></div>
+        </div>
+        <div className="relative inline-block align-bottom bg-white dark:bg-gray-900 rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:align-middle w-full max-w-lg">
+          {/* Modern Header */}
+          <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-purple-600 flex items-center justify-center">
+                  <Building2Icon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    Edit Department
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    Update department information
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager</label>
-            <select value={managerId} onChange={e => setManagerId(e.target.value ? Number(e.target.value) : '')} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-              <option value="">No manager</option>
-              {managerOptions.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
-          </div>
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Cancel</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-[var(--color-accent-green)] text-white">{loading ? 'Saving...' : 'Save'}</button>
-          </div>
-        </form>
+
+          {/* Form Content */}
+          <form onSubmit={e => { e.preventDefault(); onSave({ name, managerId: managerId ? Number(managerId) : null, description }); }} className="bg-white dark:bg-gray-900 px-8 py-6">
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                <Building2Icon className="h-4 w-4 mr-2 text-green-600" />
+                Department Name
+              </label>
+              <input 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+                placeholder="Enter department name"
+              />
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                <UsersIcon className="h-4 w-4 mr-2 text-purple-600" />
+                Manager
+              </label>
+              <select 
+                value={managerId} 
+                onChange={e => setManagerId(e.target.value ? Number(e.target.value) : '')} 
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+              >
+                <option value="">No manager</option>
+                {managerOptions.map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                <FileTextIcon className="h-4 w-4 mr-2 text-blue-600" />
+                Description
+              </label>
+              <textarea 
+                value={description} 
+                onChange={e => setDescription(e.target.value)} 
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 resize-none"
+                rows={3}
+                placeholder="Enter department description (optional)"
+              />
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-purple-600 rounded-lg hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
