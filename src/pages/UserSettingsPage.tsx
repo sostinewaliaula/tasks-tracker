@@ -11,7 +11,8 @@ import {
   BuildingIcon,
   ShieldIcon,
   ClockIcon,
-  GlobeIcon
+  GlobeIcon,
+  KeyIcon
 } from 'lucide-react';
 
 type UserProfile = {
@@ -38,6 +39,12 @@ type PrivacySettings = {
   showEmail: boolean;
   showPhone: boolean;
   showBio: boolean;
+};
+
+type RolePermissions = {
+  superadmin: string[];
+  manager: string[];
+  employee: string[];
 };
 
 export function UserSettingsPage() {
@@ -89,6 +96,13 @@ export function UserSettingsPage() {
     showEmail: true,
     showPhone: false,
     showBio: true
+  });
+
+  // Role permissions (admin only)
+  const [permissions, setPermissions] = useState<RolePermissions>({
+    superadmin: ['manage_system', 'manage_roles', 'view_all_departments', 'manage_departments'],
+    manager: ['view_department', 'create_task', 'assign_task', 'view_reports'],
+    employee: ['create_task', 'view_own_tasks']
   });
 
 
@@ -189,6 +203,19 @@ export function UserSettingsPage() {
     }
   };
 
+  const handlePermToggle = (role: keyof RolePermissions, perm: string) => {
+    setPermissions(prev => {
+      const set = new Set(prev[role]);
+      if (set.has(perm)) set.delete(perm); else set.add(perm);
+      return { ...prev, [role]: Array.from(set) } as RolePermissions;
+    });
+  };
+
+  const handleSavePermissions = () => {
+    // For now, just mock-save to console. Replace with API later.
+    console.log('Saving Role permissions', permissions);
+    showToast('Role permissions saved (mock). Backend integration pending.', 'info');
+  };
 
   const formatDisplayName = (name?: string) => {
     if (!name) return '';
@@ -587,6 +614,82 @@ export function UserSettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Role Permissions - Admin Only */}
+        {currentUser?.role === 'admin' && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                <ShieldIcon className="h-5 w-5 mr-2 text-green-500" />
+                Role Permissions
+              </h2>
+            </div>
+            <div className="px-6 py-5 space-y-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permission</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Super Admin</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Manager</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {Array.from(new Set(Object.values(permissions).flat())).map(perm => (
+                      <tr key={perm}>
+                        <td className="px-4 py-2 text-sm text-gray-700">{perm}</td>
+                        {(['superadmin', 'manager', 'employee'] as const).map(role => (
+                          <td key={role} className="px-4 py-2 text-center">
+                            <input 
+                              type="checkbox" 
+                              checked={permissions[role].includes(perm)} 
+                              onChange={() => handlePermToggle(role, perm)}
+                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Add new permission */}
+              <div className="flex items-center space-x-2">
+                <KeyIcon className="h-4 w-4 text-gray-500" />
+                <input 
+                  placeholder="Add permission key (e.g., manage_system)" 
+                  className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" 
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const val = (e.target as HTMLInputElement).value.trim();
+                      if (!val) return;
+                      if (!Array.from(new Set(Object.values(permissions).flat())).includes(val)) {
+                        setPermissions(prev => ({
+                          superadmin: [...prev.superadmin, val],
+                          manager: prev.manager,
+                          employee: prev.employee
+                        }));
+                      }
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }} 
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSavePermissions}
+                  className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
+                >
+                  <SaveIcon className="h-4 w-4 mr-2" />
+                  Save Permissions
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
       </div>
     </div>

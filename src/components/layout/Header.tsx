@@ -249,23 +249,6 @@ export function Header() {
                 </button>
               )}
 
-              {/* Settings - admin only */}
-              {isAdmin && (
-                <button
-                  onClick={() => {
-                    setIsNotificationsOpen(false);
-                    navigate('/settings');
-                  }}
-                  className={`${
-                    location.pathname === '/settings'
-                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
-                >
-                  <ShieldIcon className="h-4 w-4 mr-2" />
-                  Settings
-                </button>
-              )}
             </nav>
           </div>
 
@@ -317,7 +300,6 @@ export function Header() {
               roleLabel={formatRole(currentUser?.role)}
               onLogout={() => { logout(); navigate('/login'); }}
               onProfile={() => navigate('/profile')}
-              onSettings={() => navigate('/settings')}
               onUserSettings={() => navigate('/user-settings')}
               isAdmin={isAdmin}
             />
@@ -494,24 +476,6 @@ export function Header() {
                 </button>
               )}
 
-              {/* System Settings - admin only */}
-              {isAdmin && (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsNotificationsOpen(false);
-                    navigate('/settings');
-                  }}
-                  className={`${
-                    location.pathname === '/settings'
-                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
-                >
-                  <ShieldIcon className="h-4 w-4 mr-2" />
-                  System Settings
-                </button>
-              )}
             </div>
           </div>
         )}
@@ -520,7 +484,7 @@ export function Header() {
   );
 }
 
-function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings, onUserSettings, isAdmin }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onSettings: () => void; onUserSettings: () => void; isAdmin: boolean; }) {
+function ProfileMenu({ name, roleLabel, onLogout, onProfile, onUserSettings, isAdmin }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onUserSettings: () => void; isAdmin: boolean; }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -571,17 +535,6 @@ function ProfileMenu({ name, roleLabel, onLogout, onProfile, onSettings, onUserS
               </svg>
               User Settings
             </button>
-            {isAdmin && (
-              <button 
-                onClick={() => { setOpen(false); onSettings(); }} 
-                className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
-              >
-                <svg className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                System Settings
-              </button>
-            )}
             <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-1"></div>
             <button 
               onClick={() => { setOpen(false); onLogout(); }} 

@@ -317,13 +317,6 @@ export function AdminDashboard() {
                 <ChartBarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-3" />
                 <span className="text-sm font-medium text-purple-700 dark:text-purple-300">View Reports</span>
               </button>
-              <button 
-                onClick={() => navigate('/settings')}
-                className="w-full flex items-center p-3 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors"
-              >
-                <ClipboardCheckIcon className="h-5 w-5 text-orange-600 dark:text-orange-400 mr-3" />
-                <span className="text-sm font-medium text-orange-700 dark:text-orange-300">System Settings</span>
-              </button>
             </div>
           </div>
         </div>

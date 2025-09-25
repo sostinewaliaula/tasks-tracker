@@ -5,7 +5,6 @@ import { LoginPage } from "./pages/LoginPage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import { EmployeeDashboard } from "./pages/EmployeeDashboard";
 import { ManagerDashboard } from "./pages/ManagerDashboard";
-import { SystemSettingsPage } from "./pages/SystemSettingsPage";
 import { UsersPage } from "./pages/UsersPage";
 import { DepartmentsPage } from "./pages/DepartmentsPage";
 import { TasksPage } from "./pages/TasksPage";
@@ -68,14 +67,6 @@ export function AppRouter() {
         />
         
         {/* Admin Routes */}
-        <Route
-          path="/settings"
-          element={
-            <RBAC allowedRoles={['admin']}>
-              <SystemSettingsPage />
-            </RBAC>
-          }
-        />
         <Route
           path="/admin/dashboard"
           element={
