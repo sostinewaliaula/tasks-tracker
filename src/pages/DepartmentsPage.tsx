@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTask } from '../context/TaskContext';
-import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, UserPlus, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
+import { BuildingIcon, UsersIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, UserPlus, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
 import { DepartmentModal } from '../components/departments/DepartmentModal';
+import { InlineDepartmentStats } from '../components/departments/InlineDepartmentStats';
 import { useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
@@ -144,18 +144,18 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
                 onChange={e => setManagerId(e.target.value ? Number(e.target.value) : '')} 
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
               >
-                <option value="">No manager</option>
+              <option value="">No manager</option>
                 {finalManagerOptions.length > 0 ? (
                   finalManagerOptions.map(u => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
+                <option key={u.id} value={u.id}>{u.name}</option>
                   ))
                 ) : (
                   <option value="" disabled>
                     {managerOptions.length > 0 ? 'All users are already managers' : 'No users available'}
                   </option>
                 )}
-              </select>
-            </div>
+            </select>
+          </div>
             
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
@@ -169,7 +169,7 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
                 rows={3}
                 placeholder="Enter department description (optional)"
               />
-            </div>
+          </div>
             
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -187,8 +187,8 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
               >
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
-            </div>
-          </form>
+          </div>
+        </form>
         </div>
       </div>
     </div>
@@ -201,7 +201,6 @@ export function DepartmentsPage() {
 
 function DepartmentsPageContent() {
   const { currentUser, token } = useAuth() as any;
-  const { getTasksCountByStatus } = useTask();
 
   const [departments, setDepartments] = useState<DepartmentNode[]>([]);
   const [loading, setLoading] = useState(false);
@@ -238,12 +237,12 @@ function DepartmentsPageContent() {
   }, [currentUser?.role]);
 
   const fetchUsers = async () => {
-    if (currentUser?.role !== 'admin') return;
-    const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-    if (!res.ok) return;
-    const j = await res.json();
-    setUsers(j.data || []);
-  };
+      if (currentUser?.role !== 'admin') return;
+      const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+      if (!res.ok) return;
+      const j = await res.json();
+      setUsers(j.data || []);
+    };
 
   useEffect(() => {
     fetchUsers();
@@ -260,7 +259,6 @@ function DepartmentsPageContent() {
   const primaryDepartments = useMemo(() => allDepartments.filter(d => d.parentId === null), [allDepartments]);
 
   const selectedDept = useMemo(() => allDepartments.find(d => d.id === selectedId) || null, [allDepartments, selectedId]);
-  const deptStats = selectedDept ? getTasksCountByStatus(selectedDept.name) : null;
 
   const { showToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; deptId?: number; deptName?: string }>({ open: false });
@@ -683,99 +681,13 @@ function DepartmentsPageContent() {
                     </div>
                   </div>
                 </div>
-                {/* Department Stats Cards */}
+                {/* Department Stats */}
                 <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
-                          <UsersIcon className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                            {selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId)?.name || '—') : '—'}
-                          </div>
-                          <div className="text-sm text-blue-700 dark:text-blue-300">Department Manager</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl border border-green-200 dark:border-green-800">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
-                          <UsersIcon className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold text-green-900 dark:text-green-100">
-                            {getDepartmentMemberCount(selectedDept)}
-                          </div>
-                          <div className="text-sm text-green-700 dark:text-green-300">
-                            {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) 
-                              ? 'Total Team Members' 
-                              : 'Team Members'
-                            }
-                          </div>
-                          {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) && (
-                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                              {getDirectMemberCount(selectedDept)} direct + {getDepartmentMemberCount(selectedDept) - getDirectMemberCount(selectedDept)} sub-depts
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
-                          <ClipboardCheckIcon className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
-                            {deptStats ? deptStats['completed'] : 0}%
-                          </div>
-                          <div className="text-sm text-purple-700 dark:text-purple-300">Completion Rate</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="mb-8">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Task Completion Progress</span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{deptStats ? deptStats['completed'] : 0}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                      <div 
-                        className="bg-gradient-to-r from-green-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
-                        style={{ width: `${deptStats ? deptStats['completed'] : 0}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  {/* Task Status Overview */}
-                  {deptStats && (
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                        <ChartBarIcon className="h-5 w-5 mr-2 text-green-600" />
-                        Task Status Overview
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">{deptStats['todo'] || 0}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">To Do</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{deptStats['in-progress'] || 0}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">In Progress</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{deptStats['completed'] || 0}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">Completed</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <InlineDepartmentStats 
+                    departmentId={selectedDept.id}
+                    departmentName={selectedDept.name}
+                    managerName={selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId)?.name || '—') : '—'}
+                  />
 
                   {/* Department Members */}
                   <div className="mt-8">

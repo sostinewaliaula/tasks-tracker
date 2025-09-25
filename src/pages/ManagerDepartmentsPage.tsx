@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
 import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
 import { DepartmentModal } from '../components/departments/DepartmentModal';
+import { InlineDepartmentStats } from '../components/departments/InlineDepartmentStats';
 import { useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
@@ -144,18 +145,18 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
                 onChange={e => setManagerId(e.target.value ? Number(e.target.value) : '')} 
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
               >
-                <option value="">No manager</option>
+              <option value="">No manager</option>
                 {finalManagerOptions.length > 0 ? (
                   finalManagerOptions.map(u => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
+                <option key={u.id} value={u.id}>{u.name}</option>
                   ))
                 ) : (
                   <option value="" disabled>
                     {managerOptions.length > 0 ? 'All users are already managers' : 'No users available'}
                   </option>
                 )}
-              </select>
-            </div>
+            </select>
+          </div>
             
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
@@ -169,7 +170,7 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
                 rows={3}
                 placeholder="Enter department description (optional)"
               />
-            </div>
+          </div>
             
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -186,9 +187,9 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
                 className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-purple-600 rounded-lg hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
+            </button>
+          </div>
+        </form>
         </div>
       </div>
     </div>
@@ -238,17 +239,17 @@ function ManagerDepartmentsPageContent() {
   }, [currentUser?.role]);
 
   const fetchUsers = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-      if (res.ok) {
-        const json = await res.json();
-        setUsers(json.data || []);
-        setManagers((json.data || []).filter((u: any) => u.role === 'manager' || u.role === 'admin'));
+      try {
+        const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+        if (res.ok) {
+          const json = await res.json();
+          setUsers(json.data || []);
+          setManagers((json.data || []).filter((u: any) => u.role === 'manager' || u.role === 'admin'));
+        }
+      } catch (e) {
+        console.error('Failed to load users:', e);
       }
-    } catch (e) {
-      console.error('Failed to load users:', e);
-    }
-  };
+    };
 
   useEffect(() => {
     fetchUsers();
@@ -615,35 +616,11 @@ function ManagerDepartmentsPageContent() {
                   </div>
                 </div>
                 <div className="px-4 py-5 sm:px-6">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">Manager</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                        {selectedDept.managerId ? users.find(u => u.id === selectedDept.managerId)?.name || `User ${selectedDept.managerId}` : 'No manager assigned'}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">Team Size</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                        {getDepartmentMemberCount(selectedDept)} total members
-                        {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) && (
-                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            ({getDirectMemberCount(selectedDept)} direct + {getDepartmentMemberCount(selectedDept) - getDirectMemberCount(selectedDept)} from sub-departments)
-                          </span>
-                        )}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">Tasks</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                        {getTasksCountByStatus().total} total ({getTasksCountByStatus().completed} completed)
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">Description</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedDept.description || 'No description provided'}</dd>
-                    </div>
-                  </dl>
+                  <InlineDepartmentStats 
+                    departmentId={selectedDept.id}
+                    departmentName={selectedDept.name}
+                    managerName={selectedDept.managerId ? users.find(u => u.id === selectedDept.managerId)?.name || '—' : '—'}
+                  />
                 </div>
                 {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
                   <div className="px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-gray-700">

@@ -233,6 +233,174 @@ router.get('/:id/members', async (req, res) => {
     }
 });
 
+// Get department task statistics
+router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
+    try {
+        const departmentId = parseInt(req.params.id);
+        console.log('Fetching stats for department ID:', departmentId);
+        
+        // Get department with all users (including manager)
+        const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+                manager: {
+                    select: { id: true, name: true }
+                },
+                users: {
+                    select: { id: true, name: true }
+                }
+            }
+        });
+        
+        console.log('Department found:', department);
+        
+        if (!department) {
+            return res.status(404).json({ error: 'Department not found' });
+        }
+        
+        // Get all user IDs in this department
+        const userIds = [];
+        if (department.manager) {
+            userIds.push(department.manager.id);
+        }
+        department.users.forEach(user => {
+            if (!userIds.includes(user.id)) {
+                userIds.push(user.id);
+            }
+        });
+        
+        if (userIds.length === 0) {
+            return res.json({
+                data: {
+                    department: {
+                        id: department.id,
+                        name: department.name
+                    },
+                    stats: {
+                        totalTasks: 0,
+                        todo: 0,
+                        inProgress: 0,
+                        completed: 0,
+                        blocker: 0,
+                        high: 0,
+                        medium: 0,
+                        low: 0,
+                        overdue: 0,
+                        completionRate: 0,
+                        totalUsers: 0
+                    }
+                }
+            });
+        }
+        
+        // Get all tasks for users in this department
+        console.log('User IDs for tasks query:', userIds);
+        const tasks = await prisma.task.findMany({
+            where: {
+                createdById: {
+                    in: userIds
+                }
+            },
+            include: {
+                subtasks: {
+                    select: {
+                        id: true,
+                        status: true,
+                        priority: true,
+                        deadline: true,
+                        createdAt: true
+                    }
+                }
+            }
+        });
+        
+        console.log('Tasks found:', tasks.length);
+        
+        // Calculate statistics
+        const now = new Date();
+        let totalTasks = tasks.length;
+        let todo = 0;
+        let inProgress = 0;
+        let completed = 0;
+        let blocker = 0;
+        let high = 0;
+        let medium = 0;
+        let low = 0;
+        let overdue = 0;
+        
+        // Process main tasks
+        tasks.forEach(task => {
+            // Status counts
+            if (task.status === 'todo') todo++;
+            else if (task.status === 'in-progress') inProgress++;
+            else if (task.status === 'completed') {
+                completed++;
+            }
+            else if (task.status === 'blocker') blocker++;
+            
+            // Priority counts
+            if (task.priority === 'high') high++;
+            else if (task.priority === 'medium') medium++;
+            else if (task.priority === 'low') low++;
+            
+            // Overdue check
+            if (task.status !== 'completed' && new Date(task.deadline) < now) {
+                overdue++;
+            }
+            
+            // Process subtasks
+            if (task.subtasks) {
+                task.subtasks.forEach(subtask => {
+                    totalTasks++;
+                    
+                    if (subtask.status === 'todo') todo++;
+                    else if (subtask.status === 'in-progress') inProgress++;
+                    else if (subtask.status === 'completed') {
+                        completed++;
+                    }
+                    else if (subtask.status === 'blocker') blocker++;
+                    
+                    if (subtask.priority === 'high') high++;
+                    else if (subtask.priority === 'medium') medium++;
+                    else if (subtask.priority === 'low') low++;
+                    
+                    if (subtask.status !== 'completed' && new Date(subtask.deadline) < now) {
+                        overdue++;
+                    }
+                });
+            }
+        });
+        
+        const completionRate = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+        
+        res.json({
+            data: {
+                department: {
+                    id: department.id,
+                    name: department.name
+                },
+                stats: {
+                    totalTasks,
+                    todo,
+                    inProgress,
+                    completed,
+                    blocker,
+                    high,
+                    medium,
+                    low,
+                    overdue,
+                    completionRate,
+                    totalUsers: userIds.length
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Get department stats error:', e);
+        console.error('Error details:', JSON.stringify(e, null, 2));
+        res.status(500).json({ error: 'Failed to fetch department statistics', details: e.message });
+    }
+});
+
 export default router;
 
 
