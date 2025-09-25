@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { BuildingIcon, UsersIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, UserPlus, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
 import { DepartmentModal } from '../components/departments/DepartmentModal';
 import { InlineDepartmentStats } from '../components/departments/InlineDepartmentStats';
+import { SearchableDropdown } from '../components/ui/SearchableDropdown';
 import { useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
@@ -829,19 +830,19 @@ function DepartmentsPageContent() {
                     <div className="flex gap-4 mb-4">
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Select User</label>
-                        <select 
-                          value={selectedUserId} 
-                          onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} 
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                        >
-                          <option value="">Choose a user...</option>
-                          {users.map(u => (
-                            <option key={u.id} value={u.id}>
-                              {u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}
-                              {u.departmentId && u.departmentId !== selectedDept?.id && ' - Currently in another department'}
-                            </option>
-                          ))}
-                        </select>
+                        <SearchableDropdown
+                          options={users.map(u => ({
+                            id: u.id,
+                            label: u.name,
+                            value: u.name,
+                            subtitle: u.email ? u.email : u.ldapUid
+                          }))}
+                          value={selectedUserId}
+                          onChange={(value) => setSelectedUserId(value as number | '')}
+                          placeholder="Choose a user..."
+                          searchPlaceholder="Search users..."
+                          className="w-full"
+                        />
                       </div>
                       
                       <div className="flex items-end">

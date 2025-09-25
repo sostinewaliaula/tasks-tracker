@@ -4,6 +4,7 @@ import { useTask } from '../context/TaskContext';
 import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
 import { DepartmentModal } from '../components/departments/DepartmentModal';
 import { InlineDepartmentStats } from '../components/departments/InlineDepartmentStats';
+import { SearchableDropdown } from '../components/ui/SearchableDropdown';
 import { useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
@@ -626,19 +627,21 @@ function ManagerDepartmentsPageContent() {
                   <div className="px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg leading-6 font-medium accent-green mb-3">Add User to Department</h3>
                     <div className="flex gap-3">
-                      <select 
-                        value={selectedUserId} 
-                        onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} 
-                        className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
-                      >
-                        <option value="">Select user…</option>
-                        {users.map(u => (
-                          <option key={u.id} value={u.id}>
-                            {u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}
-                            {u.departmentId && u.departmentId !== selectedDept?.id && ' - Currently in another department'}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex-1">
+                        <SearchableDropdown
+                          options={users.map(u => ({
+                            id: u.id,
+                            label: u.name,
+                            value: u.name,
+                            subtitle: u.email ? u.email : u.ldapUid
+                          }))}
+                          value={selectedUserId}
+                          onChange={(value) => setSelectedUserId(value as number | '')}
+                          placeholder="Select user..."
+                          searchPlaceholder="Search users..."
+                          className="w-full"
+                        />
+                      </div>
                       <button
                         onClick={handleAssignUser}
                         disabled={!selectedUserId || !selectedDept}
