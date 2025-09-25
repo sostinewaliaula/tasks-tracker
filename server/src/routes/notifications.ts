@@ -1,12 +1,12 @@
 import express from 'express';
 import { PrismaClient } from '../generated/prisma2';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Create notification
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const { message, type, relatedTaskId } = req.body;
@@ -41,7 +41,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Get user's notifications
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     
@@ -67,7 +67,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Mark notification as read
-router.patch('/:id/read', authenticateToken, async (req, res) => {
+router.patch('/:id/read', authMiddleware, async (req, res) => {
   try {
     const notificationId = parseInt(req.params.id);
     const userId = (req as any).user.id;
@@ -94,7 +94,7 @@ router.patch('/:id/read', authenticateToken, async (req, res) => {
 });
 
 // Delete notification
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const notificationId = parseInt(req.params.id);
     const userId = (req as any).user.id;
@@ -120,7 +120,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Mark all notifications as read
-router.patch('/mark-all-read', authenticateToken, async (req, res) => {
+router.patch('/mark-all-read', authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).user.id;
 
@@ -137,7 +137,7 @@ router.patch('/mark-all-read', authenticateToken, async (req, res) => {
 });
 
 // Delete multiple notifications
-router.delete('/bulk', authenticateToken, async (req, res) => {
+router.delete('/bulk', authMiddleware, async (req, res) => {
   try {
     const { notificationIds } = req.body;
     const userId = (req as any).user.id;
