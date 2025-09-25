@@ -458,7 +458,7 @@ function ManagerDepartmentsPageContent() {
         </div>
 
       </div>
-      
     </div>
   );
 }
+

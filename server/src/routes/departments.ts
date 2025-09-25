@@ -15,26 +15,26 @@ router.get('/', async (req, res) => {
         
         // If user is admin, return all departments
         if (user.role === 'admin') {
-            const departments = await prisma.department.findMany({
-                where: { parentId: null },
-                include: {
-                    manager: { select: { id: true, name: true } },
-                    users: { select: { id: true, name: true, role: true } },
-                    children: {
-                        include: {
-                            manager: { select: { id: true, name: true } },
-                            users: { select: { id: true, name: true, role: true } },
-                            children: {
-                                include: {
-                                    manager: { select: { id: true, name: true } },
-                                    users: { select: { id: true, name: true, role: true } },
-                                },
+        const departments = await prisma.department.findMany({
+            where: { parentId: null },
+            include: {
+                manager: { select: { id: true, name: true } },
+                users: { select: { id: true, name: true, role: true } },
+                children: {
+                    include: {
+                        manager: { select: { id: true, name: true } },
+                        users: { select: { id: true, name: true, role: true } },
+                        children: {
+                            include: {
+                                manager: { select: { id: true, name: true } },
+                                users: { select: { id: true, name: true, role: true } },
                             },
                         },
                     },
                 },
-                orderBy: { name: 'asc' },
-            });
+            },
+            orderBy: { name: 'asc' },
+        });
             return res.json({ data: departments });
         }
         

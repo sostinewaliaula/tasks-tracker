@@ -90,23 +90,23 @@ export function UsersPage() {
   // Filter and sort users
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = users.filter(user => {
-      // Apply role filter
-      if (filters.role !== 'all' && user.role !== filters.role) return false;
-      // Apply department filters
-      if (filters.primaryDepartment !== 'all') {
-        const userPrimary = user.primaryDepartment || user.department || '';
-        if (userPrimary !== filters.primaryDepartment) return false;
-        if (filters.subDepartment !== 'all') {
-          const userSub = user.subDepartment || '';
-          if (userSub !== filters.subDepartment) return false;
-        }
+    // Apply role filter
+    if (filters.role !== 'all' && user.role !== filters.role) return false;
+    // Apply department filters
+    if (filters.primaryDepartment !== 'all') {
+      const userPrimary = user.primaryDepartment || user.department || '';
+      if (userPrimary !== filters.primaryDepartment) return false;
+      if (filters.subDepartment !== 'all') {
+        const userSub = user.subDepartment || '';
+        if (userSub !== filters.subDepartment) return false;
       }
-      // Apply search filter
-      if (filters.search && !user.name.toLowerCase().includes(filters.search.toLowerCase()) && !user.email.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false;
-      }
-      return true;
-    });
+    }
+    // Apply search filter
+    if (filters.search && !user.name.toLowerCase().includes(filters.search.toLowerCase()) && !user.email.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
     // Sort users
     filtered.sort((a, b) => {
@@ -298,7 +298,7 @@ export function UsersPage() {
               </div>
             )}
           </div>
-          <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
               {formatDisplayName(user.name)}
               {user.id === currentUser?.id && (
@@ -361,14 +361,14 @@ export function UsersPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
-                <UsersIcon className="h-8 w-8 mr-3 text-[#2e9d74]" />
-                Users
+            <UsersIcon className="h-8 w-8 mr-3 text-[#2e9d74]" />
+            Users
               </h1>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Manage and view all users in your organization
-              </p>
-            </div>
-          </div>
+            Manage and view all users in your organization
+          </p>
+        </div>
+      </div>
         </div>
 
         {/* Stats Cards */}
@@ -442,7 +442,7 @@ export function UsersPage() {
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                 </div>
-              </div>
+          </div>
 
               {/* Controls */}
               <div className="flex items-center space-x-4">
@@ -490,26 +490,26 @@ export function UsersPage() {
             {showFilters && (
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
+            <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Role
-                    </label>
+                Role
+              </label>
                     <select
                       value={filters.role}
                       onChange={handleRoleFilterChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="all">All Roles</option>
+                <option value="all">All Roles</option>
                       <option value="admin">Admin</option>
                       <option value="manager">Manager</option>
-                      <option value="employee">Employee</option>
-                    </select>
-                  </div>
+                <option value="employee">Employee</option>
+              </select>
+            </div>
                   
-                  <div>
+            <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Department
-                    </label>
+              </label>
                     <select
                       value={filters.primaryDepartment}
                       onChange={handlePrimaryDepartmentChange}
@@ -519,13 +519,13 @@ export function UsersPage() {
                       {departments.map(dept => (
                         <option key={dept} value={dept}>{dept}</option>
                       ))}
-                    </select>
-                  </div>
+              </select>
+            </div>
                   
-                  <div>
+            <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Sort By
-                    </label>
+              </label>
                     <select
                       value={`${sortBy}-${sortOrder}`}
                       onChange={(e) => {
@@ -543,10 +543,10 @@ export function UsersPage() {
                       <option value="department-desc">Department (Z-A)</option>
                       <option value="tasks-desc">Most Tasks</option>
                       <option value="tasks-asc">Least Tasks</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              </select>
+            </div>
+          </div>
+        </div>
             )}
           </div>
         </div>
@@ -609,7 +609,7 @@ export function UsersPage() {
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th className="px-6 py-3 text-left">
@@ -630,7 +630,7 @@ export function UsersPage() {
                           <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
                         )}
                       </div>
-                    </th>
+                </th>
                     <th 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
                       onClick={() => handleSort('role')}
@@ -641,34 +641,34 @@ export function UsersPage() {
                           <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
                         )}
                       </div>
-                    </th>
+                </th>
                     <th 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
                       onClick={() => handleSort('department')}
                     >
                       <div className="flex items-center">
-                        Department
+                  Department
                         {sortBy === 'department' && (
                           <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
                         )}
                       </div>
-                    </th>
+                </th>
                     <th 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
                       onClick={() => handleSort('tasks')}
                     >
                       <div className="flex items-center">
-                        Tasks
+                  Tasks
                         {sortBy === 'tasks' && (
                           <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
                         )}
                       </div>
-                    </th>
+                </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Actions
-                    </th>
-                  </tr>
-                </thead>
+                </th>
+              </tr>
+            </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredAndSortedUsers.map(user => (
                     <tr 
@@ -685,35 +685,35 @@ export function UsersPage() {
                           className="h-4 w-4 text-[#2e9d74] focus:ring-[#2e9d74] border-gray-300 dark:border-gray-600 rounded"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
                           <img 
                             className="h-10 w-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700" 
                             src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatDisplayName(user.name))}&background=2e9d74&color=fff&size=40`} 
                             alt={formatDisplayName(user.name)}
                           />
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                               {formatDisplayName(user.name)}
                               {user.id === currentUser?.id && (
                                 <span className="ml-2 text-xs text-[#2e9d74] font-medium">(You)</span>
                               )}
-                            </div>
+                        </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                               <MailIcon className="h-3 w-3 mr-1" />
-                              {user.email}
-                            </div>
-                          </div>
+                          {user.email}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                         <RoleBadge role={user.role} />
-                      </td>
+                  </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 flex items-center">
                         <BuildingIcon className="h-4 w-4 mr-2" />
                         {user.department || 'No Department'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-4 text-sm">
                           <div className="flex items-center text-green-600 dark:text-green-400">
                             <CheckCircleIcon className="h-4 w-4 mr-1" />
@@ -722,10 +722,10 @@ export function UsersPage() {
                           <div className="flex items-center text-blue-600 dark:text-blue-400">
                             <ClockIcon className="h-4 w-4 mr-1" />
                             {user.tasksInProgress || 0}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <button className="text-[#2e9d74] hover:text-[#228a63] p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
                             <EditIcon className="h-4 w-4" />
@@ -734,15 +734,15 @@ export function UsersPage() {
                             <MoreVerticalIcon className="h-4 w-4" />
                           </button>
                         </div>
-                      </td>
+                  </td>
                     </tr>
                   ))}
-                </tbody>
-              </table>
-            </div>
+            </tbody>
+          </table>
+        </div>
           </div>
         )}
       </div>
-    </div>
+      </div>
   );
 }
