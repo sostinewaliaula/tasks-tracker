@@ -96,7 +96,13 @@ export function Header() {
               <button
                 onClick={() => {
                   setIsNotificationsOpen(false);
-                  navigate(isManager ? '/manager/dashboard' : '/dashboard');
+                  if (isAdmin) {
+                    navigate('/admin/dashboard');
+                  } else if (isManager) {
+                    navigate('/manager/dashboard');
+                  } else {
+                    navigate('/dashboard');
+                  }
                 }}
                 className={`${
                   location.pathname.includes('dashboard')
@@ -124,21 +130,23 @@ export function Header() {
                 Tasks
               </button>
 
-              {/* My Reports - available to all */}
-              <button
-                onClick={() => {
-                  setIsNotificationsOpen(false);
-                  navigate('/my-reports');
-                }}
-                className={`${
-                  location.pathname === '/my-reports'
-                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
-              >
-                <BarChart3Icon className="h-4 w-4 mr-2" />
-                My Reports
-              </button>
+              {/* My Reports - available to all except admins */}
+              {!isAdmin && (
+                <button
+                  onClick={() => {
+                    setIsNotificationsOpen(false);
+                    navigate('/my-reports');
+                  }}
+                  className={`${
+                    location.pathname === '/my-reports'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <BarChart3Icon className="h-4 w-4 mr-2" />
+                  My Reports
+                </button>
+              )}
 
               {/* Notifications - available to all */}
               <button
@@ -314,7 +322,13 @@ export function Header() {
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   setIsNotificationsOpen(false);
-                  navigate(isManager ? '/manager/dashboard' : '/dashboard');
+                  if (isAdmin) {
+                    navigate('/admin/dashboard');
+                  } else if (isManager) {
+                    navigate('/manager/dashboard');
+                  } else {
+                    navigate('/dashboard');
+                  }
                 }}
                 className={`${
                   location.pathname.includes('dashboard')
@@ -343,22 +357,24 @@ export function Header() {
                 Tasks
               </button>
 
-              {/* My Reports */}
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsNotificationsOpen(false);
-                  navigate('/my-reports');
-                }}
-                className={`${
-                  location.pathname === '/my-reports'
-                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
-              >
-                <BarChart3Icon className="h-4 w-4 mr-2" />
-                My Reports
-              </button>
+              {/* My Reports - available to all except admins */}
+              {!isAdmin && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotificationsOpen(false);
+                    navigate('/my-reports');
+                  }}
+                  className={`${
+                    location.pathname === '/my-reports'
+                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
+                >
+                  <BarChart3Icon className="h-4 w-4 mr-2" />
+                  My Reports
+                </button>
+              )}
 
               {/* Notifications */}
               <button
