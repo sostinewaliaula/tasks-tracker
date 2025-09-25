@@ -12,6 +12,8 @@ type DepartmentNode = {
   children?: DepartmentNode[];
   managerId?: number | null;
   description?: string;
+  manager?: { id: number; name: string };
+  users?: { id: number; name: string; role: string }[];
 };
 
 function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boolean; onCancel: () => void; onConfirm: () => void; deptName: string }) {
@@ -357,10 +359,32 @@ function DepartmentsPageContent() {
     setEditLoading(false);
   };
 
-  // Helper to get member count for a department
-  function getDepartmentMemberCount(dept: DepartmentNode, users: { id: number; name: string; email: string | null; ldapUid: string; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]) {
-    // Count users whose primaryDepartment or department matches
-    return users.filter(u => u.primaryDepartment === dept.name || u.department === dept.name).length;
+  // Helper to get member count for a department (including all sub-departments)
+  function getDepartmentMemberCount(dept: DepartmentNode, includeSubDepartments: boolean = true) {
+    let count = 0;
+    
+    // Count users directly assigned to this department + manager
+    if (dept.managerId) {
+      count += 1;
+    }
+    
+    if (dept.users) {
+      count += dept.users.length;
+    }
+    
+    // If including sub-departments, recursively count members from all children
+    if (includeSubDepartments && dept.children) {
+      for (const child of dept.children) {
+        count += getDepartmentMemberCount(child, true);
+      }
+    }
+    
+    return count;
+  }
+
+  // Helper to get only direct members (not including sub-departments)
+  function getDirectMemberCount(dept: DepartmentNode) {
+    return getDepartmentMemberCount(dept, false);
   }
 
   const renderTree = (nodes: DepartmentNode[]) => (
@@ -420,12 +444,18 @@ function DepartmentsPageContent() {
                   <div className="flex items-center space-x-4 mt-1">
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <UsersIcon className="h-3 w-3 mr-1" />
-                      {getDepartmentMemberCount(dept, users)} members
+                      {getDirectMemberCount(dept)} direct members
                     </div>
                     {dept.children && dept.children.length > 0 && (
                       <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                         <BuildingIcon className="h-3 w-3 mr-1" />
                         {dept.children.length} sub-departments
+                      </div>
+                    )}
+                    {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
+                      <div className="flex items-center text-sm text-green-600 dark:text-green-400 font-medium">
+                        <UsersIcon className="h-3 w-3 mr-1" />
+                        {getDepartmentMemberCount(dept)} total members
                       </div>
                     )}
                   </div>
@@ -582,8 +612,18 @@ function DepartmentsPageContent() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold">{getDepartmentMemberCount(selectedDept, users)}</div>
-                      <div className="text-white/80 text-sm">Team Members</div>
+                      <div className="text-2xl font-bold">{getDepartmentMemberCount(selectedDept)}</div>
+                      <div className="text-white/80 text-sm">
+                        {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) 
+                          ? 'Total Team Members' 
+                          : 'Team Members'
+                        }
+                      </div>
+                      {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) && (
+                        <div className="text-white/60 text-xs mt-1">
+                          ({getDirectMemberCount(selectedDept)} direct + {getDepartmentMemberCount(selectedDept) - getDirectMemberCount(selectedDept)} from sub-departments)
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -611,9 +651,19 @@ function DepartmentsPageContent() {
                         </div>
                         <div>
                           <div className="text-lg font-bold text-green-900 dark:text-green-100">
-                            {getDepartmentMemberCount(selectedDept, users)}
+                            {getDepartmentMemberCount(selectedDept)}
                           </div>
-                          <div className="text-sm text-green-700 dark:text-green-300">Team Members</div>
+                          <div className="text-sm text-green-700 dark:text-green-300">
+                            {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) 
+                              ? 'Total Team Members' 
+                              : 'Team Members'
+                            }
+                          </div>
+                          {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) && (
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              {getDirectMemberCount(selectedDept)} direct + {getDepartmentMemberCount(selectedDept) - getDirectMemberCount(selectedDept)} sub-depts
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -670,6 +720,130 @@ function DepartmentsPageContent() {
                       </div>
                     </div>
                   )}
+
+                  {/* Department Members */}
+                  <div className="mt-8">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                      <UsersIcon className="h-5 w-5 mr-2 text-green-600" />
+                      Team Members ({getDepartmentMemberCount(selectedDept)})
+                      {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) && (
+                        <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                          (including all sub-departments)
+                        </span>
+                      )}
+                    </h4>
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                      {(() => {
+                        const members = [];
+                        
+                        // Add manager if exists
+                        if (selectedDept.manager) {
+                          members.push({
+                            ...selectedDept.manager,
+                            role: 'manager',
+                            isManager: true,
+                            departmentName: selectedDept.name,
+                            parentDepartment: undefined,
+                          });
+                        }
+                        
+                        // Add regular users from this department
+                        if (selectedDept.users) {
+                          const regularUsers = selectedDept.users.filter(user => 
+                            !selectedDept.manager || user.id !== selectedDept.manager.id
+                          );
+                          members.push(...regularUsers.map(user => ({
+                            ...user,
+                            isManager: false,
+                            departmentName: selectedDept.name,
+                            parentDepartment: undefined,
+                          })));
+                        }
+                        
+                        // Add members from sub-departments
+                        const addSubDepartmentMembers = (dept: DepartmentNode, parentName: string) => {
+                          if (dept.children) {
+                            for (const child of dept.children) {
+                              // Add manager if exists
+                              if (child.manager) {
+                                members.push({
+                                  ...child.manager,
+                                  role: 'manager',
+                                  isManager: true,
+                                  departmentName: child.name,
+                                  parentDepartment: parentName,
+                                });
+                              }
+                              
+                              // Add regular users
+                              if (child.users) {
+                                const childUsers = child.users.filter(user => 
+                                  !child.manager || user.id !== child.manager.id
+                                );
+                                members.push(...childUsers.map(user => ({
+                                  ...user,
+                                  isManager: false,
+                                  departmentName: child.name,
+                                  parentDepartment: parentName,
+                                })));
+                              }
+                              
+                              // Recursively add from deeper sub-departments
+                              addSubDepartmentMembers(child, child.name);
+                            }
+                          }
+                        };
+                        
+                        addSubDepartmentMembers(selectedDept, selectedDept.name);
+                        
+                        if (members.length === 0) {
+                          return (
+                            <div className="text-center py-8">
+                              <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                              <p className="text-gray-500 dark:text-gray-400">No team members assigned</p>
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div className="space-y-3">
+                            {members.map((member) => (
+                              <div key={`${member.id}-${member.departmentName}`} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                                <div className="flex items-center space-x-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                    member.isManager 
+                                      ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white' 
+                                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                                  }`}>
+                                    {member.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                                      {member.name}
+                                      {member.isManager && (
+                                        <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
+                                          Manager
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                                      {member.role}
+                                    </div>
+                                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                                      {member.departmentName}
+                                      {member.parentDepartment && member.parentDepartment !== member.departmentName && (
+                                        <span className="ml-1">(sub-department of {member.parentDepartment})</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 </div>
                 {/* User Assignment Section */}
                 {currentUser?.role === 'admin' ? (

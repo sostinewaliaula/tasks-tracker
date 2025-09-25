@@ -9,6 +9,10 @@ type DepartmentNode = {
   name: string;
   parentId: number | null;
   children?: DepartmentNode[];
+  managerId?: number | null;
+  description?: string;
+  manager?: { id: number; name: string };
+  users?: { id: number; name: string; role: string }[];
 };
 
 export function AdminDepartmentPanel() {

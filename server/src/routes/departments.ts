@@ -14,12 +14,15 @@ router.get('/', async (_req, res) => {
             where: { parentId: null },
             include: {
                 manager: { select: { id: true, name: true } },
+                users: { select: { id: true, name: true, role: true } },
                 children: {
                     include: {
                         manager: { select: { id: true, name: true } },
+                        users: { select: { id: true, name: true, role: true } },
                         children: {
                             include: {
                                 manager: { select: { id: true, name: true } },
+                                users: { select: { id: true, name: true, role: true } },
                             },
                         },
                     },
@@ -169,6 +172,64 @@ router.post('/:id/users', async (req, res) => {
     } catch (e) {
         console.error('Assign user to department error:', e);
         res.status(500).json({ error: 'Failed to assign user to department' });
+    }
+});
+
+// Get department members (including manager)
+router.get('/:id/members', async (req, res) => {
+    const departmentId = Number(req.params.id);
+    if (!Number.isFinite(departmentId)) {
+        return res.status(400).json({ error: 'Invalid department id' });
+    }
+    
+    try {
+        const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+                manager: { select: { id: true, name: true, email: true, role: true } },
+                users: { select: { id: true, name: true, email: true, role: true } },
+            },
+        });
+        
+        if (!department) {
+            return res.status(404).json({ error: 'Department not found' });
+        }
+        
+        // Combine manager and users into a single members array
+        const members = [];
+        
+        // Add manager if exists
+        if (department.manager) {
+            members.push({
+                ...department.manager,
+                isManager: true,
+            });
+        }
+        
+        // Add regular users (excluding manager if they're also in users list)
+        const regularUsers = department.users.filter(user => 
+            !department.manager || user.id !== department.manager.id
+        );
+        
+        members.push(...regularUsers.map(user => ({
+            ...user,
+            isManager: false,
+        })));
+        
+        res.json({ 
+            data: {
+                department: {
+                    id: department.id,
+                    name: department.name,
+                    parentId: department.parentId,
+                },
+                members,
+                totalMembers: members.length,
+            }
+        });
+    } catch (e) {
+        console.error('Get department members error:', e);
+        res.status(500).json({ error: 'Failed to load department members' });
     }
 });
 

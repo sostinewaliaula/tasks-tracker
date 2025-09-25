@@ -12,6 +12,8 @@ type DepartmentNode = {
   children?: DepartmentNode[];
   managerId?: number | null;
   description?: string;
+  manager?: { id: number; name: string };
+  users?: { id: number; name: string; role: string }[];
 };
 
 function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boolean; onCancel: () => void; onConfirm: () => void; deptName: string }) {
@@ -353,8 +355,32 @@ function ManagerDepartmentsPageContent() {
     setEditLoading(false);
   };
 
-  function getDepartmentMemberCount(dept: DepartmentNode, users: { id: number; name: string; email: string | null; ldapUid: string; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]) {
-    return users.filter(u => u.primaryDepartment === dept.name || u.department === dept.name).length;
+  // Helper to get member count for a department (including all sub-departments)
+  function getDepartmentMemberCount(dept: DepartmentNode, includeSubDepartments: boolean = true) {
+    let count = 0;
+    
+    // Count users directly assigned to this department + manager
+    if (dept.managerId) {
+      count += 1;
+    }
+    
+    if (dept.users) {
+      count += dept.users.length;
+    }
+    
+    // If including sub-departments, recursively count members from all children
+    if (includeSubDepartments && dept.children) {
+      for (const child of dept.children) {
+        count += getDepartmentMemberCount(child, true);
+      }
+    }
+    
+    return count;
+  }
+
+  // Helper to get only direct members (not including sub-departments)
+  function getDirectMemberCount(dept: DepartmentNode) {
+    return getDepartmentMemberCount(dept, false);
   }
 
   const renderTree = (nodes: DepartmentNode[]) => (
@@ -389,7 +415,12 @@ function ManagerDepartmentsPageContent() {
               <div>
                 <div className="font-medium text-gray-900 dark:text-gray-100">{dept.name}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {getDepartmentMemberCount(dept, users)} members
+                  {getDirectMemberCount(dept)} direct members
+                  {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
+                    <span className="ml-2 text-green-600 dark:text-green-400 font-medium">
+                      ({getDepartmentMemberCount(dept)} total)
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -526,7 +557,14 @@ function ManagerDepartmentsPageContent() {
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">Team Size</dt>
-                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{getDepartmentMemberCount(selectedDept, users)} members</dd>
+                      <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                        {getDepartmentMemberCount(selectedDept)} total members
+                        {getDepartmentMemberCount(selectedDept) > getDirectMemberCount(selectedDept) && (
+                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            ({getDirectMemberCount(selectedDept)} direct + {getDepartmentMemberCount(selectedDept) - getDirectMemberCount(selectedDept)} from sub-departments)
+                          </span>
+                        )}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-300">Tasks</dt>
