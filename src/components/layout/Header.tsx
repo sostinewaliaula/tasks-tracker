@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BellIcon, LogOutIcon, UserIcon, SettingsIcon, LayoutDashboardIcon, CheckSquareIcon, BarChart3Icon, UsersIcon, BuildingIcon, ShieldIcon, MenuIcon, XIcon } from 'lucide-react';
+import { BellIcon, LogOutIcon, UserIcon, SettingsIcon, LayoutDashboardIcon, CheckSquareIcon, BarChart3Icon, UsersIcon, BuildingIcon, MenuIcon, XIcon } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../components/auth/RBAC';
@@ -231,8 +231,8 @@ export function Header() {
                 </button>
               )}
 
-              {/* Manager Departments - managers and admins only */}
-              {(isManager || isAdmin) && (
+              {/* Manager Departments - managers only */}
+              {isManager && (
                 <button
                   onClick={() => {
                     setIsNotificationsOpen(false);
@@ -245,7 +245,7 @@ export function Header() {
                   } inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
                   <BuildingIcon className="h-4 w-4 mr-2" />
-                  {isAdmin ? 'Manager Departments' : 'Departments'}
+                  Departments
                 </button>
               )}
 
@@ -301,7 +301,6 @@ export function Header() {
               onLogout={() => { logout(); navigate('/login'); }}
               onProfile={() => navigate('/profile')}
               onUserSettings={() => navigate('/user-settings')}
-              isAdmin={isAdmin}
             />
           </div>
         </div>
@@ -457,8 +456,8 @@ export function Header() {
                 </button>
               )}
 
-              {/* Manager Departments - managers and admins only */}
-              {(isManager || isAdmin) && (
+              {/* Manager Departments - managers only */}
+              {isManager && (
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
@@ -472,7 +471,7 @@ export function Header() {
                   } w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200`}
                 >
                   <BuildingIcon className="h-4 w-4 mr-2" />
-                  {isAdmin ? 'Manager Departments' : 'Departments'}
+                  Departments
                 </button>
               )}
 
@@ -484,7 +483,7 @@ export function Header() {
   );
 }
 
-function ProfileMenu({ name, roleLabel, onLogout, onProfile, onUserSettings, isAdmin }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onUserSettings: () => void; isAdmin: boolean; }) {
+function ProfileMenu({ name, roleLabel, onLogout, onProfile, onUserSettings }: { name: string; roleLabel: string; onLogout: () => void; onProfile: () => void; onUserSettings: () => void; }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
