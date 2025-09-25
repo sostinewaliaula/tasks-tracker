@@ -242,6 +242,7 @@ export function AdminDepartmentPanel() {
         parentName={modalParent?.name}
         primaryDepartments={departments.filter(d => d.parentId === null).map(d => ({ id: d.id, name: d.name }))}
         users={users}
+        departments={departments}
       />
       {/* Rename and error UI remains unchanged */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

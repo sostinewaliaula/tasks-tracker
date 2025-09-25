@@ -10,14 +10,43 @@ interface DepartmentModalProps {
   parentName?: string;
   primaryDepartments?: { id: number; name: string }[];
   users?: { id: number; name: string; role: string; departmentId?: number | null }[];
+  departments?: { id: number; name: string; managerId?: number | null; children?: any[] }[];
 }
 
-export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments, users }: DepartmentModalProps) {
+export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments, users, departments }: DepartmentModalProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(parentId ?? null);
   const [selectedManagerId, setSelectedManagerId] = useState<number | null>(null);
   const { showToast } = useToast();
+
+  // Get all existing manager IDs from departments
+  const getExistingManagerIds = () => {
+    const managerIds = new Set<number>();
+    
+    const collectManagerIds = (depts: any[]) => {
+      depts.forEach(dept => {
+        if (dept.managerId) {
+          managerIds.add(dept.managerId);
+        }
+        if (dept.children) {
+          collectManagerIds(dept.children);
+        }
+      });
+    };
+    
+    if (departments) {
+      collectManagerIds(departments);
+    }
+    
+    return managerIds;
+  };
+
+  // Filter out users who are already managers
+  const availableUsers = users ? users.filter(user => {
+    const existingManagerIds = getExistingManagerIds();
+    return !existingManagerIds.has(user.id);
+  }) : [];
 
   useEffect(() => {
     if (open) {
@@ -130,14 +159,16 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                 onChange={e => setSelectedManagerId(e.target.value ? Number(e.target.value) : null)}
               >
                 <option value="">No manager</option>
-                {users && users.length > 0 ? (
-                  users.map(user => (
+                {availableUsers && availableUsers.length > 0 ? (
+                  availableUsers.map(user => (
                     <option key={user.id} value={user.id}>
                       {user.name} {user.role !== 'manager' && user.role !== 'admin' ? '(will be promoted to manager)' : ''}
                     </option>
                   ))
                 ) : (
-                  <option value="" disabled>Loading users...</option>
+                  <option value="" disabled>
+                    {users && users.length > 0 ? 'All users are already managers' : 'Loading users...'}
+                  </option>
                 )}
               </select>
               {selectedManagerId && users && (

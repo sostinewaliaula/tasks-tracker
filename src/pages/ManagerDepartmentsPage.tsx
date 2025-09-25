@@ -32,17 +32,51 @@ function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boo
   );
 }
 
-function EditDepartmentModal({ open, onClose, department, managerOptions, onSave, loading }: {
+function EditDepartmentModal({ open, onClose, department, managerOptions, onSave, loading, departments }: {
   open: boolean;
   onClose: () => void;
   department: DepartmentNode | null;
   managerOptions: { id: number; name: string }[];
   onSave: (data: { name: string; managerId: number | null; description?: string }) => void;
   loading: boolean;
+  departments?: DepartmentNode[];
 }) {
   const [name, setName] = useState(department?.name || '');
   const [managerId, setManagerId] = useState<number | ''>(department?.managerId || '');
   const [description, setDescription] = useState(department?.description || '');
+  
+  // Get all existing manager IDs from departments (excluding current department)
+  const getExistingManagerIds = () => {
+    const managerIds = new Set<number>();
+    
+    const collectManagerIds = (depts: DepartmentNode[]) => {
+      depts.forEach(dept => {
+        // Skip the current department being edited
+        if (dept.id !== department?.id && dept.managerId) {
+          managerIds.add(dept.managerId);
+        }
+        if (dept.children) {
+          collectManagerIds(dept.children);
+        }
+      });
+    };
+    
+    if (departments) {
+      collectManagerIds(departments);
+    }
+    
+    return managerIds;
+  };
+
+  // Filter out users who are already managers (except current manager)
+  const availableManagerOptions = managerOptions.filter(manager => {
+    const existingManagerIds = getExistingManagerIds();
+    return !existingManagerIds.has(manager.id);
+  });
+
+  // Ensure current manager is always available in the dropdown
+  const finalManagerOptions = availableManagerOptions.length > 0 ? availableManagerOptions : 
+    (department?.managerId ? managerOptions.filter(m => m.id === department.managerId) : []);
   
   useEffect(() => {
     setName(department?.name || '');
@@ -111,9 +145,15 @@ function EditDepartmentModal({ open, onClose, department, managerOptions, onSave
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
               >
                 <option value="">No manager</option>
-                {managerOptions.map(u => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
+                {finalManagerOptions.length > 0 ? (
+                  finalManagerOptions.map(u => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    {managerOptions.length > 0 ? 'All users are already managers' : 'No users available'}
+                  </option>
+                )}
               </select>
             </div>
             
@@ -485,6 +525,7 @@ function ManagerDepartmentsPageContent() {
               parentName={modalParent?.name}
               primaryDepartments={modalParent ? primaryDepartments : undefined}
               users={users}
+              departments={departments}
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -636,7 +677,7 @@ function ManagerDepartmentsPageContent() {
         </div>
       </div>
       <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
-      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={[...managers, ...(editModal.dept?.managerId ? managers.find(m => m.id === editModal.dept?.managerId) ? [] : [{ id: editModal.dept.managerId, name: users.find(u => u.id === editModal.dept?.managerId)?.name || `User ${editModal.dept.managerId}` }] : [])]} onSave={handleEditSave} loading={editLoading} />
+      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={users.map(u => ({ id: u.id, name: u.name }))} onSave={handleEditSave} loading={editLoading} departments={departments} />
     </div>
   );
 }
