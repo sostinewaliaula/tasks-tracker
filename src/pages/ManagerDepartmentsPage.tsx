@@ -270,6 +270,14 @@ function ManagerDepartmentsPageContent() {
   const { showToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; deptId?: number; deptName?: string }>({ open: false });
 
+  // Utility function to format names
+  const formatName = (name: string) => {
+    return name
+      .split('.')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  };
+
 
   const deleteDept = (id: number) => {
     const dept = allDepartments.find(d => d.id === id);
@@ -618,7 +626,7 @@ function ManagerDepartmentsPageContent() {
                   <InlineDepartmentStats 
                     departmentId={selectedDept.id}
                     departmentName={selectedDept.name}
-                    managerName={selectedDept.managerId ? users.find(u => u.id === selectedDept.managerId)?.name || '—' : '—'}
+                    managerName={selectedDept.managerId ? (users.find(u => u.id === selectedDept.managerId) ? formatName(users.find(u => u.id === selectedDept.managerId)!.name) : '—') : '—'}
                   />
                 </div>
                 {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
@@ -629,7 +637,7 @@ function ManagerDepartmentsPageContent() {
                         <SearchableDropdown
                           options={users.map(u => ({
                             id: u.id,
-                            label: u.name,
+                            label: formatName(u.name),
                             value: u.name,
                             subtitle: u.email ? u.email : u.ldapUid
                           }))}
@@ -671,7 +679,7 @@ function ManagerDepartmentsPageContent() {
         </div>
       </div>
       <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
-      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={users.map(u => ({ id: u.id, name: u.name }))} onSave={handleEditSave} loading={editLoading} departments={departments} />
+      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={users.map(u => ({ id: u.id, name: formatName(u.name) }))} onSave={handleEditSave} loading={editLoading} departments={departments} />
     </div>
   );
 }

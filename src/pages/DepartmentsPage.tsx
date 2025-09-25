@@ -264,6 +264,14 @@ function DepartmentsPageContent() {
   const { showToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; deptId?: number; deptName?: string }>({ open: false });
 
+  // Utility function to format names
+  const formatName = (name: string) => {
+    return name
+      .split('.')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const deleteDept = async (id: number) => {
     setDeleteModal({ open: true, deptId: id, deptName: allDepartments.find(d => d.id === id)?.name });
   };
@@ -685,7 +693,7 @@ function DepartmentsPageContent() {
                   <InlineDepartmentStats 
                     departmentId={selectedDept.id}
                     departmentName={selectedDept.name}
-                    managerName={selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId)?.name || '—') : '—'}
+                    managerName={selectedDept?.managerId ? (users.find(u => u.id === selectedDept.managerId) ? formatName(users.find(u => u.id === selectedDept.managerId)!.name) : '—') : '—'}
                   />
 
                   {/* Department Members */}
@@ -782,11 +790,11 @@ function DepartmentsPageContent() {
                                       ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white' 
                                       : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                                   }`}>
-                                    {member.name.charAt(0).toUpperCase()}
+                                    {formatName(member.name).charAt(0)}
                                   </div>
                                   <div>
-                                    <div className="font-medium text-gray-900 dark:text-gray-100">
-                                      {member.name}
+                                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                                    {formatName(member.name)}
                                       {member.isManager && (
                                         <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
                                           Manager
@@ -831,7 +839,7 @@ function DepartmentsPageContent() {
                         <SearchableDropdown
                           options={users.map(u => ({
                             id: u.id,
-                            label: u.name,
+                            label: formatName(u.name),
                             value: u.name,
                             subtitle: u.email ? u.email : u.ldapUid
                           }))}
@@ -891,7 +899,7 @@ function DepartmentsPageContent() {
         </div>
       </div>
       <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
-      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={users.map(u => ({ id: u.id, name: u.name }))} onSave={handleEditSave} loading={editLoading} departments={departments} />
+      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={users.map(u => ({ id: u.id, name: formatName(u.name) }))} onSave={handleEditSave} loading={editLoading} departments={departments} />
     </div>
   );
 }
