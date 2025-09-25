@@ -436,7 +436,7 @@ function ManagerDepartmentsPageContent() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              {dept.children && dept.children.length ? (
+              {dept.children && dept.children.length > 0 ? (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -475,7 +475,7 @@ function ManagerDepartmentsPageContent() {
               </div>
             ) : null}
           </div>
-          {dept.children && dept.children.length && expandedIds.has(dept.id) ? (
+          {dept.children && dept.children.length > 0 && expandedIds.has(dept.id) ? (
             <div className="ml-6 mt-2">
               {renderTree(dept.children)}
             </div>

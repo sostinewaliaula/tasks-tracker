@@ -512,7 +512,7 @@ function DepartmentsPageContent() {
             </div>
           </div>
           
-          {dept.children && dept.children.length && expandedIds.has(dept.id) && (
+          {dept.children && dept.children.length > 0 && expandedIds.has(dept.id) && (
             <div className="ml-8 mt-2 space-y-1">
               {renderTree(dept.children)}
             </div>
