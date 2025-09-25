@@ -1,6 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { UsersIcon, FilterIcon, SearchIcon } from 'lucide-react';
+import { 
+  UsersIcon, 
+  FilterIcon, 
+  SearchIcon, 
+  MoreVerticalIcon, 
+  EditIcon, 
+  TrashIcon, 
+  GridIcon,
+  ListIcon,
+  ChevronDownIcon,
+  CheckIcon,
+  XIcon,
+  MailIcon,
+  PhoneIcon,
+  CalendarIcon,
+  ShieldIcon,
+  BuildingIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  AlertCircleIcon
+} from 'lucide-react';
 // Departments are fetched from the backend; no static constants here
 type ApiUser = {
   id: number | string;
@@ -20,6 +40,11 @@ export function UsersPage() {
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedUsers, setSelectedUsers] = useState<Set<number | string>>(new Set());
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<'name' | 'role' | 'department' | 'tasks'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
   type DepartmentNode = { id: number; name: string; parentId: number | null; children?: DepartmentNode[] };
   const [filters, setFilters] = useState({
@@ -62,25 +87,105 @@ export function UsersPage() {
     loadUsers();
   }, [API_URL, token]);
 
-  // Filter users based on current filters
-  const filteredUsers = users.filter(user => {
-    // Apply role filter
-    if (filters.role !== 'all' && user.role !== filters.role) return false;
-    // Apply department filters
-    if (filters.primaryDepartment !== 'all') {
-      const userPrimary = user.primaryDepartment || user.department || '';
-      if (userPrimary !== filters.primaryDepartment) return false;
-      if (filters.subDepartment !== 'all') {
-        const userSub = user.subDepartment || '';
-        if (userSub !== filters.subDepartment) return false;
+  // Filter and sort users
+  const filteredAndSortedUsers = useMemo(() => {
+    let filtered = users.filter(user => {
+      // Apply role filter
+      if (filters.role !== 'all' && user.role !== filters.role) return false;
+      // Apply department filters
+      if (filters.primaryDepartment !== 'all') {
+        const userPrimary = user.primaryDepartment || user.department || '';
+        if (userPrimary !== filters.primaryDepartment) return false;
+        if (filters.subDepartment !== 'all') {
+          const userSub = user.subDepartment || '';
+          if (userSub !== filters.subDepartment) return false;
+        }
       }
+      // Apply search filter
+      if (filters.search && !user.name.toLowerCase().includes(filters.search.toLowerCase()) && !user.email.toLowerCase().includes(filters.search.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+
+    // Sort users
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'role':
+          aValue = a.role;
+          bValue = b.role;
+          break;
+        case 'department':
+          aValue = (a.department || '').toLowerCase();
+          bValue = (b.department || '').toLowerCase();
+          break;
+        case 'tasks':
+          aValue = (a.tasksCompleted || 0) + (a.tasksInProgress || 0);
+          bValue = (b.tasksCompleted || 0) + (b.tasksInProgress || 0);
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [users, filters, sortBy, sortOrder]);
+
+  // Selection handlers
+  const handleSelectUser = (userId: number | string) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
     }
-    // Apply search filter
-    if (filters.search && !user.name.toLowerCase().includes(filters.search.toLowerCase()) && !user.email.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
+    setSelectedUsers(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.size === filteredAndSortedUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredAndSortedUsers.map(user => user.id)));
     }
-    return true;
-  });
+  };
+
+  const handleSort = (field: 'name' | 'role' | 'department' | 'tasks') => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
+  // Utility function to format names properly
+  const formatDisplayName = (name: string) => {
+    if (!name) return 'Unknown User';
+    
+    // Handle cases like "sostine.waliaula" or "manager.it"
+    if (name.includes('.')) {
+      return name
+        .split('.')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
+    
+    // Handle cases with spaces or other separators
+    return name
+      .split(/[\s_-]+/)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  };
   // Departments list
   const [departments, setDepartments] = useState<string[]>([]);
   const [departmentTree, setDepartmentTree] = useState<DepartmentNode[]>([]);
@@ -135,140 +240,509 @@ export function UsersPage() {
       subDepartment: e.target.value
     }));
   };
-  return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="md:flex md:items-center md:justify-between mb-6">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:truncate flex items-center">
-            <UsersIcon className="h-8 w-8 mr-3 text-[#2e9d74]" />
-            Users
-          </h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-            Manage and view all users in your organization
-          </p>
+  // Role badge component
+  const RoleBadge = ({ role }: { role: string }) => {
+    const roleConfig = {
+      admin: { 
+        icon: ShieldIcon, 
+        color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800',
+        label: 'Admin'
+      },
+      manager: { 
+        icon: UsersIcon, 
+        color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-800',
+        label: 'Manager'
+      },
+      employee: { 
+        icon: UsersIcon, 
+        color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800',
+        label: 'Employee'
+      }
+    };
+    
+    const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.employee;
+    const Icon = config.icon;
+    
+    return (
+      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}>
+        <Icon className="w-3 h-3 mr-1.5" />
+        {config.label}
+      </span>
+    );
+  };
+
+  // User card component for grid view
+  const UserCard = ({ user }: { user: ApiUser }) => (
+    <div className={`group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 ${user.id === currentUser?.id ? 'ring-2 ring-[#2e9d74] ring-opacity-50' : ''}`}>
+      {/* Select checkbox positioned in top-right corner */}
+      <div className="absolute top-3 right-3 z-10">
+        <input
+          type="checkbox"
+          checked={selectedUsers.has(user.id)}
+          onChange={() => handleSelectUser(user.id)}
+          className="h-4 w-4 text-[#2e9d74] focus:ring-[#2e9d74] border-gray-300 dark:border-gray-600 rounded cursor-pointer"
+        />
+      </div>
+      
+      <div className="p-6">
+        <div className="flex items-start space-x-4">
+          <div className="relative flex-shrink-0">
+            <img 
+              className="h-14 w-14 rounded-full ring-2 ring-gray-200 dark:ring-gray-700" 
+              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatDisplayName(user.name))}&background=2e9d74&color=fff&size=56`} 
+              alt={formatDisplayName(user.name)}
+            />
+            {user.id === currentUser?.id && (
+              <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-[#2e9d74] rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                <CheckIcon className="h-3 w-3 text-white" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+              {formatDisplayName(user.name)}
+              {user.id === currentUser?.id && (
+                <span className="ml-2 text-xs text-[#2e9d74] font-medium">(You)</span>
+              )}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 truncate flex items-center mt-1">
+              <MailIcon className="h-3 w-3 mr-1.5 flex-shrink-0" />
+              <span className="truncate" title={user.email}>
+                {user.email}
+              </span>
+            </p>
+          </div>
+        </div>
+        
+        <div className="mt-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <RoleBadge role={user.role} />
+            <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+              <BuildingIcon className="h-3 w-3 mr-1" />
+              <span className="truncate max-w-20" title={user.department || 'No Department'}>
+                {user.department || 'No Department'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+            <div className="text-center">
+              <div className="flex items-center justify-center text-green-600 dark:text-green-400">
+                <CheckCircleIcon className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">{user.tasksCompleted || 0}</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Completed</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <ClockIcon className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">{user.tasksInProgress || 0}</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">In Progress</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Action button - appears on hover */}
+        <div className="absolute top-3 right-12 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <MoreVerticalIcon className="h-4 w-4" />
+          </button>
         </div>
       </div>
-      <div className="card">
-        <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 flex items-center">
-              <FilterIcon className="h-5 w-5 mr-2 text-[#2e9d74]" />
-              Filter Users
-            </h3>
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-4 sm:gap-x-4">
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
             <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Search
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <SearchIcon className="h-5 w-5 text-gray-400 dark:text-gray-300" />
-                </div>
-                <input type="text" name="search" id="search" className="focus:ring-[#2e9d74] focus:border-[#2e9d74] block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Search by name or email" value={filters.search} onChange={handleSearchChange} />
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                <UsersIcon className="h-8 w-8 mr-3 text-[#2e9d74]" />
+                Users
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                Manage and view all users in your organization
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <UsersIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{users.length}</p>
               </div>
             </div>
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Role
-              </label>
-              <select id="role" name="role" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={filters.role} onChange={handleRoleFilterChange}>
-                <option value="all">All Roles</option>
-                <option value="employee">Employee</option>
-                <option value="manager">Manager</option>
-              </select>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <UsersIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Managers</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {users.filter(u => u.role === 'manager').length}
+                </p>
+              </div>
             </div>
-            <div>
-              <label htmlFor="primaryDepartment" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Primary Department
-              </label>
-              <select id="primaryDepartment" name="primaryDepartment" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={filters.primaryDepartment} onChange={handlePrimaryDepartmentChange}>
-                <option value="all">All Primary</option>
-                {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
-              </select>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Employees</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {users.filter(u => u.role === 'employee').length}
+                </p>
+              </div>
             </div>
-            <div>
-              <label htmlFor="subDepartment" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Sub-Department
-              </label>
-              <select id="subDepartment" name="subDepartment" disabled={filters.primaryDepartment === 'all'} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-800" value={filters.subDepartment} onChange={handleSubDepartmentChange}>
-                <option value="all">{filters.primaryDepartment === 'all' ? 'Select primary first' : 'All Sub-Departments'}</option>
-                {subDepartmentOptions.map(sub => <option key={sub} value={sub}>{sub}</option>)}
-              </select>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <BuildingIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Departments</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{departments.length}</p>
+              </div>
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          {error && (
-            <div className="px-6 py-3 text-sm text-red-600 dark:text-red-400">{error}</div>
-          )}
-          {loading && (
-            <div className="px-6 py-3 text-sm text-gray-500 dark:text-gray-300">Loading users…</div>
-          )}
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  User
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Role
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Department
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Tasks
-                </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredUsers.map(user => <tr key={user.id} className={user.id === currentUser?.id ? 'bg-[#e8f5f0] dark:bg-[#22332c]' : ''}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img className="h-10 w-10 rounded-full" src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2e9d74&color=fff`} alt="" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {user.name}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-300">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'manager' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'}`}>
-                      {user.role === 'manager' ? 'Manager' : 'Employee'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {user.department}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                      {user.tasksCompleted} completed
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-300">
-                      {user.tasksInProgress} in progress
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="#" className="text-[#2e9d74] hover:text-[#228a63]">
-                      View
-                    </a>
-                  </td>
-                </tr>)}
-            </tbody>
-          </table>
+
+        {/* Filters and Controls */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+          <div className="p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              {/* Search */}
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search users..."
+                    value={filters.search}
+                    onChange={handleSearchChange}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center space-x-4">
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-md transition-colors ${
+                      viewMode === 'grid' 
+                        ? 'bg-white dark:bg-gray-600 text-[#2e9d74] shadow-sm' 
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    <GridIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-md transition-colors ${
+                      viewMode === 'list' 
+                        ? 'bg-white dark:bg-gray-600 text-[#2e9d74] shadow-sm' 
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    <ListIcon className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Filter Toggle */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`inline-flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                    showFilters
+                      ? 'border-[#2e9d74] text-[#2e9d74] bg-[#2e9d74]/10'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <FilterIcon className="h-4 w-4 mr-2" />
+                  Filters
+                  <ChevronDownIcon className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Advanced Filters */}
+            {showFilters && (
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={filters.role}
+                      onChange={handleRoleFilterChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="employee">Employee</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Department
+                    </label>
+                    <select
+                      value={filters.primaryDepartment}
+                      onChange={handlePrimaryDepartmentChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="all">All Departments</option>
+                      {departments.map(dept => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Sort By
+                    </label>
+                    <select
+                      value={`${sortBy}-${sortOrder}`}
+                      onChange={(e) => {
+                        const [field, order] = e.target.value.split('-');
+                        setSortBy(field as any);
+                        setSortOrder(order as any);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2e9d74] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="name-asc">Name (A-Z)</option>
+                      <option value="name-desc">Name (Z-A)</option>
+                      <option value="role-asc">Role (A-Z)</option>
+                      <option value="role-desc">Role (Z-A)</option>
+                      <option value="department-asc">Department (A-Z)</option>
+                      <option value="department-desc">Department (Z-A)</option>
+                      <option value="tasks-desc">Most Tasks</option>
+                      <option value="tasks-asc">Least Tasks</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        {filteredUsers.length === 0 && <div className="px-6 py-10 text-center text-gray-500 dark:text-gray-300">
-            No users match your current filters.
-          </div>}
+
+        {/* Bulk Actions */}
+        {selectedUsers.size > 0 && (
+          <div className="bg-[#2e9d74] text-white rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">
+                {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
+              </span>
+              <div className="flex items-center space-x-2">
+                <button className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-medium transition-colors">
+                  Export
+                </button>
+                <button className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-medium transition-colors">
+                  Assign Department
+                </button>
+                <button className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-medium transition-colors">
+                  Change Role
+                </button>
+                <button 
+                  onClick={() => setSelectedUsers(new Set())}
+                  className="p-1 hover:bg-white/20 rounded transition-colors"
+                >
+                  <XIcon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Content */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e9d74]"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+            <AlertCircleIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">Error Loading Users</h3>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        ) : filteredAndSortedUsers.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No users found</h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              {filters.search || filters.role !== 'all' || filters.primaryDepartment !== 'all'
+                ? 'Try adjusting your filters to see more results.'
+                : 'Get started by adding your first user.'}
+            </p>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredAndSortedUsers.map(user => (
+              <UserCard key={user.id} user={user} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.size === filteredAndSortedUsers.length && filteredAndSortedUsers.length > 0}
+                        onChange={handleSelectAll}
+                        className="h-4 w-4 text-[#2e9d74] focus:ring-[#2e9d74] border-gray-300 dark:border-gray-600 rounded"
+                      />
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center">
+                        User
+                        {sortBy === 'name' && (
+                          <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                      onClick={() => handleSort('role')}
+                    >
+                      <div className="flex items-center">
+                        Role
+                        {sortBy === 'role' && (
+                          <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                      onClick={() => handleSort('department')}
+                    >
+                      <div className="flex items-center">
+                        Department
+                        {sortBy === 'department' && (
+                          <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                      onClick={() => handleSort('tasks')}
+                    >
+                      <div className="flex items-center">
+                        Tasks
+                        {sortBy === 'tasks' && (
+                          <ChevronDownIcon className={`h-4 w-4 ml-1 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredAndSortedUsers.map(user => (
+                    <tr 
+                      key={user.id} 
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                        user.id === currentUser?.id ? 'bg-[#e8f5f0] dark:bg-[#22332c]' : ''
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.has(user.id)}
+                          onChange={() => handleSelectUser(user.id)}
+                          className="h-4 w-4 text-[#2e9d74] focus:ring-[#2e9d74] border-gray-300 dark:border-gray-600 rounded"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <img 
+                            className="h-10 w-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700" 
+                            src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatDisplayName(user.name))}&background=2e9d74&color=fff&size=40`} 
+                            alt={formatDisplayName(user.name)}
+                          />
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {formatDisplayName(user.name)}
+                              {user.id === currentUser?.id && (
+                                <span className="ml-2 text-xs text-[#2e9d74] font-medium">(You)</span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                              <MailIcon className="h-3 w-3 mr-1" />
+                              {user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <RoleBadge role={user.role} />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                        <BuildingIcon className="h-4 w-4 mr-2" />
+                        {user.department || 'No Department'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center text-green-600 dark:text-green-400">
+                            <CheckCircleIcon className="h-4 w-4 mr-1" />
+                            {user.tasksCompleted || 0}
+                          </div>
+                          <div className="flex items-center text-blue-600 dark:text-blue-400">
+                            <ClockIcon className="h-4 w-4 mr-1" />
+                            {user.tasksInProgress || 0}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button className="text-[#2e9d74] hover:text-[#228a63] p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <EditIcon className="h-4 w-4" />
+                          </button>
+                          <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <MoreVerticalIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 }
