@@ -465,55 +465,53 @@ function ManagerDepartmentsPageContent() {
       {nodes.map((dept) => (
         <li
           key={dept.id}
-          className={`px-4 py-3 transition-colors duration-150 cursor-pointer
+          className={`px-3 py-2 transition-colors duration-150 cursor-pointer
             ${selectedId === dept.id
               ? 'bg-[#e8f5f0] dark:bg-[var(--color-bg-card)]'
               : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
           `}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {dept.children && dept.children.length > 0 ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const next = new Set(expandedIds);
-                    if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
-                    setExpandedIds(next);
-                  }}
-                  className="mr-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
-                >
-                  {expandedIds.has(dept.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </button>
-              ) : (
-                <div className="w-6 mr-2" />
-              )}
-              <BuildingIcon className="h-5 w-5 mr-3 text-gray-400" />
-              <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{dept.name}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {getDirectMemberCount(dept)} direct members
-                  {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
-                    <span className="ml-2 text-green-600 dark:text-green-400 font-medium">
-                      ({getDepartmentMemberCount(dept)} total)
-                    </span>
-                  )}
-                </div>
+          <div className="flex items-center">
+            {dept.children && dept.children.length > 0 ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const next = new Set(expandedIds);
+                  if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
+                  setExpandedIds(next);
+                }}
+                className="mr-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+              >
+                {expandedIds.has(dept.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </button>
+            ) : (
+              <div className="w-6 mr-2" />
+            )}
+            <BuildingIcon className="h-4 w-4 mr-2 text-gray-400" />
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-gray-900 dark:text-gray-100">{dept.name}</div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <span>{getDirectMemberCount(dept)} direct</span>
+                {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
+                  <span className="text-green-600 dark:text-green-400 font-medium">
+                    {getDepartmentMemberCount(dept)} total
+                  </span>
+                )}
               </div>
             </div>
             {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
-              <div className="flex items-center space-x-2">
-                <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
-                  <PencilIcon className="h-4 w-4" />
+              <div className="flex items-center space-x-1 ml-2">
+                <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} className="p-1 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Edit">
+                  <PencilIcon className="h-3.5 w-3.5" />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} className="text-red-500 hover:text-red-600" title="Delete">
-                  <TrashIcon className="h-4 w-4" />
+                <button onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} className="p-1 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded" title="Delete">
+                  <TrashIcon className="h-3.5 w-3.5" />
                 </button>
               </div>
             ) : null}
           </div>
           {dept.children && dept.children.length > 0 && expandedIds.has(dept.id) ? (
-            <div className="ml-6 mt-2">
+            <div className="ml-6 mt-1">
               {renderTree(dept.children)}
             </div>
           ) : null}

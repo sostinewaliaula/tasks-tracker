@@ -451,11 +451,11 @@ function DepartmentsPageContent() {
   }
 
   const renderTree = (nodes: DepartmentNode[]) => (
-    <div className="space-y-1 p-2">
+    <div className="space-y-1">
       {nodes.map((dept) => (
         <div key={dept.id}>
           <div
-            className={`group relative rounded-xl p-4 transition-all duration-200 cursor-pointer border
+            className={`group relative rounded-lg p-3 transition-all duration-200 cursor-pointer border
               ${selectedId === dept.id
                 ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800 shadow-md'
                 : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm'
@@ -463,83 +463,81 @@ function DepartmentsPageContent() {
             `}
             onClick={() => setSelectedId(dept.id)}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center flex-1">
-                {dept.children && dept.children.length ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const next = new Set(expandedIds);
-                      if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
-                      setExpandedIds(next);
-                    }}
-                    className="mr-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                  >
-                    {expandedIds.has(dept.id) ? 
-                      <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" /> : 
-                      <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    }
-                  </button>
-                ) : (
-                  <div className="w-8 mr-3" />
-                )}
-                
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-4 ${
+            <div className="flex items-center">
+              {dept.children && dept.children.length ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const next = new Set(expandedIds);
+                    if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
+                    setExpandedIds(next);
+                  }}
+                  className="mr-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  {expandedIds.has(dept.id) ? 
+                    <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" /> : 
+                    <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  }
+                </button>
+              ) : (
+                <div className="w-8 mr-3" />
+              )}
+              
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
                   selectedId === dept.id 
                     ? 'bg-green-500' 
                     : 'bg-gray-100 dark:bg-gray-600 group-hover:bg-green-100 dark:group-hover:bg-green-900/20'
                 } transition-colors`}>
-                  <BuildingIcon className={`h-5 w-5 ${
+                  <BuildingIcon className={`h-4 w-4 ${
                     selectedId === dept.id 
                       ? 'text-white' 
                       : 'text-gray-500 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400'
                   } transition-colors`} />
                 </div>
-                
-                <div className="flex-1">
-                  <div className={`font-semibold transition-colors ${
-                    selectedId === dept.id 
-                      ? 'text-green-900 dark:text-green-100' 
-                      : 'text-gray-900 dark:text-gray-100'
-                  }`}>
-                    {dept.name}
+              
+              <div className="flex-1 min-w-0">
+                <div className={`font-semibold transition-colors ${
+                  selectedId === dept.id 
+                    ? 'text-green-900 dark:text-green-100' 
+                    : 'text-gray-900 dark:text-gray-100'
+                }`}>
+                  {dept.name}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                    <UsersIcon className="h-3 w-3 mr-1" />
+                    {getDirectMemberCount(dept)} direct
                   </div>
-                  <div className="flex items-center space-x-4 mt-1">
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <UsersIcon className="h-3 w-3 mr-1" />
-                      {getDirectMemberCount(dept)} direct members
+                  {dept.children && dept.children.length > 0 && (
+                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                      <BuildingIcon className="h-3 w-3 mr-1" />
+                      {dept.children.length} sub-depts
                     </div>
-                    {dept.children && dept.children.length > 0 && (
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <BuildingIcon className="h-3 w-3 mr-1" />
-                        {dept.children.length} sub-departments
-                      </div>
-                    )}
-                    {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
-                      <div className="flex items-center text-sm text-green-600 dark:text-green-400 font-medium">
-                        <UsersIcon className="h-3 w-3 mr-1" />
-                        {getDepartmentMemberCount(dept)} total members
-                      </div>
-                    )}
-                  </div>
+                  )}
+                  {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
+                    <div className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium">
+                      <UsersIcon className="h-3 w-3 mr-1" />
+                      {getDepartmentMemberCount(dept)} total
+                    </div>
+                  )}
                 </div>
               </div>
               
               {currentUser?.role === 'admin' && (
-                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center space-x-1 ml-2">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} 
-                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
+                    className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-all"
                     title="Edit Department"
                   >
-                    <PencilIcon className="h-4 w-4" />
+                    <PencilIcon className="h-3.5 w-3.5" />
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} 
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
                     title="Delete Department"
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    <TrashIcon className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
@@ -547,7 +545,7 @@ function DepartmentsPageContent() {
           </div>
           
           {dept.children && dept.children.length > 0 && expandedIds.has(dept.id) && (
-            <div className="ml-8 mt-2 space-y-1">
+            <div className="ml-6 mt-1 space-y-1">
               {renderTree(dept.children)}
             </div>
           )}
