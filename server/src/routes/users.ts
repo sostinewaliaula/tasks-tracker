@@ -68,12 +68,42 @@ router.patch('/:id/department', authMiddleware, roleCheck(['admin', 'manager']),
         const userId = parseInt(req.params.id);
         const { departmentId } = req.body;
         
+        console.log('Update user department request:', { userId, departmentId, body: req.body });
+        
+        // Validate userId
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ error: 'Invalid user ID' });
+        }
+        
+        // Check if user exists
+        const existingUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, name: true }
+        });
+        
+        if (!existingUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // If departmentId is provided, validate it exists
+        if (departmentId) {
+            const department = await prisma.department.findUnique({
+                where: { id: parseInt(departmentId) },
+                select: { id: true, name: true }
+            });
+            
+            if (!department) {
+                return res.status(404).json({ error: 'Department not found' });
+            }
+        }
+        
         const user = await prisma.user.update({
             where: { id: userId },
             data: { departmentId: departmentId ? parseInt(departmentId) : null },
             select: { id: true, name: true, email: true, role: true, departmentId: true }
         });
         
+        console.log('User department updated successfully:', user);
         res.json({ data: user });
     } catch (e) {
         console.error('Update user department error:', e);

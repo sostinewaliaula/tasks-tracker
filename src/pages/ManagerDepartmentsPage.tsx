@@ -207,9 +207,7 @@ function ManagerDepartmentsPageContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [editName, setEditName] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
-  const [assignUser, setAssignUser] = useState('');
   const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; role: string; departmentId?: number | null; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -270,22 +268,6 @@ function ManagerDepartmentsPageContent() {
   const { showToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; deptId?: number; deptName?: string }>({ open: false });
 
-  const updateDept = async () => {
-    if (!editName.trim() || !selectedId) return;
-    try {
-      const res = await fetch(`${API_URL}/api/departments/${selectedId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ name: editName.trim() }) });
-      if (res.ok) {
-        setEditName('');
-        fetchDepartments();
-        showToast('Department updated', 'success');
-      } else {
-        const j = await res.json().catch(() => ({}));
-        showToast(j.error || 'Failed to update department', 'error');
-      }
-    } catch (e) {
-      showToast('Failed to update department', 'error');
-    }
-  };
 
   const deleteDept = (id: number) => {
     const dept = allDepartments.find(d => d.id === id);
@@ -369,6 +351,59 @@ function ManagerDepartmentsPageContent() {
       }
     } catch (e) {
       showToast('Failed to create department', 'error');
+    }
+  };
+
+  const handleAssignUser = async () => {
+    if (!selectedUserId || !selectedDept) return;
+    
+    try {
+      // First, check if user is already in another department
+      const selectedUser = users.find(u => u.id === selectedUserId);
+      const previousDepartmentId = selectedUser?.departmentId;
+      
+      console.log('Assigning user:', {
+        userId: selectedUserId,
+        departmentId: selectedDept.id,
+        previousDepartmentId,
+        API_URL
+      });
+      
+      // Assign user to the new department
+      const res = await fetch(`${API_URL}/api/users/${selectedUserId}/department`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+        body: JSON.stringify({ departmentId: selectedDept.id })
+      });
+      
+      console.log('Response status:', res.status);
+      console.log('Response ok:', res.ok);
+      
+      if (res.ok) {
+        setSelectedUserId('');
+        fetchDepartments(); // Refresh departments to update member counts
+        fetchUsers(); // Refresh users to update their department assignments
+        
+        if (previousDepartmentId && previousDepartmentId !== selectedDept.id) {
+          showToast(`User moved from previous department to ${selectedDept.name}`, 'success');
+        } else {
+          showToast(`User assigned to ${selectedDept.name}`, 'success');
+        }
+      } else {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        let errorMessage = 'Failed to assign user';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch (e) {
+          console.error('Could not parse error response as JSON');
+        }
+        showToast(errorMessage, 'error');
+      }
+    } catch (e) {
+      console.error('Exception in handleAssignUser:', e);
+      showToast('Failed to assign user', 'error');
     }
   };
 
@@ -527,15 +562,6 @@ function ManagerDepartmentsPageContent() {
               users={users}
               departments={departments}
             />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Rename Department</label>
-                <div className="flex">
-                  <input value={editName} onChange={(e) => setEditName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700" placeholder="New name" />
-                  <button onClick={updateDept} disabled={!selectedId || !editName.trim()} className="bg-[var(--color-accent-green)] text-white px-3 rounded-r text-sm disabled:opacity-50">Save</button>
-                </div>
-              </div>
-            </div>
             {error ? <p className="text-sm text-red-600 mt-2">{error}</p> : null}
           </div>
         ) : (
@@ -622,41 +648,31 @@ function ManagerDepartmentsPageContent() {
                 {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
                   <div className="px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg leading-6 font-medium accent-green mb-3">Add User to Department</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} className="border rounded px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700">
+                    <div className="flex gap-3">
+                      <select 
+                        value={selectedUserId} 
+                        onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : '')} 
+                        className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+                      >
                         <option value="">Select user…</option>
                         {users.map(u => (
-                          <option key={u.id} value={u.id}>{u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}</option>
+                          <option key={u.id} value={u.id}>
+                            {u.name} {u.email ? `(${u.email})` : `(${u.ldapUid})`}
+                            {u.departmentId && u.departmentId !== selectedDept?.id && ' - Currently in another department'}
+                          </option>
                         ))}
                       </select>
-                      <input value={assignUser} onChange={(e) => setAssignUser(e.target.value)} placeholder="Enter userId, LDAP UID or email" className="border rounded px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700" />
                       <button
-                        onClick={async () => {
-                          if ((!assignUser.trim() && selectedUserId === '') || !selectedDept) return;
-                          const body: any = {};
-                          if (selectedUserId !== '') body.userId = Number(selectedUserId);
-                          else if (/^\d+$/.test(assignUser.trim())) body.userId = Number(assignUser.trim());
-                          else if (assignUser.includes('@')) body.email = assignUser.trim();
-                          else body.ldapUid = assignUser.trim();
-                          const res = await fetch(`${API_URL}/api/departments/${selectedDept.id}/users`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-                            body: JSON.stringify(body)
-                          });
-                          if (res.ok) {
-                            setAssignUser(''); setSelectedUserId('');
-                            showToast('User assigned to department', 'success');
-                          } else {
-                            const j = await res.json().catch(() => ({}));
-                            showToast(j.error || 'Failed to assign user', 'error');
-                          }
-                        }}
-                        className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded text-sm"
+                        onClick={handleAssignUser}
+                        disabled={!selectedUserId || !selectedDept}
+                        className="bg-[var(--color-accent-green)] disabled:bg-gray-400 text-white px-4 py-2 rounded text-sm disabled:cursor-not-allowed"
                       >
                         Add User
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Tip: provide numeric user ID, LDAP UID, or email.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                      Select a user to assign them to this department. If they're already in another department, they'll be automatically moved here.
+                    </p>
                   </div>
                 ) : null}
               </div> : <div className="card">
