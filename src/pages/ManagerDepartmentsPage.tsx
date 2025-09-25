@@ -4,12 +4,10 @@ import { useTask } from '../context/TaskContext';
 import { 
   BuildingIcon, 
   UsersIcon, 
-  XIcon, 
   TrendingUpIcon,
   ClockIcon,
   CheckCircleIcon,
-  TargetIcon,
-  EyeIcon
+  TargetIcon
 } from 'lucide-react';
 import { InlineDepartmentStats } from '../components/departments/InlineDepartmentStats';
 
@@ -35,7 +33,6 @@ function ManagerDepartmentsPageContent() {
 
   const [departments, setDepartments] = useState<DepartmentNode[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; role: string; departmentId?: number | null; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
@@ -43,21 +40,13 @@ function ManagerDepartmentsPageContent() {
   const fetchDepartments = async () => {
     try {
       setLoading(true);
-      console.log('Fetching departments...', { API_URL, token: token ? 'present' : 'missing' });
       const res = await fetch(`${API_URL}/api/departments`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-      console.log('Departments response status:', res.status);
       if (!res.ok) {
         const errorText = await res.text();
         console.error('Departments API error:', errorText);
         throw new Error('Failed to load departments');
       }
       const json = await res.json();
-      console.log('Departments API response:', json);
-      console.log('Departments data array:', json.data);
-      console.log('Departments array length:', json.data?.length);
-      if (json.data && json.data.length > 0) {
-        console.log('First department:', json.data[0]);
-      }
       setDepartments(json.data || []);
     } catch (e: any) {
       console.error('Failed to load departments:', e);
@@ -67,21 +56,16 @@ function ManagerDepartmentsPageContent() {
   };
 
   useEffect(() => {
-    console.log('Current user changed:', currentUser);
     if (currentUser?.role === 'manager' || currentUser?.role === 'admin') {
-      console.log('Fetching departments for user role:', currentUser.role);
       fetchDepartments();
     }
   }, [currentUser?.role]);
 
   const fetchUsers = async () => {
       try {
-        console.log('Fetching users...', { API_URL, token: token ? 'present' : 'missing' });
         const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-        console.log('Users response status:', res.status);
         if (res.ok) {
           const json = await res.json();
-          console.log('Users API response:', json);
           setUsers(json.data || []);
         } else {
           const errorText = await res.text();
@@ -96,12 +80,6 @@ function ManagerDepartmentsPageContent() {
     fetchUsers();
   }, [token, API_URL]);
 
-  const selectedDept = useMemo(() => {
-    const all: DepartmentNode[] = [];
-    const walk = (nodes: DepartmentNode[]) => nodes.forEach(n => { all.push(n); if (n.children) walk(n.children); });
-    walk(departments);
-    return all.find(d => d.id === selectedId) || null;
-  }, [departments, selectedId]);
 
   // Utility function to format names
   const formatName = (name: string) => {
@@ -124,13 +102,11 @@ function ManagerDepartmentsPageContent() {
 
   // Get the single department managed by current user
   const managedDepartment = useMemo(() => {
-    console.log('Computing managedDepartment...', { currentUserId: currentUser?.id, departmentsCount: departments.length });
     if (!currentUser?.id) return null;
     
     const all: DepartmentNode[] = [];
     const walk = (nodes: DepartmentNode[]) => {
       nodes.forEach(n => {
-        console.log('Checking department:', n.name, 'managerId:', n.managerId, 'currentUserId:', currentUser.id, 'type check:', n.managerId === Number(currentUser.id));
         if (n.managerId === Number(currentUser.id)) {
           all.push(n);
         }
@@ -138,15 +114,12 @@ function ManagerDepartmentsPageContent() {
       });
     };
     walk(departments);
-    console.log('Found managed departments:', all.length, all.map(d => d.name));
     return all[0] || null; // Managers only manage one department
   }, [departments, currentUser?.id]);
 
   // Get team members from the single managed department
   const teamMembers = useMemo(() => {
-    console.log('Computing teamMembers...', { managedDepartment: managedDepartment?.name, currentUserId: currentUser?.id });
     if (!currentUser?.id || !managedDepartment) {
-      console.log('No managed department or current user, returning empty team');
       return [];
     }
     
@@ -164,7 +137,6 @@ function ManagerDepartmentsPageContent() {
     
     // Add users from the managed department
     if (managedDepartment.users) {
-      console.log('Adding users from managed department:', managedDepartment.users.length);
       managedDepartment.users.forEach(user => {
         if (!members.has(user.id)) {
           members.set(user.id, {
@@ -176,9 +148,7 @@ function ManagerDepartmentsPageContent() {
       });
     }
     
-    const result = Array.from(members.values());
-    console.log('Final team members:', result.length, result.map(m => m.name));
-    return result;
+    return Array.from(members.values());
   }, [managedDepartment, currentUser]);
 
   // Calculate team statistics for the single managed department
@@ -260,17 +230,10 @@ function ManagerDepartmentsPageContent() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-center text-sm">
             <span className="text-gray-500 dark:text-gray-400">
               {deptStats ? Math.round(((deptStats.completed || 0) / Object.values(deptStats).reduce((sum, count) => sum + count, 0)) * 100) || 0 : 0}% completion rate
             </span>
-            <button 
-              onClick={() => setSelectedId(department.id)}
-              className="text-[#2e9d74] hover:text-[#228a63] font-medium flex items-center"
-            >
-              View Details
-              <EyeIcon className="h-4 w-4 ml-1" />
-            </button>
           </div>
         </div>
       </div>
@@ -418,8 +381,54 @@ function ManagerDepartmentsPageContent() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-6">
                   <DepartmentCard department={managedDepartment} />
+                  
+                  {/* Department Statistics */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Department Statistics</h3>
+                    <InlineDepartmentStats 
+                      departmentId={managedDepartment.id}
+                      departmentName={managedDepartment.name}
+                      managerName={managedDepartment.managerId ? (users.find(u => u.id === managedDepartment.managerId) ? formatName(users.find(u => u.id === managedDepartment.managerId)!.name) : '—') : '—'}
+                    />
+                  </div>
+                  
+                  {/* Team Members Details */}
+                  {managedDepartment.users && managedDepartment.users.length > 0 && (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Team Members</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {managedDepartment.users.map(user => (
+                          <div key={user.id} className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <img 
+                              className="h-10 w-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-600" 
+                              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formatName(user.name))}&background=2e9d74&color=fff&size=40`} 
+                              alt={formatName(user.name)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                {formatName(user.name)}
+                                {Number(user.id) === Number(currentUser?.id) && (
+                                  <span className="ml-2 text-xs text-[#2e9d74] font-medium">(You)</span>
+                                )}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {user.role === 'manager' ? 'Manager' : 'Employee'}
+                              </p>
+                            </div>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              user.role === 'manager' 
+                                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200'
+                                : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+                            }`}>
+                              {user.role === 'manager' ? 'Manager' : 'Employee'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -448,79 +457,6 @@ function ManagerDepartmentsPageContent() {
           </div>
         </div>
 
-        {/* Department Details Modal */}
-        {selectedDept && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div className="absolute inset-0 bg-black bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-80"></div>
-              </div>
-              
-              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {selectedDept.name} - Department Details
-                    </h3>
-                    <button 
-                      onClick={() => setSelectedId(null)}
-                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                    >
-                      <XIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="px-6 py-4">
-                  <div className="mb-6">
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{selectedDept.name} Overview</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Department Name</p>
-                        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{selectedDept.name}</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Team Members</p>
-                        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{selectedDept.users?.length || 0}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <InlineDepartmentStats 
-                    departmentId={selectedDept.id}
-                    departmentName={selectedDept.name}
-                    managerName={selectedDept.managerId ? (users.find(u => u.id === selectedDept.managerId) ? formatName(users.find(u => u.id === selectedDept.managerId)!.name) : '—') : '—'}
-                  />
-                  
-                  {selectedDept.users && selectedDept.users.length > 0 && (
-                    <div className="mt-6">
-                      <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Team Members</h4>
-                      <div className="space-y-3">
-                        {selectedDept.users.map(user => (
-                          <div key={user.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <img 
-                              className="h-8 w-8 rounded-full ring-2 ring-gray-200 dark:ring-gray-600" 
-                              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formatName(user.name))}&background=2e9d74&color=fff&size=32`} 
-                              alt={formatName(user.name)}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                {formatName(user.name)}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {user.role === 'manager' ? 'Manager' : 'Employee'}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       
     </div>
