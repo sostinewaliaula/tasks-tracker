@@ -11,6 +11,54 @@ const router = express.Router();
 
 router.post('/login', authenticate);
 
+// Get current user profile
+router.get('/me', authMiddleware, async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: (req as any).user.id },
+            include: {
+                department: { select: { id: true, name: true } },
+                managingDepartments: { select: { id: true, name: true } }
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Transform the user data to match frontend expectations
+        const userData = {
+            id: user.id.toString(),
+            name: user.name,
+            role: user.role,
+            department_id: user.department?.id?.toString() || '',
+            department: user.department?.name || '',
+            email: user.email || '',
+            ldap_uid: user.ldapUid,
+            phone: user.phone || '',
+            bio: user.bio || '',
+            language: user.language,
+            timezone: user.timezone,
+            darkMode: user.darkMode,
+            emailNotifications: user.emailNotifications,
+            taskAssigned: user.taskAssigned,
+            taskCompleted: user.taskCompleted,
+            taskOverdue: user.taskOverdue,
+            taskDeadline: user.taskDeadline,
+            weeklyReport: user.weeklyReport,
+            showEmail: user.showEmail,
+            showPhone: user.showPhone,
+            showBio: user.showBio,
+            managingDepartments: user.managingDepartments
+        };
+
+        res.json({ user: userData });
+    } catch (error) {
+        console.error('Get user profile error:', error);
+        res.status(500).json({ error: 'Failed to get user profile' });
+    }
+});
+
 // Admin: import users via CSV (columns: ldapUid,email,name,role)
 const upload = multer({ dest: 'uploads/' });
 router.post('/import', authMiddleware, roleCheck(['admin']), upload.single('file'), async (req, res) => {

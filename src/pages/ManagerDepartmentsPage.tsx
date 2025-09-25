@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTask } from '../context/TaskContext';
-import { BuildingIcon, UsersIcon, ClipboardCheckIcon, ChartBarIcon, PencilIcon, TrashIcon, ChevronRight, ChevronDown, Building2Icon, XIcon, FileTextIcon } from 'lucide-react';
-import { DepartmentModal } from '../components/departments/DepartmentModal';
+import { 
+  BuildingIcon, 
+  UsersIcon, 
+  XIcon, 
+  TrendingUpIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  TargetIcon,
+  EyeIcon
+} from 'lucide-react';
 import { InlineDepartmentStats } from '../components/departments/InlineDepartmentStats';
-import { SearchableDropdown } from '../components/ui/SearchableDropdown';
-import { useToast } from '../components/ui/Toast';
 
 type DepartmentNode = {
   id: number;
@@ -18,184 +24,6 @@ type DepartmentNode = {
   users?: { id: number; name: string; role: string }[];
 };
 
-function DeleteConfirmModal({ open, onCancel, onConfirm, deptName }: { open: boolean; onCancel: () => void; onConfirm: () => void; deptName: string }) {
-  if (!open) return null;
-  return (
-    <div className="fixed z-30 inset-0 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm">
-        <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Delete Department</h2>
-        <p className="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to delete <span className="font-bold">{deptName}</span>? This action cannot be undone.</p>
-        <div className="flex justify-end gap-2">
-          <button onClick={onCancel} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Cancel</button>
-          <button onClick={onConfirm} className="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EditDepartmentModal({ open, onClose, department, managerOptions, onSave, loading, departments }: {
-  open: boolean;
-  onClose: () => void;
-  department: DepartmentNode | null;
-  managerOptions: { id: number; name: string }[];
-  onSave: (data: { name: string; managerId: number | null; description?: string }) => void;
-  loading: boolean;
-  departments?: DepartmentNode[];
-}) {
-  const [name, setName] = useState(department?.name || '');
-  const [managerId, setManagerId] = useState<number | ''>(department?.managerId || '');
-  const [description, setDescription] = useState(department?.description || '');
-  
-  // Get all existing manager IDs from departments (excluding current department)
-  const getExistingManagerIds = () => {
-    const managerIds = new Set<number>();
-    
-    const collectManagerIds = (depts: DepartmentNode[]) => {
-      depts.forEach(dept => {
-        // Skip the current department being edited
-        if (dept.id !== department?.id && dept.managerId) {
-          managerIds.add(dept.managerId);
-        }
-        if (dept.children) {
-          collectManagerIds(dept.children);
-        }
-      });
-    };
-    
-    if (departments) {
-      collectManagerIds(departments);
-    }
-    
-    return managerIds;
-  };
-
-  // Filter out users who are already managers (except current manager)
-  const availableManagerOptions = managerOptions.filter(manager => {
-    const existingManagerIds = getExistingManagerIds();
-    return !existingManagerIds.has(manager.id);
-  });
-
-  // Ensure current manager is always available in the dropdown
-  const finalManagerOptions = availableManagerOptions.length > 0 ? availableManagerOptions : 
-    (department?.managerId ? managerOptions.filter(m => m.id === department.managerId) : []);
-  
-  useEffect(() => {
-    setName(department?.name || '');
-    setManagerId(department?.managerId ? Number(department.managerId) : '');
-    setDescription(department?.description || '');
-  }, [department, open]);
-  
-  if (!open || !department) return null;
-  
-  return (
-    <div className="fixed z-50 inset-0 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-16 px-4 pb-16 text-center sm:p-0">
-        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div className="absolute inset-0 bg-black bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-80"></div>
-        </div>
-        <div className="relative inline-block align-bottom bg-white dark:bg-gray-900 rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:align-middle w-full max-w-lg">
-          {/* Modern Header */}
-          <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-purple-600 flex items-center justify-center">
-                  <Building2Icon className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    Edit Department
-                  </h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                    Update department information
-                  </p>
-                </div>
-              </div>
-              <button 
-                type="button" 
-                onClick={onClose} 
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Form Content */}
-          <form onSubmit={e => { e.preventDefault(); onSave({ name, managerId: managerId ? Number(managerId) : null, description }); }} className="bg-white dark:bg-gray-900 px-8 py-6">
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
-                <Building2Icon className="h-4 w-4 mr-2 text-green-600" />
-                Department Name
-              </label>
-              <input 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
-                placeholder="Enter department name"
-              />
-            </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
-                <UsersIcon className="h-4 w-4 mr-2 text-purple-600" />
-                Manager
-              </label>
-              <select 
-                value={managerId} 
-                onChange={e => setManagerId(e.target.value ? Number(e.target.value) : '')} 
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
-              >
-              <option value="">No manager</option>
-                {finalManagerOptions.length > 0 ? (
-                  finalManagerOptions.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-                  ))
-                ) : (
-                  <option value="" disabled>
-                    {managerOptions.length > 0 ? 'All users are already managers' : 'No users available'}
-                  </option>
-                )}
-            </select>
-          </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
-                <FileTextIcon className="h-4 w-4 mr-2 text-blue-600" />
-                Description
-              </label>
-              <textarea 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 resize-none"
-                rows={3}
-                placeholder="Enter department description (optional)"
-              />
-          </div>
-            
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button 
-                type="button" 
-                onClick={onClose} 
-                className="px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                disabled={loading} 
-                className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-purple-600 rounded-lg hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function ManagerDepartmentsPage() {
   return <ManagerDepartmentsPageContent />;
@@ -207,45 +35,57 @@ function ManagerDepartmentsPageContent() {
 
   const [departments, setDepartments] = useState<DepartmentNode[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; role: string; departmentId?: number | null; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalParent, setModalParent] = useState<{ id: number | null, name?: string } | null>(null);
-  const [editModal, setEditModal] = useState<{ open: boolean; dept: DepartmentNode | null }>({ open: false, dept: null });
-  const [managers, setManagers] = useState<{ id: number; name: string }[]>([]);
-  const [editLoading, setEditLoading] = useState(false);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
   const fetchDepartments = async () => {
     try {
       setLoading(true);
-      setError(null);
+      console.log('Fetching departments...', { API_URL, token: token ? 'present' : 'missing' });
       const res = await fetch(`${API_URL}/api/departments`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-      if (!res.ok) throw new Error('Failed to load departments');
+      console.log('Departments response status:', res.status);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Departments API error:', errorText);
+        throw new Error('Failed to load departments');
+      }
       const json = await res.json();
+      console.log('Departments API response:', json);
+      console.log('Departments data array:', json.data);
+      console.log('Departments array length:', json.data?.length);
+      if (json.data && json.data.length > 0) {
+        console.log('First department:', json.data[0]);
+      }
       setDepartments(json.data || []);
     } catch (e: any) {
-      setError(e.message || 'Failed to load departments');
+      console.error('Failed to load departments:', e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (currentUser?.role === 'manager' || currentUser?.role === 'admin') fetchDepartments();
+    console.log('Current user changed:', currentUser);
+    if (currentUser?.role === 'manager' || currentUser?.role === 'admin') {
+      console.log('Fetching departments for user role:', currentUser.role);
+      fetchDepartments();
+    }
   }, [currentUser?.role]);
 
   const fetchUsers = async () => {
       try {
+        console.log('Fetching users...', { API_URL, token: token ? 'present' : 'missing' });
         const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+        console.log('Users response status:', res.status);
         if (res.ok) {
           const json = await res.json();
+          console.log('Users API response:', json);
           setUsers(json.data || []);
-          setManagers((json.data || []).filter((u: any) => u.role === 'manager' || u.role === 'admin'));
+        } else {
+          const errorText = await res.text();
+          console.error('Users API error:', errorText);
         }
       } catch (e) {
         console.error('Failed to load users:', e);
@@ -256,430 +96,433 @@ function ManagerDepartmentsPageContent() {
     fetchUsers();
   }, [token, API_URL]);
 
-  const allDepartments = useMemo(() => {
+  const selectedDept = useMemo(() => {
     const all: DepartmentNode[] = [];
     const walk = (nodes: DepartmentNode[]) => nodes.forEach(n => { all.push(n); if (n.children) walk(n.children); });
     walk(departments);
-    return all;
-  }, [departments]);
-
-  const primaryDepartments = useMemo(() => departments.filter(d => !d.parentId), [departments]);
-  const selectedDept = useMemo(() => allDepartments.find(d => d.id === selectedId) || null, [allDepartments, selectedId]);
-  const deptStats = selectedDept ? getTasksCountByStatus(selectedDept.name) : null;
-
-  const { showToast } = useToast();
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; deptId?: number; deptName?: string }>({ open: false });
+    return all.find(d => d.id === selectedId) || null;
+  }, [departments, selectedId]);
 
   // Utility function to format names
   const formatName = (name: string) => {
+    if (!name) return 'Unknown User';
+    
+    // Handle cases like "sostine.waliaula" or "manager.it"
+    if (name.includes('.')) {
+      return name
+        .split('.')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
+    
+    // Handle cases with spaces or other separators
     return name
-      .split('.')
+      .split(/[\s_-]+/)
       .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(' ');
   };
 
-
-  const deleteDept = (id: number) => {
-    const dept = allDepartments.find(d => d.id === id);
-    setDeleteModal({ open: true, deptId: id, deptName: dept?.name });
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.deptId) return;
-    try {
-      const res = await fetch(`${API_URL}/api/departments/${deleteModal.deptId}`, { method: 'DELETE', headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-      if (res.status === 204) {
-        if (selectedId === deleteModal.deptId) setSelectedId(null);
-        fetchDepartments();
-        showToast('Department deleted', 'success');
-      } else {
-        const j = await res.json().catch(() => ({}));
-        showToast(j.error || 'Failed to delete department', 'error');
-      }
-    } catch (e) {
-      showToast('Failed to delete department', 'error');
-    }
-    setDeleteModal({ open: false });
-  };
-
-  const handleAddDepartment = () => {
-    setModalParent(null);
-    setModalOpen(true);
-  };
-  
-  const handleAddSubDepartment = () => {
-    const defaultPrimary = primaryDepartments[0];
-    setModalParent({ id: defaultPrimary?.id ?? null, name: defaultPrimary?.name });
-    setModalOpen(true);
-  };
-  
-  const handleModalSubmit = async (name: string, parentId?: number | null, managerId?: number | null) => {
-    if (!name.trim()) return;
-    const body: any = { name: name.trim() };
-    if (parentId) body.parentId = parentId;
-    if (managerId !== undefined) body.managerId = managerId;
+  // Get the single department managed by current user
+  const managedDepartment = useMemo(() => {
+    console.log('Computing managedDepartment...', { currentUserId: currentUser?.id, departmentsCount: departments.length });
+    if (!currentUser?.id) return null;
     
-    try {
-      // First create the department
-      const res = await fetch(`${API_URL}/api/departments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-        body: JSON.stringify(body)
+    const all: DepartmentNode[] = [];
+    const walk = (nodes: DepartmentNode[]) => {
+      nodes.forEach(n => {
+        console.log('Checking department:', n.name, 'managerId:', n.managerId, 'currentUserId:', currentUser.id, 'type check:', n.managerId === Number(currentUser.id));
+        if (n.managerId === Number(currentUser.id)) {
+          all.push(n);
+        }
+        if (n.children) walk(n.children);
       });
-      
-      if (res.ok) {
-        const deptData = await res.json();
-        const newDepartmentId = deptData.data?.id;
-        
-        // If a manager is selected, update their role and assign them to the department
-        if (managerId && newDepartmentId) {
-          const selectedUser = users.find(u => u.id === managerId);
-          
-          // Update user role to manager if they're not already a manager or admin
-          if (selectedUser && selectedUser.role !== 'manager' && selectedUser.role !== 'admin') {
-            await fetch(`${API_URL}/api/users/${managerId}/role`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-              body: JSON.stringify({ role: 'manager' })
-            });
-          }
-          
-          // Assign user to the department
-          await fetch(`${API_URL}/api/users/${managerId}/department`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-            body: JSON.stringify({ departmentId: newDepartmentId })
+    };
+    walk(departments);
+    console.log('Found managed departments:', all.length, all.map(d => d.name));
+    return all[0] || null; // Managers only manage one department
+  }, [departments, currentUser?.id]);
+
+  // Get team members from the single managed department
+  const teamMembers = useMemo(() => {
+    console.log('Computing teamMembers...', { managedDepartment: managedDepartment?.name, currentUserId: currentUser?.id });
+    if (!currentUser?.id || !managedDepartment) {
+      console.log('No managed department or current user, returning empty team');
+      return [];
+    }
+    
+    const members = new Map();
+    
+    // Add manager (current user)
+    members.set(Number(currentUser.id), {
+      id: Number(currentUser.id),
+      name: currentUser.name,
+      email: currentUser.email,
+      role: 'manager',
+      department: managedDepartment.name,
+      isManager: true
+    });
+    
+    // Add users from the managed department
+    if (managedDepartment.users) {
+      console.log('Adding users from managed department:', managedDepartment.users.length);
+      managedDepartment.users.forEach(user => {
+        if (!members.has(user.id)) {
+          members.set(user.id, {
+            ...user,
+            department: managedDepartment.name,
+            isManager: false
           });
         }
-        
-        fetchDepartments();
-        fetchUsers(); // Refresh users list to show updated roles
-        showToast('Department added successfully', 'success');
-      } else {
-        const j = await res.json().catch(() => ({}));
-        showToast(j.error || 'Failed to create department', 'error');
-      }
-    } catch (e) {
-      showToast('Failed to create department', 'error');
-    }
-  };
-
-  const handleAssignUser = async () => {
-    if (!selectedUserId || !selectedDept) return;
-    
-    try {
-      // First, check if user is already in another department
-      const selectedUser = users.find(u => u.id === selectedUserId);
-      const previousDepartmentId = selectedUser?.departmentId;
-      
-      console.log('Assigning user:', {
-        userId: selectedUserId,
-        departmentId: selectedDept.id,
-        previousDepartmentId,
-        API_URL
       });
-      
-      // Assign user to the new department
-      const res = await fetch(`${API_URL}/api/users/${selectedUserId}/department`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-        body: JSON.stringify({ departmentId: selectedDept.id })
-      });
-      
-      console.log('Response status:', res.status);
-      console.log('Response ok:', res.ok);
-      
-      if (res.ok) {
-        setSelectedUserId('');
-        fetchDepartments(); // Refresh departments to update member counts
-        fetchUsers(); // Refresh users to update their department assignments
-        
-        if (previousDepartmentId && previousDepartmentId !== selectedDept.id) {
-          showToast(`User moved from previous department to ${selectedDept.name}`, 'success');
-        } else {
-          showToast(`User assigned to ${selectedDept.name}`, 'success');
-        }
-      } else {
-        const errorText = await res.text();
-        console.error('Error response:', errorText);
-        let errorMessage = 'Failed to assign user';
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.error || errorMessage;
-        } catch (e) {
-          console.error('Could not parse error response as JSON');
-        }
-        showToast(errorMessage, 'error');
-      }
-    } catch (e) {
-      console.error('Exception in handleAssignUser:', e);
-      showToast('Failed to assign user', 'error');
     }
-  };
+    
+    const result = Array.from(members.values());
+    console.log('Final team members:', result.length, result.map(m => m.name));
+    return result;
+  }, [managedDepartment, currentUser]);
 
-  const handleEditSave = async (data: { name: string; managerId: number | null; description?: string }) => {
-    if (!editModal.dept) return;
-    setEditLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/departments/${editModal.dept.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
-        body: JSON.stringify({ name: data.name, managerId: data.managerId, description: data.description })
-      });
-      if (res.ok) {
-        fetchDepartments();
-        showToast('Department updated', 'success');
-        setEditModal({ open: false, dept: null });
-      } else {
-        const j = await res.json().catch(() => ({}));
-        showToast(j.error || 'Failed to update department', 'error');
-      }
-    } catch (e) {
-      showToast('Failed to update department', 'error');
-    }
-    setEditLoading(false);
-  };
-
-  // Helper to get member count for a department (including all sub-departments)
-  function getDepartmentMemberCount(dept: DepartmentNode, includeSubDepartments: boolean = true) {
-    let count = 0;
+  // Calculate team statistics for the single managed department
+  const teamStats = useMemo(() => {
+    const totalMembers = teamMembers.length;
+    const managers = teamMembers.filter(m => m.isManager).length;
+    const employees = teamMembers.filter(m => !m.isManager).length;
     
-    // Count users directly assigned to this department + manager
-    if (dept.managerId) {
-      count += 1;
-    }
+    // Get task statistics for the single managed department
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let inProgressTasks = 0;
+    let overdueTasks = 0;
     
-    if (dept.users) {
-      count += dept.users.length;
-    }
-    
-    // If including sub-departments, recursively count members from all children
-    if (includeSubDepartments && dept.children) {
-      for (const child of dept.children) {
-        count += getDepartmentMemberCount(child, true);
+    if (managedDepartment) {
+      const deptStats = getTasksCountByStatus(managedDepartment.name);
+      if (deptStats) {
+        totalTasks = Object.values(deptStats).reduce((sum, count) => sum + count, 0);
+        completedTasks = deptStats.completed || 0;
+        inProgressTasks = deptStats['in-progress'] || 0;
+        overdueTasks = 0; // Overdue tasks not available in current stats
       }
     }
     
-    return count;
-  }
+    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
+    return {
+      totalMembers,
+      managers,
+      employees,
+      totalTasks,
+      completedTasks,
+      inProgressTasks,
+      overdueTasks,
+      completionRate
+    };
+  }, [teamMembers, managedDepartment, getTasksCountByStatus]);
 
-  // Helper to get only direct members (not including sub-departments)
-  function getDirectMemberCount(dept: DepartmentNode) {
-    return getDepartmentMemberCount(dept, false);
-  }
 
-  const renderTree = (nodes: DepartmentNode[]) => (
-    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-      {nodes.map((dept) => (
-        <li
-          key={dept.id}
-          className={`px-3 py-2 transition-colors duration-150 cursor-pointer
-            ${selectedId === dept.id
-              ? 'bg-[#e8f5f0] dark:bg-[var(--color-bg-card)]'
-              : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
-          `}
-        >
-          <div className="flex items-center">
-            {dept.children && dept.children.length > 0 ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const next = new Set(expandedIds);
-                  if (next.has(dept.id)) next.delete(dept.id); else next.add(dept.id);
-                  setExpandedIds(next);
-                }}
-                className="mr-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
-              >
-                {expandedIds.has(dept.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-              </button>
-            ) : (
-              <div className="w-6 mr-2" />
-            )}
-            <BuildingIcon className="h-4 w-4 mr-2 text-gray-400" />
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-gray-900 dark:text-gray-100">{dept.name}</div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <span>{getDirectMemberCount(dept)} direct</span>
-                {getDepartmentMemberCount(dept) > getDirectMemberCount(dept) && (
-                  <span className="text-green-600 dark:text-green-400 font-medium">
-                    {getDepartmentMemberCount(dept)} total
-                  </span>
-                )}
+
+  // Department card component
+  const DepartmentCard = ({ department }: { department: DepartmentNode }) => {
+    const deptStats = getTasksCountByStatus(department.name);
+    const memberCount = department.users?.length || 0;
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50">
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-to-r from-[#2e9d74] to-purple-600 rounded-lg">
+                <BuildingIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {department.name}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {memberCount} team member{memberCount !== 1 ? 's' : ''}
+                </p>
               </div>
             </div>
-            {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
-              <div className="flex items-center space-x-1 ml-2">
-                <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept }); }} className="p-1 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Edit">
-                  <PencilIcon className="h-3.5 w-3.5" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }} className="p-1 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded" title="Delete">
-                  <TrashIcon className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : null}
           </div>
-          {dept.children && dept.children.length > 0 && expandedIds.has(dept.id) ? (
-            <div className="ml-6 mt-1">
-              {renderTree(dept.children)}
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center text-green-600 dark:text-green-400 mb-1">
+                <CheckCircleIcon className="h-4 w-4 mr-1" />
+                <span className="text-lg font-semibold">{deptStats?.completed || 0}</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
             </div>
-          ) : null}
-        </li>
-      ))}
-    </ul>
-  );
-
-  return (
-    <div className="w-full min-h-screen bg-white dark:bg-[var(--color-bg-dark)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="md:flex md:items-center md:justify-between mb-6">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 accent-green sm:text-3xl sm:truncate flex items-center">
-              <BuildingIcon className="h-8 w-8 mr-3 accent-green" />
-              Department Management
-            </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-              View and manage departments under your supervision
-            </p>
+            <div className="text-center">
+              <div className="flex items-center justify-center text-blue-600 dark:text-blue-400 mb-1">
+                <ClockIcon className="h-4 w-4 mr-1" />
+                <span className="text-lg font-semibold">{deptStats?.['in-progress'] || 0}</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500 dark:text-gray-400">
+              {deptStats ? Math.round(((deptStats.completed || 0) / Object.values(deptStats).reduce((sum, count) => sum + count, 0)) * 100) || 0 : 0}% completion rate
+            </span>
+            <button 
+              onClick={() => setSelectedId(department.id)}
+              className="text-[#2e9d74] hover:text-[#228a63] font-medium flex items-center"
+            >
+              View Details
+              <EyeIcon className="h-4 w-4 ml-1" />
+            </button>
           </div>
         </div>
+      </div>
+    );
+  };
 
-        {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
-          <div className="section-card p-4 mb-6">
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-              <button
-                onClick={handleAddDepartment}
-                className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-4 py-2 rounded-lg flex items-center text-sm w-full md:w-auto justify-center hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Add Department
-              </button>
-              <button
-                onClick={handleAddSubDepartment}
-                disabled={primaryDepartments.length === 0}
-                className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-4 py-2 rounded-lg flex items-center text-sm w-full md:w-auto justify-center hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Add Sub-Department
-              </button>
-            </div>
-            <DepartmentModal
-              open={modalOpen}
-              onClose={() => setModalOpen(false)}
-              onSubmit={handleModalSubmit}
-              parentId={modalParent?.id ?? undefined}
-              parentName={modalParent?.name}
-              primaryDepartments={modalParent ? primaryDepartments : undefined}
-              users={users}
-              departments={departments}
-            />
-            {error ? <p className="text-sm text-red-600 mt-2">{error}</p> : null}
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <div className="text-center">
-              <BuildingIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Access Restricted</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                You need manager or administrator privileges to view and manage departments.
+  // Team member card component
+  const TeamMemberCard = ({ member }: { member: any }) => (
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+      <div className="flex items-center space-x-3">
+        <img 
+          className="h-10 w-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700" 
+          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formatName(member.name))}&background=2e9d74&color=fff&size=40`} 
+          alt={formatName(member.name)}
+        />
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+            {formatName(member.name)}
+            {member.isManager && (
+              <span className="ml-2 text-xs text-[#2e9d74] font-medium">(You)</span>
+            )}
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            {member.email || member.ldapUid}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {member.department}
+          </p>
+        </div>
+        <div className="flex items-center space-x-1">
+          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+            member.isManager 
+              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200'
+              : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+          }`}>
+            {member.isManager ? 'Manager' : 'Employee'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (currentUser?.role !== 'manager' && currentUser?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center max-w-md">
+          <BuildingIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Access Restricted</h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            You need manager or administrator privileges to view department management.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                <BuildingIcon className="h-8 w-8 mr-3 text-[#2e9d74]" />
+                My Department
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                View your department details and team information
               </p>
             </div>
           </div>
-        )}
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-1">
-            <div className="card">
-              <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium accent-green">Departments</h3>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <BuildingIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
-              {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
-                loading ? <div className="p-4 text-sm text-gray-500 dark:text-gray-300">Loading...</div> : (
-                  departments.length ? renderTree(departments) : <div className="p-4 text-sm text-gray-500 dark:text-gray-300">No departments yet.</div>
-                )
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Department</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{managedDepartment ? '1' : '0'}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <UsersIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Team Members</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{teamStats.totalMembers}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <TargetIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tasks</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{teamStats.totalTasks}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <TrendingUpIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completion Rate</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{teamStats.completionRate}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Department Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">My Department</h2>
+              </div>
+              
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e9d74]"></div>
+                </div>
+              ) : !managedDepartment ? (
+                <div className="text-center py-12">
+                  <BuildingIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Department</h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    You're not currently managing any department.
+                  </p>
+                </div>
               ) : (
-                <div className="p-4 text-center">
-                  <BuildingIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500 dark:text-gray-300">Access restricted to managers and administrators</p>
+                <div className="grid grid-cols-1 gap-6">
+                  <DepartmentCard department={managedDepartment} />
                 </div>
               )}
             </div>
           </div>
-          <div className="lg:col-span-2">
-            {selectedDept ? <div className="card bg-white dark:bg-[var(--color-bg-card)]">
-                <div className="px-4 py-5 sm:px-6">
+
+          {/* Team Members Section */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Team Members</h2>
+              </div>
+              
+              {teamMembers.length === 0 ? (
+                <div className="text-center py-8">
+                  <UsersIcon className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No team members yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {teamMembers.map(member => (
+                    <TeamMemberCard key={member.id} member={member} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Department Details Modal */}
+        {selectedDept && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div className="absolute inset-0 bg-black bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-80"></div>
+              </div>
+              
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg leading-6 font-medium accent-green">{selectedDept.name}</h3>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">Department details and management</p>
-                    </div>
-                    {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
-                      <div className="flex items-center space-x-2">
-                        <button onClick={(e) => { e.stopPropagation(); setEditModal({ open: true, dept: selectedDept }); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" title="Edit">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); deleteDept(selectedDept.id); }} className="text-red-500 hover:text-red-600" title="Delete">
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : null}
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedDept.name} - Department Details
+                    </h3>
+                    <button 
+                      onClick={() => setSelectedId(null)}
+                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    >
+                      <XIcon className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
-                <div className="px-4 py-5 sm:px-6">
+                
+                <div className="px-6 py-4">
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{selectedDept.name} Overview</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Department Name</p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{selectedDept.name}</p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Team Members</p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{selectedDept.users?.length || 0}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <InlineDepartmentStats 
                     departmentId={selectedDept.id}
                     departmentName={selectedDept.name}
                     managerName={selectedDept.managerId ? (users.find(u => u.id === selectedDept.managerId) ? formatName(users.find(u => u.id === selectedDept.managerId)!.name) : '—') : '—'}
                   />
-                </div>
-                {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? (
-                  <div className="px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg leading-6 font-medium accent-green mb-3">Add User to Department</h3>
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <SearchableDropdown
-                          options={users.map(u => ({
-                            id: u.id,
-                            label: formatName(u.name),
-                            value: u.name,
-                            subtitle: u.email ? u.email : u.ldapUid
-                          }))}
-                          value={selectedUserId}
-                          onChange={(value) => setSelectedUserId(value as number | '')}
-                          placeholder="Select user..."
-                          searchPlaceholder="Search users..."
-                          className="w-full"
-                        />
+                  
+                  {selectedDept.users && selectedDept.users.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Team Members</h4>
+                      <div className="space-y-3">
+                        {selectedDept.users.map(user => (
+                          <div key={user.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <img 
+                              className="h-8 w-8 rounded-full ring-2 ring-gray-200 dark:ring-gray-600" 
+                              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formatName(user.name))}&background=2e9d74&color=fff&size=32`} 
+                              alt={formatName(user.name)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                {formatName(user.name)}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {user.role === 'manager' ? 'Manager' : 'Employee'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <button
-                        onClick={handleAssignUser}
-                        disabled={!selectedUserId || !selectedDept}
-                        className="bg-[var(--color-accent-green)] disabled:bg-gray-400 text-white px-4 py-2 rounded text-sm disabled:cursor-not-allowed"
-                      >
-                        Add User
-                      </button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
-                      Select a user to assign them to this department. If they're already in another department, they'll be automatically moved here.
-                    </p>
-                  </div>
-                ) : null}
-              </div> : <div className="card">
-                <div className="px-4 py-5 sm:px-6 text-center">
-                  <BuildingIcon className="h-12 w-12 accent-green mx-auto mb-4" />
-                  <h3 className="text-lg leading-6 font-medium accent-green">
-                    {(currentUser?.role === 'manager' || currentUser?.role === 'admin') ? 'Select a Department' : 'Access Restricted'}
-                  </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-300 mx-auto">
-                    {(currentUser?.role === 'manager' || currentUser?.role === 'admin') 
-                      ? 'Click on a department from the list to view its details.'
-                      : 'You need manager or administrator privileges to view department details.'
-                    }
-                  </p>
+                  )}
                 </div>
-              </div>}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-      <DeleteConfirmModal open={deleteModal.open} onCancel={() => setDeleteModal({ open: false })} onConfirm={handleDeleteConfirm} deptName={deleteModal.deptName || ''} />
-      <EditDepartmentModal open={editModal.open} onClose={() => setEditModal({ open: false, dept: null })} department={editModal.dept} managerOptions={users.map(u => ({ id: u.id, name: formatName(u.name) }))} onSave={handleEditSave} loading={editLoading} departments={departments} />
+      
     </div>
   );
 }

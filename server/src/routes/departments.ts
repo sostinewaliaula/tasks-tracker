@@ -5,41 +5,73 @@ import { syncUserRolesWithDepartments, validateRoleConsistency } from '../lib/ro
 
 const router = express.Router();
 
-// Require admin for all department routes
-router.use(authMiddleware, roleCheck(['admin']));
+// Require authentication for all department routes
+router.use(authMiddleware);
 
 // List departments as a tree
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const departments = await prisma.department.findMany({
-            where: { parentId: null },
-            include: {
-                manager: { select: { id: true, name: true } },
-                users: { select: { id: true, name: true, role: true } },
-                children: {
-                    include: {
-                        manager: { select: { id: true, name: true } },
-                        users: { select: { id: true, name: true, role: true } },
-                        children: {
-                            include: {
-                                manager: { select: { id: true, name: true } },
-                                users: { select: { id: true, name: true, role: true } },
+        const user = (req as any).user;
+        
+        // If user is admin, return all departments
+        if (user.role === 'admin') {
+            const departments = await prisma.department.findMany({
+                where: { parentId: null },
+                include: {
+                    manager: { select: { id: true, name: true } },
+                    users: { select: { id: true, name: true, role: true } },
+                    children: {
+                        include: {
+                            manager: { select: { id: true, name: true } },
+                            users: { select: { id: true, name: true, role: true } },
+                            children: {
+                                include: {
+                                    manager: { select: { id: true, name: true } },
+                                    users: { select: { id: true, name: true, role: true } },
+                                },
                             },
                         },
                     },
                 },
-            },
-            orderBy: { name: 'asc' },
-        });
-        res.json({ data: departments });
+                orderBy: { name: 'asc' },
+            });
+            return res.json({ data: departments });
+        }
+        
+        // If user is manager, return only their managed department
+        if (user.role === 'manager') {
+            const department = await prisma.department.findFirst({
+                where: { managerId: user.id },
+                include: {
+                    manager: { select: { id: true, name: true } },
+                    users: { select: { id: true, name: true, role: true } },
+                    children: {
+                        include: {
+                            manager: { select: { id: true, name: true } },
+                            users: { select: { id: true, name: true, role: true } },
+                        },
+                    },
+                },
+            });
+            
+            if (!department) {
+                return res.json({ data: [] });
+            }
+            
+            // Return as array to maintain consistency with admin response
+            return res.json({ data: [department] });
+        }
+        
+        // If user is employee, return empty array
+        res.json({ data: [] });
     } catch (e) {
         console.error('Departments list error:', e);
         res.status(500).json({ error: 'Failed to load departments' });
     }
 });
 
-// Create primary or sub-department (optional manager)
-router.post('/', async (req, res) => {
+// Create primary or sub-department (optional manager) - Admin only
+router.post('/', roleCheck(['admin']), async (req, res) => {
     const { name, parentId, managerId } = req.body || {};
     if (!name || typeof name !== 'string') {
         return res.status(400).json({ error: 'Name is required' });
@@ -76,7 +108,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update department (name and/or parent and/or manager)
-router.put('/:id', async (req, res) => {
+router.put('/:id', roleCheck(['admin']), async (req, res) => {
     const id = Number(req.params.id);
     const { name, parentId, managerId } = req.body || {};
     if (!Number.isFinite(id)) {
@@ -142,7 +174,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete department (and optionally cascade handled by DB relations if set)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', roleCheck(['admin']), async (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) {
         return res.status(400).json({ error: 'Invalid id' });
@@ -187,7 +219,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Assign a user to a department by id, ldapUid or email
-router.post('/:id/users', async (req, res) => {
+router.post('/:id/users', roleCheck(['admin']), async (req, res) => {
     const departmentId = Number(req.params.id);
     const { userId, ldapUid, email } = req.body || {};
     if (!Number.isFinite(departmentId)) {
@@ -224,7 +256,7 @@ router.post('/:id/users', async (req, res) => {
 });
 
 // Get department members (including manager)
-router.get('/:id/members', async (req, res) => {
+router.get('/:id/members', roleCheck(['admin', 'manager']), async (req, res) => {
     const departmentId = Number(req.params.id);
     if (!Number.isFinite(departmentId)) {
         return res.status(400).json({ error: 'Invalid department id' });
@@ -450,7 +482,7 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
 });
 
 // Sync user roles with department manager assignments
-router.post('/sync-roles', async (_req, res) => {
+router.post('/sync-roles', roleCheck(['admin']), async (_req, res) => {
     try {
         const result = await syncUserRolesWithDepartments();
         res.json({ 
@@ -464,7 +496,7 @@ router.post('/sync-roles', async (_req, res) => {
 });
 
 // Check role consistency
-router.get('/check-consistency', async (_req, res) => {
+router.get('/check-consistency', roleCheck(['admin']), async (_req, res) => {
     try {
         const result = await validateRoleConsistency();
         res.json({ 
