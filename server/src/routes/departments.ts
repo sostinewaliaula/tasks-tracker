@@ -1,6 +1,7 @@
 import express from 'express';
 import { authMiddleware, roleCheck } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
+import { syncUserRolesWithDepartments, validateRoleConsistency } from '../lib/roleSync';
 
 const router = express.Router();
 
@@ -90,6 +91,12 @@ router.put('/:id', async (req, res) => {
         }
         const department = await prisma.department.findUnique({ where: { id } });
         const updated = await prisma.$transaction(async (tx) => {
+            // Get the current department to check for existing manager
+            const currentDept = await tx.department.findUnique({ 
+                where: { id }, 
+                select: { managerId: true } 
+            });
+            
             const dep = await tx.department.update({
                 where: { id },
                 data: {
@@ -98,9 +105,30 @@ router.put('/:id', async (req, res) => {
                     managerId: managerId === undefined ? undefined : (managerId === null ? null : Number(managerId)),
                 },
             });
+            
+            // Handle manager assignment/removal/reassignment
             if (managerId) {
-                await tx.user.update({ where: { id: Number(managerId) }, data: { role: 'manager', departmentId: dep.id } });
+                // If there was a previous manager, demote them to employee
+                if (currentDept?.managerId && currentDept.managerId !== Number(managerId)) {
+                    await tx.user.update({ 
+                        where: { id: currentDept.managerId }, 
+                        data: { role: 'employee' } 
+                    });
+                }
+                
+                // Assign new manager
+                await tx.user.update({ 
+                    where: { id: Number(managerId) }, 
+                    data: { role: 'manager', departmentId: dep.id } 
+                });
+            } else if (managerId === null && currentDept?.managerId) {
+                // Remove existing manager - change their role back to employee
+                await tx.user.update({ 
+                    where: { id: currentDept.managerId }, 
+                    data: { role: 'employee' } 
+                });
             }
+            
             return dep;
         });
         res.json({ data: updated });
@@ -120,6 +148,12 @@ router.delete('/:id', async (req, res) => {
         return res.status(400).json({ error: 'Invalid id' });
     }
     try {
+        // Get the department and its manager before deletion
+        const department = await prisma.department.findUnique({
+            where: { id },
+            select: { managerId: true }
+        });
+        
         // Ensure no children exist before delete for safety
         const childrenCount = await prisma.department.count({ where: { parentId: id } });
         if (childrenCount > 0) {
@@ -130,7 +164,21 @@ router.delete('/:id', async (req, res) => {
         if (usersCount > 0) {
             return res.status(400).json({ error: 'Reassign users from this department before deletion' });
         }
-        await prisma.department.delete({ where: { id } });
+        
+        // Delete department and demote manager if exists
+        await prisma.$transaction(async (tx) => {
+            // Demote manager to employee if they exist
+            if (department?.managerId) {
+                await tx.user.update({
+                    where: { id: department.managerId },
+                    data: { role: 'employee' }
+                });
+            }
+            
+            // Delete the department
+            await tx.department.delete({ where: { id } });
+        });
+        
         res.status(204).send();
     } catch (e) {
         console.error('Department delete error:', e);
@@ -398,6 +446,33 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
         console.error('Get department stats error:', e);
         console.error('Error details:', JSON.stringify(e, null, 2));
         res.status(500).json({ error: 'Failed to fetch department statistics', details: e.message });
+    }
+});
+
+// Sync user roles with department manager assignments
+router.post('/sync-roles', async (_req, res) => {
+    try {
+        const result = await syncUserRolesWithDepartments();
+        res.json({ 
+            message: 'Role synchronization completed successfully',
+            data: result
+        });
+    } catch (error) {
+        console.error('Role sync error:', error);
+        res.status(500).json({ error: 'Failed to synchronize roles' });
+    }
+});
+
+// Check role consistency
+router.get('/check-consistency', async (_req, res) => {
+    try {
+        const result = await validateRoleConsistency();
+        res.json({ 
+            data: result
+        });
+    } catch (error) {
+        console.error('Role consistency check error:', error);
+        res.status(500).json({ error: 'Failed to check role consistency' });
     }
 });
 

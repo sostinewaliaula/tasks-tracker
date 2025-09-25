@@ -1,6 +1,7 @@
 import express from 'express';
 import { authMiddleware, roleCheck } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
+import { syncUserRolesWithDepartments } from '../lib/roleSync';
 
 const router = express.Router();
 
@@ -49,11 +50,31 @@ router.patch('/:id/role', authMiddleware, roleCheck(['admin']), async (req, res)
             return res.status(400).json({ error: 'Invalid role' });
         }
         
+        // Check if user is currently managing any department
+        const currentDepartments = await prisma.department.findMany({
+            where: { managerId: userId },
+            select: { id: true, name: true }
+        });
+        
         const user = await prisma.user.update({
             where: { id: userId },
             data: { role: role as any },
             select: { id: true, name: true, email: true, role: true, departmentId: true }
         });
+        
+        // If changing from manager to employee and user manages departments, remove them as manager
+        if (role === 'employee' && currentDepartments.length > 0) {
+            await prisma.department.updateMany({
+                where: { managerId: userId },
+                data: { managerId: null }
+            });
+            console.log(`Removed user ${user.name} as manager from ${currentDepartments.length} department(s)`);
+        }
+        
+        // If changing to manager role, ensure they're not managing any department (they need to be assigned)
+        if (role === 'manager' && currentDepartments.length === 0) {
+            console.log(`User ${user.name} has manager role but doesn't manage any department`);
+        }
         
         res.json({ data: user });
     } catch (e) {
