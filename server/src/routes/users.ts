@@ -39,6 +39,48 @@ router.get('/', authMiddleware, roleCheck(['admin', 'manager']), async (req, res
     }
 });
 
+// Update user role to manager
+router.patch('/:id/role', authMiddleware, roleCheck(['admin']), async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const { role } = req.body;
+        
+        if (!role || !['admin', 'manager', 'employee'].includes(role)) {
+            return res.status(400).json({ error: 'Invalid role' });
+        }
+        
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: { role: role as any },
+            select: { id: true, name: true, email: true, role: true, departmentId: true }
+        });
+        
+        res.json({ data: user });
+    } catch (e) {
+        console.error('Update user role error:', e);
+        res.status(500).json({ error: 'Failed to update user role' });
+    }
+});
+
+// Assign user to department
+router.patch('/:id/department', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const { departmentId } = req.body;
+        
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: { departmentId: departmentId ? parseInt(departmentId) : null },
+            select: { id: true, name: true, email: true, role: true, departmentId: true }
+        });
+        
+        res.json({ data: user });
+    } catch (e) {
+        console.error('Update user department error:', e);
+        res.status(500).json({ error: 'Failed to update user department' });
+    }
+});
+
 export default router;
 
 

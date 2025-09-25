@@ -15,7 +15,7 @@ export function AdminDepartmentPanel() {
   const { currentUser, token } = useAuth() as any;
   const { showToast } = useToast();
   const [departments, setDepartments] = React.useState<DepartmentNode[]>([]);
-  const [managers, setManagers] = React.useState<{ id: number; name: string }[]>([]);
+  const [users, setUsers] = React.useState<{ id: number; name: string; role: string; departmentId?: number | null }[]>([]);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
   const [editName, setEditName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -42,15 +42,20 @@ export function AdminDepartmentPanel() {
     }
   };
 
-  const fetchManagers = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/users?eligibleManager=true`, {
+      const res = await fetch(`${API_URL}/api/users`, {
         headers: { Authorization: token ? `Bearer ${token}` : '' },
       });
-      if (!res.ok) throw new Error('Failed to load managers');
+      if (!res.ok) throw new Error('Failed to load users');
       const json = await res.json();
-      const items = (json.data || []).map((u: any) => ({ id: u.id, name: u.name }));
-      setManagers(items);
+      const items = (json.data || []).map((u: any) => ({ 
+        id: u.id, 
+        name: u.name, 
+        role: u.role,
+        departmentId: u.departmentId 
+      }));
+      setUsers(items);
     } catch (e) {
       // noop for now
     }
@@ -59,7 +64,7 @@ export function AdminDepartmentPanel() {
   React.useEffect(() => {
     if (currentUser?.role === 'admin') {
       fetchDepartments();
-      fetchManagers();
+      fetchUsers();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role]);
@@ -150,13 +155,50 @@ export function AdminDepartmentPanel() {
     const body: any = { name: name.trim() };
     if (parentId) body.parentId = parentId;
     if (managerId !== undefined) body.managerId = managerId;
-    const res = await fetch(`${API_URL}/api/departments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-      body: JSON.stringify(body)
-    });
-    if (res.ok) { fetchDepartments(); }
-    else { const j = await res.json().catch(() => ({})); showToast(j.error || 'Failed to create department', 'error'); }
+    
+    try {
+      // First create the department
+      const res = await fetch(`${API_URL}/api/departments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+        body: JSON.stringify(body)
+      });
+      
+      if (res.ok) {
+        const deptData = await res.json();
+        const newDepartmentId = deptData.data?.id;
+        
+        // If a manager is selected, update their role and assign them to the department
+        if (managerId && newDepartmentId) {
+          const selectedUser = users.find(u => u.id === managerId);
+          
+          // Update user role to manager if they're not already a manager or admin
+          if (selectedUser && selectedUser.role !== 'manager' && selectedUser.role !== 'admin') {
+            await fetch(`${API_URL}/api/users/${managerId}/role`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+              body: JSON.stringify({ role: 'manager' })
+            });
+          }
+          
+          // Assign user to the department
+          await fetch(`${API_URL}/api/users/${managerId}/department`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+            body: JSON.stringify({ departmentId: newDepartmentId })
+          });
+        }
+        
+        fetchDepartments();
+        fetchUsers(); // Refresh users list to show updated roles
+        showToast('Department added successfully', 'success');
+      } else {
+        const j = await res.json().catch(() => ({}));
+        showToast(j.error || 'Failed to create department', 'error');
+      }
+    } catch (e) {
+      showToast('Failed to create department', 'error');
+    }
   };
   function findDepartmentById(nodes: DepartmentNode[], id: number): DepartmentNode | undefined {
     for (const node of nodes) {
@@ -176,14 +218,14 @@ export function AdminDepartmentPanel() {
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <button
           onClick={handleAddDepartment}
-          className="bg-[#2e9d74] text-white px-4 py-2 rounded flex items-center text-sm w-full md:w-auto justify-center"
+          className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-4 py-2 rounded-lg flex items-center text-sm w-full md:w-auto justify-center hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl"
         >
           <PlusIcon className="h-4 w-4 mr-1" /> Add Department
         </button>
         <button
           onClick={handleAddSubDepartment}
           disabled={!selectedId}
-          className="bg-[#2e9d74] text-white px-4 py-2 rounded flex items-center text-sm w-full md:w-auto justify-center disabled:opacity-50"
+          className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-4 py-2 rounded-lg flex items-center text-sm w-full md:w-auto justify-center hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <PlusIcon className="h-4 w-4 mr-1" /> Add Sub-Department
         </button>
@@ -195,7 +237,7 @@ export function AdminDepartmentPanel() {
         parentId={modalParent?.id ?? undefined}
         parentName={modalParent?.name}
         primaryDepartments={departments.filter(d => d.parentId === null).map(d => ({ id: d.id, name: d.name }))}
-        managers={managers}
+        users={users}
       />
       {/* Rename and error UI remains unchanged */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -203,7 +245,7 @@ export function AdminDepartmentPanel() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Rename Department</label>
           <div className="flex">
             <input value={editName} onChange={(e) => setEditName(e.target.value)} className="flex-1 border rounded-l px-3 py-2 text-sm" placeholder="New name" />
-            <button onClick={updateDept} disabled={!selectedId || !editName.trim()} className="bg-[#2e9d74] text-white px-3 rounded-r text-sm disabled:opacity-50">Save</button>
+            <button onClick={updateDept} disabled={!selectedId || !editName.trim()} className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-3 py-2 rounded-r text-sm hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
           </div>
         </div>
       </div>

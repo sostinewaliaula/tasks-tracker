@@ -9,10 +9,10 @@ interface DepartmentModalProps {
   parentId?: number | null;
   parentName?: string;
   primaryDepartments?: { id: number; name: string }[];
-  managers?: { id: number; name: string }[];
+  users?: { id: number; name: string; role: string; departmentId?: number | null }[];
 }
 
-export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments, managers }: DepartmentModalProps) {
+export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName, primaryDepartments, users }: DepartmentModalProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(parentId ?? null);
@@ -130,14 +130,27 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                 onChange={e => setSelectedManagerId(e.target.value ? Number(e.target.value) : null)}
               >
                 <option value="">No manager</option>
-                {managers && managers.length > 0 ? (
-                  managers.map(m => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
+                {users && users.length > 0 ? (
+                  users.map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} {user.role !== 'manager' && user.role !== 'admin' ? '(will be promoted to manager)' : ''}
+                    </option>
                   ))
                 ) : (
-                  <option value="" disabled>Loading managers...</option>
+                  <option value="" disabled>Loading users...</option>
                 )}
               </select>
+              {selectedManagerId && users && (
+                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                  {(() => {
+                    const selectedUser = users.find(u => u.id === selectedManagerId);
+                    if (selectedUser && selectedUser.role !== 'manager' && selectedUser.role !== 'admin') {
+                      return `This user will be promoted to manager and assigned to this department.`;
+                    }
+                    return `This user will be assigned as manager of this department.`;
+                  })()}
+                </div>
+              )}
             </div>
             {error && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

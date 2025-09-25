@@ -168,7 +168,7 @@ function ManagerDepartmentsPageContent() {
   const [editName, setEditName] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [assignUser, setAssignUser] = useState('');
-  const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
+  const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; role: string; departmentId?: number | null; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalParent, setModalParent] = useState<{ id: number | null, name?: string } | null>(null);
@@ -197,20 +197,21 @@ function ManagerDepartmentsPageContent() {
     if (currentUser?.role === 'manager' || currentUser?.role === 'admin') fetchDepartments();
   }, [currentUser?.role]);
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-        if (res.ok) {
-          const json = await res.json();
-          setUsers(json.data || []);
-          setManagers((json.data || []).filter((u: any) => u.role === 'manager' || u.role === 'admin'));
-        }
-      } catch (e) {
-        console.error('Failed to load users:', e);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+      if (res.ok) {
+        const json = await res.json();
+        setUsers(json.data || []);
+        setManagers((json.data || []).filter((u: any) => u.role === 'manager' || u.role === 'admin'));
       }
-    };
-    loadUsers();
+    } catch (e) {
+      console.error('Failed to load users:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
   }, [token, API_URL]);
 
   const allDepartments = useMemo(() => {
@@ -283,15 +284,43 @@ function ManagerDepartmentsPageContent() {
     const body: any = { name: name.trim() };
     if (parentId) body.parentId = parentId;
     if (managerId !== undefined) body.managerId = managerId;
+    
     try {
+      // First create the department
       const res = await fetch(`${API_URL}/api/departments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
         body: JSON.stringify(body)
       });
+      
       if (res.ok) {
+        const deptData = await res.json();
+        const newDepartmentId = deptData.data?.id;
+        
+        // If a manager is selected, update their role and assign them to the department
+        if (managerId && newDepartmentId) {
+          const selectedUser = users.find(u => u.id === managerId);
+          
+          // Update user role to manager if they're not already a manager or admin
+          if (selectedUser && selectedUser.role !== 'manager' && selectedUser.role !== 'admin') {
+            await fetch(`${API_URL}/api/users/${managerId}/role`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+              body: JSON.stringify({ role: 'manager' })
+            });
+          }
+          
+          // Assign user to the department
+          await fetch(`${API_URL}/api/users/${managerId}/department`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+            body: JSON.stringify({ departmentId: newDepartmentId })
+          });
+        }
+        
         fetchDepartments();
-        showToast('Department added', 'success');
+        fetchUsers(); // Refresh users list to show updated roles
+        showToast('Department added successfully', 'success');
       } else {
         const j = await res.json().catch(() => ({}));
         showToast(j.error || 'Failed to create department', 'error');
@@ -405,14 +434,14 @@ function ManagerDepartmentsPageContent() {
             <div className="flex flex-col md:flex-row gap-4 mb-4">
               <button
                 onClick={handleAddDepartment}
-                className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded flex items-center text-sm w-full md:w-auto justify-center"
+                className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-4 py-2 rounded-lg flex items-center text-sm w-full md:w-auto justify-center hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Add Department
               </button>
               <button
                 onClick={handleAddSubDepartment}
                 disabled={primaryDepartments.length === 0}
-                className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded flex items-center text-sm w-full md:w-auto justify-center disabled:opacity-50"
+                className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-4 py-2 rounded-lg flex items-center text-sm w-full md:w-auto justify-center hover:from-green-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add Sub-Department
               </button>
@@ -424,7 +453,7 @@ function ManagerDepartmentsPageContent() {
               parentId={modalParent?.id ?? undefined}
               parentName={modalParent?.name}
               primaryDepartments={modalParent ? primaryDepartments : undefined}
-              managers={managers}
+              users={users}
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
