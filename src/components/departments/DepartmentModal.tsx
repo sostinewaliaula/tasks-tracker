@@ -80,6 +80,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
 
           {/* Form Content */}
           <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 px-8 py-6">
+            {/* Primary Department - First (only for sub-departments) */}
             {primaryDepartments && (
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
@@ -91,6 +92,7 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                   value={selectedParentId ?? ''}
                   onChange={e => setSelectedParentId(e.target.value ? Number(e.target.value) : null)}
                   required
+                  autoFocus
                 >
                   <option value="">Select primary department</option>
                   {primaryDepartments.map(pd => (
@@ -99,24 +101,8 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                 </select>
               </div>
             )}
-            {managers && managers.length > 0 && (
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
-                  <UsersIcon className="h-4 w-4 mr-2 text-purple-600" />
-                  Manager (optional)
-                </label>
-                <select
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
-                  value={selectedManagerId ?? ''}
-                  onChange={e => setSelectedManagerId(e.target.value ? Number(e.target.value) : null)}
-                >
-                  <option value="">No manager</option>
-                  {managers.map(m => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+
+            {/* Department Name - Second */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
                 <Building2Icon className="h-4 w-4 mr-2 text-green-600" />
@@ -128,8 +114,30 @@ export function DepartmentModal({ open, onClose, onSubmit, parentId, parentName,
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder={parentId ? 'e.g., Platform' : 'e.g., Turnkey'}
-                autoFocus
+                autoFocus={!primaryDepartments}
               />
+            </div>
+
+            {/* Manager Selection - Third */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                <UsersIcon className="h-4 w-4 mr-2 text-purple-600" />
+                Manager (optional)
+              </label>
+              <select
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+                value={selectedManagerId ?? ''}
+                onChange={e => setSelectedManagerId(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">No manager</option>
+                {managers && managers.length > 0 ? (
+                  managers.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))
+                ) : (
+                  <option value="" disabled>Loading managers...</option>
+                )}
+              </select>
             </div>
             {error && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

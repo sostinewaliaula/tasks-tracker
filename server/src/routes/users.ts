@@ -4,8 +4,8 @@ import { prisma } from '../lib/prisma';
 
 const router = express.Router();
 
-// Admin-only users list with optional search
-router.get('/', authMiddleware, roleCheck(['admin']), async (req, res) => {
+// Users list with optional search - accessible by admin and manager roles
+router.get('/', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {
         const q = String(req.query.q || '').trim();
         const role = String(req.query.role || '').trim();
@@ -20,13 +20,13 @@ router.get('/', authMiddleware, roleCheck(['admin']), async (req, res) => {
                       ].filter(Boolean) as any,
                       AND: [
                         role ? { role: role as any } : undefined,
-                        eligibleManager ? { managingDepartments: { none: {} } } : undefined,
+                        eligibleManager ? { role: { in: ['manager', 'admin'] } } : undefined,
                       ].filter(Boolean) as any,
                   }
                 : role
                 ? { role: role as any }
                 : eligibleManager
-                ? { managingDepartments: { none: {} } }
+                ? { role: { in: ['manager', 'admin'] } }
                 : undefined,
             select: { id: true, name: true, email: true, ldapUid: true, departmentId: true, role: true },
             orderBy: { name: 'asc' },
