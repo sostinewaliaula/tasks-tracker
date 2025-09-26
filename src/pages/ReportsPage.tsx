@@ -294,7 +294,7 @@ export function ReportsPage() {
             'Total Users': departmentStats.stats?.totalUsers || 0
           };
           
-          // Add detailed tasks and subtasks
+          // Add detailed tasks and subtasks as nested data
           const tasksData = departmentStats.tasks?.map((task: any) => ({
             'Task ID': task.id,
             'Task Title': task.title,
@@ -312,7 +312,14 @@ export function ReportsPage() {
             ).join('; ') || 'None'
           })) || [];
           
-          exportData = [statsData, ...tasksData];
+          // Create one department record with all tasks nested within it
+          const departmentRecord = {
+            ...statsData,
+            'Tasks': tasksData.length,
+            'Tasks Details': tasksData
+          };
+          
+          exportData = [departmentRecord];
         } else {
           exportData = filteredTasks.map(task => ({
             'Task ID': task.id,
@@ -444,20 +451,22 @@ export function ReportsPage() {
     }
 
     if (format === 'CSV') {
-      // Convert to CSV
-      const headers = Object.keys(exportData[0] || {});
-      let csvContent = [
-        headers.join(','),
-        ...exportData.map(row => 
+      // Convert to CSV - handle nested structure for overview reports
+      if (reportType === 'overview' && exportData[0] && exportData[0]['Tasks Details']) {
+        // For overview reports, create a single department record
+        const departmentRecord = exportData[0];
+        const headers = Object.keys(departmentRecord).filter(key => key !== 'Tasks Details');
+        
+        let csvContent = [
+          headers.join(','),
           headers.map(header => {
-            const value = row[header] || '';
+            const value = departmentRecord[header] || '';
             // Escape commas and quotes in CSV
             return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
               ? `"${value.replace(/"/g, '""')}"` 
               : value;
           }).join(',')
-        )
-      ].join('\n');
+        ].join('\n');
 
       // Add task listings for overview reports
       if (reportType === 'overview' && departmentStats?.tasks) {
@@ -498,25 +507,74 @@ export function ReportsPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      } else {
+        // For non-overview reports, use the original CSV logic
+        const headers = Object.keys(exportData[0] || {});
+        const csvContent = [
+          headers.join(','),
+          ...exportData.map(row => 
+            headers.map(header => {
+              const value = row[header] || '';
+              // Escape commas and quotes in CSV
+              return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+                ? `"${value.replace(/"/g, '""')}"` 
+                : value;
+            }).join(',')
+          )
+        ].join('\n');
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `tasks-export-${dateRange}-${format.toLowerCase()}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } else if (format === 'Excel') {
       // For Excel, we'll create a simple CSV that can be opened in Excel
-      const headers = Object.keys(exportData[0] || {});
-      const csvContent = [
-        headers.join('\t'),
-        ...exportData.map(row => 
-          headers.map(header => row[header] || '').join('\t')
-        )
-      ].join('\n');
+      if (reportType === 'overview' && exportData[0] && exportData[0]['Tasks Details']) {
+        // For overview reports, create a single department record
+        const departmentRecord = exportData[0];
+        const headers = Object.keys(departmentRecord).filter(key => key !== 'Tasks Details');
+        
+        const csvContent = [
+          headers.join('\t'),
+          headers.map(header => departmentRecord[header] || '').join('\t')
+        ].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `tasks-export-${dateRange}-${format.toLowerCase()}.xls`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // For non-overview reports, use the original Excel logic
+        const headers = Object.keys(exportData[0] || {});
+        const csvContent = [
+          headers.join('\t'),
+          ...exportData.map(row => 
+            headers.map(header => row[header] || '').join('\t')
+          )
+        ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `tasks-export-${dateRange}-${format.toLowerCase()}.xls`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        const blob = new Blob([csvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `tasks-export-${dateRange}-${format.toLowerCase()}.xls`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } else if (format === 'PDF') {
       // For PDF, we'll create a simple HTML table and use browser print
       const tableHtml = `
@@ -709,7 +767,7 @@ export function ReportsPage() {
                   new Paragraph({
                     children: [
                       new TextRun({
-                        text: `Record ${index + 1}`,
+                        text: `Department Report`,
                         bold: true,
                         size: 22
                       })
@@ -717,8 +775,8 @@ export function ReportsPage() {
                     spacing: { before: 200, after: 100 }
                   }),
                   
-                  // Data entries as paragraphs
-                  ...entries.map(([key, value]) => 
+                  // Data entries as paragraphs (excluding nested Tasks Details)
+                  ...entries.filter(([key, value]) => key !== 'Tasks Details').map(([key, value]) => 
                     new Paragraph({
                       children: [
                         new TextRun({
