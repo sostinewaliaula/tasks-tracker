@@ -590,11 +590,31 @@ export function ReportsPage() {
               .header { text-align: center; margin-bottom: 20px; }
               .summary { margin-bottom: 20px; }
               tr:nth-child(even) { background-color: #f9f9f9; }
+              .company-header { 
+                text-align: center; 
+                margin-bottom: 30px; 
+                border-bottom: 2px solid #2e9d74; 
+                padding-bottom: 20px; 
+              }
+              .company-name { 
+                font-size: 28px; 
+                font-weight: bold; 
+                color: #2e9d74; 
+                margin-bottom: 10px; 
+              }
+              .logo { 
+                max-width: 100px; 
+                max-height: 60px; 
+                margin-bottom: 10px; 
+              }
             </style>
           </head>
           <body>
+            <div class="company-header">
+              <img src="/src/assets/logo.png" alt="Caava Group Logo" class="logo" />
+              <h1 style="margin: 0; font-size: 24px; color: #333;">${reportTitle}</h1>
+            </div>
             <div class="header">
-              <h1>${reportTitle}</h1>
               <p>${reportDescription}</p>
               <p>Date Range: ${dateRange}</p>
               <p>Statuses: ${statuses.join(', ')}</p>
@@ -603,12 +623,12 @@ export function ReportsPage() {
             <table>
               <thead>
                 <tr>
-                  ${Object.keys(exportData[0] || {}).map(header => `<th>${header}</th>`).join('')}
+                  ${Object.keys(exportData[0] || {}).filter(header => header !== 'Tasks Details').map(header => `<th>${header}</th>`).join('')}
                 </tr>
               </thead>
               <tbody>
                 ${exportData.map(row => 
-                  `<tr>${Object.values(row).map(value => `<td>${value || ''}</td>`).join('')}</tr>`
+                  `<tr>${Object.entries(row).filter(([key]) => key !== 'Tasks Details').map(([key, value]) => `<td>${value || ''}</td>`).join('')}</tr>`
                 ).join('')}
               </tbody>
             </table>
@@ -666,12 +686,44 @@ export function ReportsPage() {
       }
     } else if (format === 'Word') {
       // Generate proper Word document using docx library
-      import('docx').then(({ Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel }) => {
+      import('docx').then(async ({ Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun }) => {
+        // Load logo image
+        const logoResponse = await fetch('/src/assets/logo.png');
+        const logoBuffer = await logoResponse.arrayBuffer();
+        
         // Create document
         const doc = new Document({
           sections: [{
             properties: {},
             children: [
+              // Company Header with Logo
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: logoBuffer,
+                    transformation: {
+                      width: 100,
+                      height: 60,
+                    },
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 100 }
+              }),
+              
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Caava Group",
+                    bold: true,
+                    size: 28,
+                    color: "2e9d74"
+                  })
+                ],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 200 }
+              }),
+              
               // Title
               new Paragraph({
                 children: [
@@ -683,7 +735,8 @@ export function ReportsPage() {
                   })
                 ],
                 alignment: AlignmentType.CENTER,
-                heading: HeadingLevel.TITLE
+                heading: HeadingLevel.TITLE,
+                spacing: { before: 100, after: 200 }
               }),
               
               // Generation date
