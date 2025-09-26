@@ -65,10 +65,10 @@ export function TaskStats({
   return <div className="space-y-6">
       {/* Quick Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-green-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 text-sm font-medium">Total Tasks</p>
+              <p className="text-white/90 text-sm font-medium">Total Tasks</p>
               <p className="text-3xl font-bold">{totalTasks}</p>
             </div>
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -79,10 +79,10 @@ export function TaskStats({
           </div>
         </div>
         
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-green-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 text-sm font-medium">Completed</p>
+              <p className="text-white/90 text-sm font-medium">Completed</p>
               <p className="text-3xl font-bold">{statusCounts.completed}</p>
             </div>
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -93,10 +93,10 @@ export function TaskStats({
           </div>
         </div>
         
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-green-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm font-medium">Completion Rate</p>
+              <p className="text-white/90 text-sm font-medium">Completion Rate</p>
               <p className="text-3xl font-bold">{completionRate}%</p>
             </div>
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -111,7 +111,7 @@ export function TaskStats({
       {/* Charts Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-500 to-green-400 px-6 py-4">
+          <div className="bg-gradient-to-r from-green-500 to-purple-600 px-6 py-4">
             <h3 className="text-lg font-semibold text-white">
               Task Status Overview
             </h3>
@@ -150,7 +150,7 @@ export function TaskStats({
         </div>
         
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-purple-500 px-6 py-4">
+          <div className="bg-gradient-to-r from-green-500 to-purple-600 px-6 py-4">
             <h3 className="text-lg font-semibold text-white">
               Priority Distribution
             </h3>
