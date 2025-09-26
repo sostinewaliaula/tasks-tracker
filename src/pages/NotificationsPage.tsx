@@ -1,21 +1,26 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTask } from '../context/TaskContext';
-import { useAuth } from '../context/AuthContext';
-import { BellIcon, CheckIcon, TrashIcon, FilterIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon, EyeIcon, MoreVerticalIcon, SearchIcon, ArchiveIcon, ChevronDownIcon, ChevronRightIcon, CalendarIcon, FlagIcon } from 'lucide-react';
+import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
+import { BellIcon, CheckIcon, TrashIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon, EyeIcon, MoreVerticalIcon, SearchIcon, ChevronDownIcon, ChevronRightIcon, CalendarIcon, FlagIcon, WifiIcon, WifiOffIcon, SettingsIcon, TrendingUpIcon } from 'lucide-react';
+import { NotificationPreferences } from '../components/notifications/NotificationPreferences';
+import { NotificationFilters } from '../components/notifications/NotificationFilters';
+import { NotificationAnalytics } from '../components/notifications/NotificationAnalytics';
+import { NotificationScheduler } from '../components/notifications/NotificationScheduler';
 export function NotificationsPage() {
   const {
     getUserNotifications,
     markNotificationAsRead,
     deleteNotification
   } = useTask();
-  const {
-    currentUser
-  } = useAuth();
+  const { isConnected, connectionError } = useRealtimeNotifications();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showActions, setShowActions] = useState<string | null>(null);
   const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'analytics'>('list');
   
   // Get user-specific notifications
   const notifications = getUserNotifications();
@@ -79,6 +84,7 @@ export function NotificationsPage() {
   const handleClearSearch = () => {
     setSearchQuery('');
   };
+
 
   const toggleActions = (notificationId: string) => {
     setShowActions(showActions === notificationId ? null : notificationId);
@@ -150,27 +156,6 @@ export function NotificationsPage() {
     }
   };
 
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const notificationDate = new Date(date);
-    const diffInHours = Math.floor((now.getTime() - notificationDate.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      return 'Just now';
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else if (diffInHours < 48) {
-      return 'Yesterday';
-    } else {
-      return notificationDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
-      });
-    }
-  };
 
   const getRelativeTime = (date: Date) => {
     const now = new Date();
@@ -193,42 +178,87 @@ export function NotificationsPage() {
                 <BellIcon className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                  Notifications
-                </h1>
+                <div className="flex items-center space-x-3">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Notifications
+                  </h1>
+                  {/* Connection Status */}
+                  <div className="flex items-center space-x-2">
+                    {isConnected ? (
+                      <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                        <WifiIcon className="h-4 w-4" />
+                        <span className="text-xs font-medium">Live</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
+                        <WifiOffIcon className="h-4 w-4" />
+                        <span className="text-xs font-medium">Offline</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Stay updated with all your task-related notifications
-                </p>
-              </div>
+            Stay updated with all your task-related notifications
+                  {connectionError && (
+                    <span className="text-red-500 dark:text-red-400 ml-2">
+                      ({connectionError})
+                    </span>
+                  )}
+          </p>
+        </div>
             </div>
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-3">
-              {selectedNotifications.length > 0 && (
+          {selectedNotifications.length > 0 && (
                 <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm border border-gray-200 dark:border-gray-700">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     {selectedNotifications.length} selected
                   </span>
-                  <button 
-                    onClick={handleMarkSelectedAsRead}
-                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-                  >
-                    <CheckIcon className="h-4 w-4 mr-1" />
-                    Mark Read
-                  </button>
-                  <button 
-                    onClick={handleDeleteSelected}
-                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                  >
-                    <TrashIcon className="h-4 w-4 mr-1" />
-                    Delete
-                  </button>
-                </div>
-              )}
-              
               <button 
-                onClick={handleMarkAllAsRead} 
-                disabled={!unreadCount} 
+                onClick={handleMarkSelectedAsRead}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+              >
+                <CheckIcon className="h-4 w-4 mr-1" />
+                    Mark Read
+              </button>
+              <button 
+                onClick={handleDeleteSelected}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+              >
+                <TrashIcon className="h-4 w-4 mr-1" />
+                Delete
+              </button>
+                </div>
+          )}
+              
+          <button 
+            onClick={() => setViewMode(viewMode === 'list' ? 'analytics' : 'list')}
+            className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <TrendingUpIcon className="h-4 w-4 mr-2" />
+            {viewMode === 'list' ? 'Analytics' : 'List'}
+          </button>
+          
+          <button 
+            onClick={() => setShowScheduler(true)}
+            className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <ClockIcon className="h-4 w-4 mr-2" />
+            Schedule
+          </button>
+          
+          <button 
+            onClick={() => setShowPreferences(true)}
+            className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <SettingsIcon className="h-4 w-4 mr-2" />
+            Preferences
+          </button>
+          
+          <button 
+            onClick={handleMarkAllAsRead} 
+            disabled={!unreadCount} 
                 className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   unreadCount 
                     ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white hover:shadow-lg hover:scale-105' 
@@ -237,9 +267,9 @@ export function NotificationsPage() {
               >
                 <CheckIcon className="h-4 w-4 mr-2" />
                 Mark All Read
-              </button>
-            </div>
-          </div>
+          </button>
+        </div>
+      </div>
         </div>
 
         {/* Stats Cards */}
@@ -280,7 +310,19 @@ export function NotificationsPage() {
             </div>
           </div>
         </div>
-        {/* Filters and Search */}
+
+        {/* Conditional Rendering based on view mode */}
+        {viewMode === 'analytics' ? (
+          <NotificationAnalytics />
+        ) : (
+          <>
+            {/* Advanced Filters */}
+            <NotificationFilters 
+              onFiltersChange={() => {}}
+              onClearFilters={() => {}}
+            />
+
+            {/* Filters and Search */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
           <div className="p-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
@@ -309,30 +351,30 @@ export function NotificationsPage() {
               </div>
               
               {/* Filter and Select All */}
-              <div className="flex items-center space-x-4">
-                {filteredNotifications.length > 0 && (
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedNotifications.length === filteredNotifications.length}
-                      onChange={handleSelectAll}
+            <div className="flex items-center space-x-4">
+              {filteredNotifications.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedNotifications.length === filteredNotifications.length}
+                    onChange={handleSelectAll}
                       className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded"
-                    />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Select All ({selectedNotifications.length}/{filteredNotifications.length})
-                    </span>
-                  </div>
-                )}
+                  />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Select All ({selectedNotifications.length}/{filteredNotifications.length})
+                  </span>
+                </div>
+              )}
                 
-                <select 
-                  value={filter} 
-                  onChange={e => setFilter(e.target.value as 'all' | 'unread' | 'read')}
+              <select 
+                value={filter} 
+                onChange={e => setFilter(e.target.value as 'all' | 'unread' | 'read')}
                   className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                 >
                   <option value="all">All ({notifications.length})</option>
                   <option value="unread">Unread ({unreadCount})</option>
                   <option value="read">Read ({notifications.length - unreadCount})</option>
-                </select>
+              </select>
               </div>
             </div>
           </div>
@@ -352,22 +394,22 @@ export function NotificationsPage() {
                 <div className="p-6">
                   <div className="flex items-start space-x-4">
                     {/* Checkbox */}
-                    <input
-                      type="checkbox"
-                      checked={selectedNotifications.includes(notification.id)}
-                      onChange={() => handleSelectNotification(notification.id)}
+                  <input
+                    type="checkbox"
+                    checked={selectedNotifications.includes(notification.id)}
+                    onChange={() => handleSelectNotification(notification.id)}
                       className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded mt-1"
-                    />
+                  />
                     
                     {/* Icon */}
-                    <div className="flex-shrink-0">
+                  <div className="flex-shrink-0">
                       <div className={`p-2 rounded-lg ${
                         notification.read 
                           ? 'bg-gray-100 dark:bg-gray-700' 
                           : 'bg-white dark:bg-gray-800 shadow-sm'
                       }`}>
-                        {getNotificationIcon(notification.type)}
-                      </div>
+                    {getNotificationIcon(notification.type)}
+                  </div>
                     </div>
                     
                     {/* Content */}
@@ -375,7 +417,7 @@ export function NotificationsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
-                            {!notification.read && (
+                      {!notification.read && (
                               <div className="h-2 w-2 bg-gradient-to-r from-green-500 to-purple-600 rounded-full"></div>
                             )}
                             <p className={`text-sm ${
@@ -383,19 +425,19 @@ export function NotificationsPage() {
                                 ? 'text-gray-600 dark:text-gray-400' 
                                 : 'text-gray-900 dark:text-gray-100 font-semibold'
                             }`}>
-                              {notification.message}
-                            </p>
-                          </div>
+                        {notification.message}
+                      </p>
+                    </div>
                           
                           <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
                             <div className="flex items-center space-x-1">
                               <ClockIcon className="h-3 w-3" />
                               <span>{getRelativeTime(notification.createdAt)}</span>
                             </div>
-                            {notification.relatedTaskId && (
+                      {notification.relatedTaskId && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                Task Related
-                              </span>
+                          Task Related
+                        </span>
                             )}
                           </div>
 
@@ -459,10 +501,10 @@ export function NotificationsPage() {
                                                 </span>
                                               </div>
                                             </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
+                      )}
+                    </div>
+                    </div>
+                  </div>
                                   ))}
                                 </div>
                               )}
@@ -472,15 +514,15 @@ export function NotificationsPage() {
                         
                         {/* Actions */}
                         <div className="flex items-center space-x-2 ml-4">
-                          {!notification.read && (
-                            <button
-                              onClick={() => markNotificationAsRead(notification.id)}
+                  {!notification.read && (
+                    <button 
+                      onClick={() => markNotificationAsRead(notification.id)} 
                               className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                            >
+                    >
                               <EyeIcon className="h-3 w-3 mr-1" />
                               Mark Read
-                            </button>
-                          )}
+                    </button>
+                  )}
                           
                           <div className="relative">
                             <button
@@ -502,7 +544,7 @@ export function NotificationsPage() {
                                   <CheckIcon className="h-4 w-4 mr-2" />
                                   Mark as Read
                                 </button>
-                                <button
+                  <button 
                                   onClick={() => {
                                     deleteNotification(notification.id);
                                     setShowActions(null);
@@ -511,7 +553,7 @@ export function NotificationsPage() {
                                 >
                                   <TrashIcon className="h-4 w-4 mr-2" />
                                   Delete
-                                </button>
+                  </button>
                               </div>
                             )}
                           </div>
@@ -525,12 +567,12 @@ export function NotificationsPage() {
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="p-12 text-center">
-                <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center">
                   <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
                     <BellIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    No notifications found
+                  No notifications found
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400 text-sm">
                     {searchQuery 
@@ -545,7 +587,27 @@ export function NotificationsPage() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
+
+      {/* Notification Preferences Modal */}
+      {showPreferences && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-opacity-70 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full mx-auto max-h-[90vh] overflow-y-auto">
+            <NotificationPreferences onClose={() => setShowPreferences(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Notification Scheduler Modal */}
+      {showScheduler && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-opacity-70 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full mx-auto max-h-[90vh] overflow-y-auto">
+            <NotificationScheduler onClose={() => setShowScheduler(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

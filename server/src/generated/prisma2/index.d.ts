@@ -71,7 +71,15 @@ export const NotificationType: {
   task_assigned: 'task_assigned',
   task_overdue: 'task_overdue',
   task_deadline: 'task_deadline',
-  general: 'general'
+  general: 'general',
+  daily_progress: 'daily_progress',
+  weekly_report: 'weekly_report',
+  manager_summary: 'manager_summary',
+  deadline_reminder: 'deadline_reminder',
+  blocker_resolved: 'blocker_resolved',
+  task_updated: 'task_updated',
+  department_update: 'department_update',
+  system_announcement: 'system_announcement'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
@@ -4892,6 +4900,8 @@ export namespace Prisma {
     message: string | null
     read: boolean | null
     type: $Enums.NotificationType | null
+    category: string | null
+    priority: string | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: number | null
@@ -4903,6 +4913,8 @@ export namespace Prisma {
     message: string | null
     read: boolean | null
     type: $Enums.NotificationType | null
+    category: string | null
+    priority: string | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: number | null
@@ -4914,6 +4926,9 @@ export namespace Prisma {
     message: number
     read: number
     type: number
+    category: number
+    priority: number
+    metadata: number
     createdAt: number
     updatedAt: number
     userId: number
@@ -4939,6 +4954,8 @@ export namespace Prisma {
     message?: true
     read?: true
     type?: true
+    category?: true
+    priority?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -4950,6 +4967,8 @@ export namespace Prisma {
     message?: true
     read?: true
     type?: true
+    category?: true
+    priority?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -4961,6 +4980,9 @@ export namespace Prisma {
     message?: true
     read?: true
     type?: true
+    category?: true
+    priority?: true
+    metadata?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -5059,6 +5081,9 @@ export namespace Prisma {
     message: string
     read: boolean
     type: $Enums.NotificationType
+    category: string | null
+    priority: string | null
+    metadata: JsonValue | null
     createdAt: Date
     updatedAt: Date
     userId: number
@@ -5089,6 +5114,9 @@ export namespace Prisma {
     message?: boolean
     read?: boolean
     type?: boolean
+    category?: boolean
+    priority?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -5104,13 +5132,16 @@ export namespace Prisma {
     message?: boolean
     read?: boolean
     type?: boolean
+    category?: boolean
+    priority?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
     relatedTaskId?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "message" | "read" | "type" | "createdAt" | "updatedAt" | "userId" | "relatedTaskId", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "message" | "read" | "type" | "category" | "priority" | "metadata" | "createdAt" | "updatedAt" | "userId" | "relatedTaskId", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     relatedTask?: boolean | Notification$relatedTaskArgs<ExtArgs>
@@ -5127,6 +5158,9 @@ export namespace Prisma {
       message: string
       read: boolean
       type: $Enums.NotificationType
+      category: string | null
+      priority: string | null
+      metadata: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
       userId: number
@@ -5506,6 +5540,9 @@ export namespace Prisma {
     readonly message: FieldRef<"Notification", 'String'>
     readonly read: FieldRef<"Notification", 'Boolean'>
     readonly type: FieldRef<"Notification", 'NotificationType'>
+    readonly category: FieldRef<"Notification", 'String'>
+    readonly priority: FieldRef<"Notification", 'String'>
+    readonly metadata: FieldRef<"Notification", 'Json'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
     readonly updatedAt: FieldRef<"Notification", 'DateTime'>
     readonly userId: FieldRef<"Notification", 'Int'>
@@ -5971,6 +6008,9 @@ export namespace Prisma {
     message: 'message',
     read: 'read',
     type: 'type',
+    category: 'category',
+    priority: 'priority',
+    metadata: 'metadata',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     userId: 'userId',
@@ -5986,6 +6026,14 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const NullsOrder: {
@@ -6026,8 +6074,27 @@ export namespace Prisma {
   export type TaskOrderByRelevanceFieldEnum = (typeof TaskOrderByRelevanceFieldEnum)[keyof typeof TaskOrderByRelevanceFieldEnum]
 
 
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
   export const NotificationOrderByRelevanceFieldEnum: {
-    message: 'message'
+    message: 'message',
+    category: 'category',
+    priority: 'priority'
   };
 
   export type NotificationOrderByRelevanceFieldEnum = (typeof NotificationOrderByRelevanceFieldEnum)[keyof typeof NotificationOrderByRelevanceFieldEnum]
@@ -6091,6 +6158,20 @@ export namespace Prisma {
    * Reference to a field of type 'NotificationType'
    */
   export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -6465,6 +6546,9 @@ export namespace Prisma {
     message?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
+    category?: StringNullableFilter<"Notification"> | string | null
+    priority?: StringNullableFilter<"Notification"> | string | null
+    metadata?: JsonNullableFilter<"Notification">
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     updatedAt?: DateTimeFilter<"Notification"> | Date | string
     userId?: IntFilter<"Notification"> | number
@@ -6478,6 +6562,9 @@ export namespace Prisma {
     message?: SortOrder
     read?: SortOrder
     type?: SortOrder
+    category?: SortOrderInput | SortOrder
+    priority?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6495,6 +6582,9 @@ export namespace Prisma {
     message?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
+    category?: StringNullableFilter<"Notification"> | string | null
+    priority?: StringNullableFilter<"Notification"> | string | null
+    metadata?: JsonNullableFilter<"Notification">
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     updatedAt?: DateTimeFilter<"Notification"> | Date | string
     userId?: IntFilter<"Notification"> | number
@@ -6508,6 +6598,9 @@ export namespace Prisma {
     message?: SortOrder
     read?: SortOrder
     type?: SortOrder
+    category?: SortOrderInput | SortOrder
+    priority?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6527,6 +6620,9 @@ export namespace Prisma {
     message?: StringWithAggregatesFilter<"Notification"> | string
     read?: BoolWithAggregatesFilter<"Notification"> | boolean
     type?: EnumNotificationTypeWithAggregatesFilter<"Notification"> | $Enums.NotificationType
+    category?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    priority?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"Notification">
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
     userId?: IntWithAggregatesFilter<"Notification"> | number
@@ -6925,6 +7021,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutNotificationsInput
@@ -6936,6 +7035,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: number
@@ -6946,6 +7048,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
@@ -6957,6 +7062,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: IntFieldUpdateOperationsInput | number
@@ -6968,6 +7076,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: number
@@ -6978,6 +7089,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6987,6 +7101,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: IntFieldUpdateOperationsInput | number
@@ -7516,6 +7633,29 @@ export namespace Prisma {
     notIn?: $Enums.NotificationType[]
     not?: NestedEnumNotificationTypeFilter<$PrismaModel> | $Enums.NotificationType
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NotificationOrderByRelevanceInput = {
     fields: NotificationOrderByRelevanceFieldEnum | NotificationOrderByRelevanceFieldEnum[]
@@ -7528,6 +7668,9 @@ export namespace Prisma {
     message?: SortOrder
     read?: SortOrder
     type?: SortOrder
+    category?: SortOrder
+    priority?: SortOrder
+    metadata?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -7545,6 +7688,8 @@ export namespace Prisma {
     message?: SortOrder
     read?: SortOrder
     type?: SortOrder
+    category?: SortOrder
+    priority?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -7556,6 +7701,8 @@ export namespace Prisma {
     message?: SortOrder
     read?: SortOrder
     type?: SortOrder
+    category?: SortOrder
+    priority?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -7576,6 +7723,32 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumNotificationTypeFilter<$PrismaModel>
     _max?: NestedEnumNotificationTypeFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type DepartmentCreateNestedOneWithoutUsersInput = {
@@ -8362,6 +8535,29 @@ export namespace Prisma {
     _min?: NestedEnumNotificationTypeFilter<$PrismaModel>
     _max?: NestedEnumNotificationTypeFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type DepartmentCreateWithoutUsersInput = {
     name: string
@@ -8473,6 +8669,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     relatedTask?: TaskCreateNestedOneWithoutNotificationsInput
@@ -8483,6 +8682,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     relatedTaskId?: number | null
@@ -8620,6 +8822,9 @@ export namespace Prisma {
     message?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
+    category?: StringNullableFilter<"Notification"> | string | null
+    priority?: StringNullableFilter<"Notification"> | string | null
+    metadata?: JsonNullableFilter<"Notification">
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     updatedAt?: DateTimeFilter<"Notification"> | Date | string
     userId?: IntFilter<"Notification"> | number
@@ -9206,6 +9411,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutNotificationsInput
@@ -9216,6 +9424,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: number
@@ -9656,6 +9867,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     relatedTaskId?: number | null
@@ -9751,6 +9965,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     relatedTask?: TaskUpdateOneWithoutNotificationsNestedInput
@@ -9761,6 +9978,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     relatedTaskId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -9771,6 +9991,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     relatedTaskId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -10012,6 +10235,9 @@ export namespace Prisma {
     message: string
     read?: boolean
     type?: $Enums.NotificationType
+    category?: string | null
+    priority?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: number
@@ -10078,6 +10304,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
@@ -10088,6 +10317,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: IntFieldUpdateOperationsInput | number
@@ -10098,6 +10330,9 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: IntFieldUpdateOperationsInput | number

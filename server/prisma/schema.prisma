@@ -123,6 +123,14 @@ enum NotificationType {
   task_overdue
   task_deadline
   general
+  daily_progress
+  weekly_report
+  manager_summary
+  deadline_reminder
+  blocker_resolved
+  task_updated
+  department_update
+  system_announcement
 }
 
 model Notification {
@@ -130,6 +138,9 @@ model Notification {
   message       String
   read          Boolean          @default(false)
   type          NotificationType @default(general)
+  category      String?          // Custom category for advanced filtering
+  priority      String?          // high, medium, low
+  metadata      Json?            // Additional data for filtering and display
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 

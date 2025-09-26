@@ -17,6 +17,7 @@ import usersRouter from './routes/users';
 import tasksRouter from './routes/tasks';
 import userRouter from './routes/user';
 import notificationsRouter from './routes/notifications';
+import notificationsSSERouter from './routes/notifications-sse';
 import { authMiddleware } from './middleware/auth';
 
 const app = express();
@@ -36,6 +37,7 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/notifications', notificationsRouter);
+app.use('/api/notifications', notificationsSSERouter);
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {

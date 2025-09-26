@@ -106,7 +106,12 @@ router.put('/profile', authMiddleware, async (req, res) => {
       weeklyReport: updatedUser.weeklyReport,
       showEmail: updatedUser.showEmail,
       showPhone: updatedUser.showPhone,
-      showBio: updatedUser.showBio
+      showBio: updatedUser.showBio,
+      emailNotifications: updatedUser.emailNotifications,
+      taskAssigned: updatedUser.taskAssigned,
+      taskCompleted: updatedUser.taskCompleted,
+      taskOverdue: updatedUser.taskOverdue,
+      taskDeadline: updatedUser.taskDeadline
     });
   } catch (error: any) {
     console.error('Error updating user profile:', error);

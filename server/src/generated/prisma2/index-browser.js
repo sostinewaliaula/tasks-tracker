@@ -178,6 +178,9 @@ exports.Prisma.NotificationScalarFieldEnum = {
   message: 'message',
   read: 'read',
   type: 'type',
+  category: 'category',
+  priority: 'priority',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   userId: 'userId',
@@ -187,6 +190,11 @@ exports.Prisma.NotificationScalarFieldEnum = {
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.NullsOrder = {
@@ -215,8 +223,21 @@ exports.Prisma.TaskOrderByRelevanceFieldEnum = {
   carryOverReason: 'carryOverReason'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NotificationOrderByRelevanceFieldEnum = {
-  message: 'message'
+  message: 'message',
+  category: 'category',
+  priority: 'priority'
 };
 exports.Role = exports.$Enums.Role = {
   admin: 'admin',
@@ -242,7 +263,15 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   task_assigned: 'task_assigned',
   task_overdue: 'task_overdue',
   task_deadline: 'task_deadline',
-  general: 'general'
+  general: 'general',
+  daily_progress: 'daily_progress',
+  weekly_report: 'weekly_report',
+  manager_summary: 'manager_summary',
+  deadline_reminder: 'deadline_reminder',
+  blocker_resolved: 'blocker_resolved',
+  task_updated: 'task_updated',
+  department_update: 'department_update',
+  system_announcement: 'system_announcement'
 };
 
 exports.Prisma.ModelName = {

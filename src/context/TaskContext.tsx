@@ -1,6 +1,7 @@
-import React, { useEffect, useState, createContext, useContext, ReactNode } from 'react';
+import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from '../components/ui/Toast';
+import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskStatus = 'todo' | 'in-progress' | 'completed' | 'blocker';
 export type Task = {
@@ -61,10 +62,6 @@ type TaskContextType = {
   getTasksCountByPriority: (department?: string) => Record<TaskPriority, number>;
 };
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
-// Generate 20 tasks per user across the current week
-const startOfWeek = (() => { const d = new Date(); const day = d.getDay(); const s = new Date(d); s.setDate(d.getDate() - day); s.setHours(0,0,0,0); return s; })();
-const addDays = (date: Date, days: number) => { const d = new Date(date); d.setDate(d.getDate() + days); return d; };
-const mockNotifications: Notification[] = [];
 export function TaskProvider({
   children
 }: {
@@ -73,6 +70,9 @@ export function TaskProvider({
   const { token, currentUser } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  // Initialize real-time notifications
+  useRealtimeNotifications();
   
   // Optional toast - only use if available
   let showToast: ((message: string, type?: 'success' | 'error' | 'warning' | 'info', duration?: number) => void) | null = null;
@@ -373,6 +373,26 @@ export function TaskProvider({
       setNotifications([]);
     }
   }, [token]);
+
+  // Listen for real-time notifications
+  useEffect(() => {
+    const handleRealtimeNotification = (event: CustomEvent) => {
+      const notification = event.detail;
+      if (notification) {
+        // Add the new notification to the list
+        setNotifications(prev => [notification, ...prev]);
+        
+        // Show toast notification
+        showToast?.(notification.message, 'info', 5000);
+      }
+    };
+
+    window.addEventListener('realtimeNotification', handleRealtimeNotification as EventListener);
+    
+    return () => {
+      window.removeEventListener('realtimeNotification', handleRealtimeNotification as EventListener);
+    };
+  }, [showToast]);
 
   // Add deadline reminder notifications
   useEffect(() => {
