@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTask } from '../context/TaskContext';
 import { useAuth } from '../context/AuthContext';
-import { BellIcon, CheckIcon, TrashIcon, FilterIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon } from 'lucide-react';
+import { BellIcon, CheckIcon, TrashIcon, FilterIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon, EyeIcon, MoreVerticalIcon, SearchIcon, ArchiveIcon } from 'lucide-react';
 export function NotificationsPage() {
   const {
     getUserNotifications,
@@ -13,18 +13,29 @@ export function NotificationsPage() {
   } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showActions, setShowActions] = useState<string | null>(null);
+  
   // Get user-specific notifications
   const notifications = getUserNotifications();
   
   // Sort notifications by date (newest first)
   const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  // Apply filter
+  
+  // Apply filter and search
   const filteredNotifications = sortedNotifications.filter(notification => {
-    if (filter === 'all') return true;
-    if (filter === 'read') return notification.read;
-    if (filter === 'unread') return !notification.read;
+    // Apply filter
+    if (filter === 'read' && !notification.read) return false;
+    if (filter === 'unread' && notification.read) return false;
+    
+    // Apply search
+    if (searchQuery) {
+      return notification.message.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    
     return true;
   });
+  
   const unreadCount = notifications.filter(n => !n.read).length;
   const handleMarkAllAsRead = () => {
     filteredNotifications.forEach(notification => {
@@ -64,179 +75,366 @@ export function NotificationsPage() {
     setSelectedNotifications([]);
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
+  const toggleActions = (notificationId: string) => {
+    setShowActions(showActions === notificationId ? null : notificationId);
+  };
+
   const getNotificationIcon = (type?: string) => {
     switch (type) {
       case 'task_completed':
-        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
+        return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
       case 'task_overdue':
-        return <AlertCircleIcon className="h-5 w-5 text-red-500" />;
+        return <AlertCircleIcon className="h-6 w-6 text-red-500" />;
       case 'task_assigned':
-        return <InfoIcon className="h-5 w-5 text-blue-500" />;
+        return <InfoIcon className="h-6 w-6 text-blue-500" />;
       default:
-        return <BellIcon className="h-5 w-5 text-gray-500" />;
+        return <BellIcon className="h-6 w-6 text-gray-500" />;
     }
   };
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    });
+
+  const getNotificationTypeColor = (type?: string) => {
+    switch (type) {
+      case 'task_completed':
+        return 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800';
+      case 'task_overdue':
+        return 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800';
+      case 'task_assigned':
+        return 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800';
+      default:
+        return 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700';
+    }
   };
-  return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="md:flex md:items-center md:justify-between mb-6">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:truncate flex items-center">
-            <BellIcon className="h-8 w-8 mr-3 text-green-500" />
-            Notifications
-          </h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Stay updated with all your task-related notifications
-          </p>
-        </div>
-        <div className="mt-4 flex space-x-2 md:mt-0 md:ml-4">
-          {selectedNotifications.length > 0 && (
-            <>
-              <button 
-                type="button" 
-                onClick={handleMarkSelectedAsRead}
-                className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <CheckIcon className="h-4 w-4 mr-1" />
-                Mark as Read
-              </button>
-              <button 
-                type="button" 
-                onClick={handleDeleteSelected}
-                className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <TrashIcon className="h-4 w-4 mr-1" />
-                Delete
-              </button>
-            </>
-          )}
-          <button 
-            type="button" 
-            onClick={handleMarkAllAsRead} 
-            disabled={!unreadCount} 
-            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${unreadCount ? 'bg-gradient-to-r from-green-500 to-purple-600 hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
-          >
-            <CheckIcon className="h-5 w-5 mr-2" />
-            Mark All as Read
-          </button>
-        </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+
+  const formatDate = (date: Date) => {
+    const now = new Date();
+    const notificationDate = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - notificationDate.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInHours < 48) {
+      return 'Yesterday';
+    } else {
+      return notificationDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
+    }
+  };
+
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const notificationDate = new Date(date);
+    const diffInMinutes = Math.floor((now.getTime() - notificationDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 flex items-center">
-                <FilterIcon className="h-5 w-5 mr-2 text-green-500" />
-              Filter Notifications
-            </h3>
-              {filteredNotifications.length > 0 && (
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedNotifications.length === filteredNotifications.length}
-                    onChange={handleSelectAll}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                  />
+              <div className="p-3 bg-gradient-to-br from-green-500 to-purple-600 rounded-xl shadow-lg">
+                <BellIcon className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  Notifications
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  Stay updated with all your task-related notifications
+                </p>
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-3">
+              {selectedNotifications.length > 0 && (
+                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm border border-gray-200 dark:border-gray-700">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Select All ({selectedNotifications.length}/{filteredNotifications.length})
+                    {selectedNotifications.length} selected
                   </span>
+                  <button 
+                    onClick={handleMarkSelectedAsRead}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                  >
+                    <CheckIcon className="h-4 w-4 mr-1" />
+                    Mark Read
+                  </button>
+                  <button 
+                    onClick={handleDeleteSelected}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                  >
+                    <TrashIcon className="h-4 w-4 mr-1" />
+                    Delete
+                  </button>
                 </div>
               )}
-            </div>
-            <div className="mt-3 sm:mt-0">
-              <select 
-                id="filter" 
-                name="filter" 
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" 
-                value={filter} 
-                onChange={e => setFilter(e.target.value as 'all' | 'unread' | 'read')}
+              
+              <button 
+                onClick={handleMarkAllAsRead} 
+                disabled={!unreadCount} 
+                className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  unreadCount 
+                    ? 'bg-gradient-to-r from-green-500 to-purple-600 text-white hover:shadow-lg hover:scale-105' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                }`}
               >
-                <option value="all">All Notifications ({notifications.length})</option>
-                <option value="unread">Unread Only ({unreadCount})</option>
-                <option value="read">Read Only ({notifications.length - unreadCount})</option>
-              </select>
+                <CheckIcon className="h-4 w-4 mr-2" />
+                Mark All Read
+              </button>
             </div>
           </div>
         </div>
-        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filteredNotifications.length > 0 ? filteredNotifications.map(notification => (
-            <li key={notification.id} className={`px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ${
-              notification.read ? 'opacity-75' : 'bg-gradient-to-r from-blue-50/30 to-transparent dark:from-blue-900/20'
-            }`}>
-                <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1 flex items-start space-x-3">
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <BellIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{notifications.length}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <AlertCircleIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Unread</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{unreadCount}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Read</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{notifications.length - unreadCount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Filters and Search */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+          <div className="p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+              {/* Search Bar */}
+              <div className="flex-1">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <SearchIcon className="h-5 w-5 text-gray-400" />
+                  </div>
                   <input
-                    type="checkbox"
-                    checked={selectedNotifications.includes(notification.id)}
-                    onChange={() => handleSelectNotification(notification.id)}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1"
+                    type="text"
+                    placeholder="Search notifications..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="block w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                   />
-                  <div className="flex-shrink-0">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center">
-                      {!notification.read && (
-                        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-gradient-to-r from-green-500 to-purple-600" aria-hidden="true"></span>
-                      )}
-                      <p className={`${!notification.read ? 'ml-2 font-semibold' : 'ml-2 font-medium'} text-sm text-gray-900 dark:text-gray-100`}>
-                        {notification.message}
-                      </p>
-                    </div>
-                    <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <ClockIcon className="h-4 w-4 mr-1" />
-                      <span>{formatDate(notification.createdAt)}</span>
-                      {notification.relatedTaskId && (
-                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                          Task Related
-                        </span>
-                      )}
-                    </div>
-                    </div>
-                  </div>
-                <div className="ml-4 flex-shrink-0 flex space-x-2">
-                  {!notification.read && (
-                    <button 
-                      type="button" 
-                      onClick={() => markNotificationAsRead(notification.id)} 
-                      className="text-green-500 dark:text-green-400 hover:bg-green-500/10 dark:hover:bg-green-400/10 px-2 py-1 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                  {searchQuery && (
+                    <button
+                      onClick={handleClearSearch}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                        Mark as read
+                      <XIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                     </button>
                   )}
-                  <button 
-                    type="button" 
-                    onClick={() => deleteNotification(notification.id)} 
-                    className="text-red-500 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-400/10 px-2 py-1 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </button>
+                </div>
+              </div>
+              
+              {/* Filter and Select All */}
+              <div className="flex items-center space-x-4">
+                {filteredNotifications.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedNotifications.length === filteredNotifications.length}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded"
+                    />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Select All ({selectedNotifications.length}/{filteredNotifications.length})
+                    </span>
+                  </div>
+                )}
+                
+                <select 
+                  value={filter} 
+                  onChange={e => setFilter(e.target.value as 'all' | 'unread' | 'read')}
+                  className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                >
+                  <option value="all">All ({notifications.length})</option>
+                  <option value="unread">Unread ({unreadCount})</option>
+                  <option value="read">Read ({notifications.length - unreadCount})</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Notifications List */}
+        <div className="space-y-4">
+          {filteredNotifications.length > 0 ? (
+            filteredNotifications.map(notification => (
+              <div
+                key={notification.id}
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-all duration-200 hover:shadow-md ${
+                  notification.read 
+                    ? 'border-gray-200 dark:border-gray-700 opacity-75' 
+                    : `border-l-4 border-l-green-500 ${getNotificationTypeColor(notification.type)}`
+                }`}
+              >
+                <div className="p-6">
+                  <div className="flex items-start space-x-4">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedNotifications.includes(notification.id)}
+                      onChange={() => handleSelectNotification(notification.id)}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded mt-1"
+                    />
+                    
+                    {/* Icon */}
+                    <div className="flex-shrink-0">
+                      <div className={`p-2 rounded-lg ${
+                        notification.read 
+                          ? 'bg-gray-100 dark:bg-gray-700' 
+                          : 'bg-white dark:bg-gray-800 shadow-sm'
+                      }`}>
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            {!notification.read && (
+                              <div className="h-2 w-2 bg-gradient-to-r from-green-500 to-purple-600 rounded-full"></div>
+                            )}
+                            <p className={`text-sm ${
+                              notification.read 
+                                ? 'text-gray-600 dark:text-gray-400' 
+                                : 'text-gray-900 dark:text-gray-100 font-semibold'
+                            }`}>
+                              {notification.message}
+                            </p>
+                          </div>
+                          
+                          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center space-x-1">
+                              <ClockIcon className="h-3 w-3" />
+                              <span>{getRelativeTime(notification.createdAt)}</span>
+                            </div>
+                            {notification.relatedTaskId && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                Task Related
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="flex items-center space-x-2 ml-4">
+                          {!notification.read && (
+                            <button
+                              onClick={() => markNotificationAsRead(notification.id)}
+                              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                            >
+                              <EyeIcon className="h-3 w-3 mr-1" />
+                              Mark Read
+                            </button>
+                          )}
+                          
+                          <div className="relative">
+                            <button
+                              onClick={() => toggleActions(notification.id)}
+                              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            >
+                              <MoreVerticalIcon className="h-4 w-4" />
+                            </button>
+                            
+                            {showActions === notification.id && (
+                              <div className="absolute right-0 top-8 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+                                <button
+                                  onClick={() => {
+                                    markNotificationAsRead(notification.id);
+                                    setShowActions(null);
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  <CheckIcon className="h-4 w-4 mr-2" />
+                                  Mark as Read
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    deleteNotification(notification.id);
+                                    setShowActions(null);
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                >
+                                  <TrashIcon className="h-4 w-4 mr-2" />
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-            </li>
-          )) : (
-            <li className="px-4 py-12 text-center">
-              <div className="flex flex-col items-center">
-                <BellIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-                  No notifications found
-                </p>
-                <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
-                  {filter !== 'all' && 'Try changing the filter to see more notifications.'}
-                  {filter === 'all' && 'You\'re all caught up!'}
-                </p>
               </div>
-            </li>
+            ))
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-12 text-center">
+                <div className="flex flex-col items-center">
+                  <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                    <BellIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    No notifications found
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    {searchQuery 
+                      ? 'Try adjusting your search terms or filters.' 
+                      : filter !== 'all' 
+                        ? 'Try changing the filter to see more notifications.' 
+                        : 'You\'re all caught up!'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
-        </ul>
+        </div>
       </div>
-    </div>;
+    </div>
+  );
 }
