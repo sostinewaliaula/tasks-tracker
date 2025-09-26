@@ -653,6 +653,210 @@ router.get('/:id/trends', authMiddleware, roleCheck(['admin', 'manager']), async
     }
 });
 
+// Get department blockers data
+router.get('/:id/blockers', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
+    try {
+        const departmentId = parseInt(req.params.id);
+        console.log('Fetching blockers for department ID:', departmentId);
+        
+        // Get department with all users
+        const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+                manager: {
+                    select: { id: true, name: true }
+                },
+                users: {
+                    select: { id: true, name: true }
+                }
+            }
+        });
+        
+        if (!department) {
+            return res.status(404).json({ error: 'Department not found' });
+        }
+        
+        // Get all user IDs in this department
+        const userIds = [];
+        if (department.manager) {
+            userIds.push(department.manager.id);
+        }
+        department.users.forEach(user => {
+            if (!userIds.includes(user.id)) {
+                userIds.push(user.id);
+            }
+        });
+        
+        if (userIds.length === 0) {
+            return res.json({
+                data: {
+                    department: {
+                        id: department.id,
+                        name: department.name
+                    },
+                    blockers: [],
+                    analytics: {
+                        total: 0,
+                        urgent: 0,
+                        overdue: 0,
+                        longTerm: 0,
+                        priorityBreakdown: {},
+                        departmentBreakdown: {},
+                        ageDistribution: { '0-1d': 0, '1-3d': 0, '3-7d': 0, '7d+': 0 },
+                        averageResolutionTime: 0,
+                        mainTasks: 0,
+                        subtasks: 0
+                    }
+                }
+            });
+        }
+        
+        // Get all tasks for users in this department
+        const tasks = await prisma.task.findMany({
+            where: {
+                createdById: {
+                    in: userIds
+                }
+            },
+            include: {
+                subtasks: {
+                    select: {
+                        id: true,
+                        status: true,
+                        priority: true,
+                        deadline: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        blockerReason: true
+                    }
+                }
+            }
+        });
+        
+        console.log('Tasks found for blockers:', tasks.length);
+        
+        // Find all blockers (main tasks and subtasks)
+        const allBlockers = [];
+        
+        // Main task blockers
+        tasks.forEach(task => {
+            if (task.status === 'blocker') {
+                allBlockers.push({
+                    id: task.id,
+                    title: task.title,
+                    status: task.status,
+                    priority: task.priority,
+                    deadline: task.deadline,
+                    createdAt: task.createdAt,
+                    updatedAt: task.updatedAt,
+                    blockerReason: task.blockerReason,
+                    createdBy: task.createdById,
+                    department: department.name,
+                    isSubtask: false,
+                    parentId: null
+                });
+            }
+            
+            // Subtask blockers
+            task.subtasks.forEach(subtask => {
+                if (subtask.status === 'blocker') {
+                    allBlockers.push({
+                        id: subtask.id,
+                        title: `${task.title} - ${subtask.id}`,
+                        status: subtask.status,
+                        priority: subtask.priority,
+                        deadline: subtask.deadline,
+                        createdAt: subtask.createdAt,
+                        updatedAt: subtask.updatedAt,
+                        blockerReason: subtask.blockerReason,
+                        createdBy: task.createdById,
+                        department: department.name,
+                        isSubtask: true,
+                        parentId: task.id
+                    });
+                }
+            });
+        });
+        
+        console.log('Blockers found:', allBlockers.length);
+        
+        const now = new Date();
+        
+        // Calculate analytics
+        const urgentBlockers = allBlockers.filter(blocker => {
+            const days = Math.ceil((new Date(blocker.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return days <= 1 && days >= 0;
+        });
+        
+        const overdueBlockers = allBlockers.filter(blocker => {
+            const days = Math.ceil((new Date(blocker.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return days < 0;
+        });
+        
+        const longTermBlockers = allBlockers.filter(blocker => {
+            const age = Math.floor((now.getTime() - new Date(blocker.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+            return age > 7;
+        });
+        
+        // Priority breakdown
+        const priorityBreakdown = allBlockers.reduce((acc, blocker) => {
+            acc[blocker.priority] = (acc[blocker.priority] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+        
+        // Department breakdown
+        const departmentBreakdown = allBlockers.reduce((acc, blocker) => {
+            acc[blocker.department] = (acc[blocker.department] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+        
+        // Age distribution
+        const ageDistribution = allBlockers.reduce((acc, blocker) => {
+            const age = Math.floor((now.getTime() - new Date(blocker.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+            if (age <= 1) acc['0-1d']++;
+            else if (age <= 3) acc['1-3d']++;
+            else if (age <= 7) acc['3-7d']++;
+            else acc['7d+']++;
+            return acc;
+        }, { '0-1d': 0, '1-3d': 0, '3-7d': 0, '7d+': 0 });
+        
+        // Average resolution time
+        const averageResolutionTime = allBlockers.length > 0 ? 
+            Math.round(allBlockers.reduce((sum, blocker) => {
+                const age = Math.floor((now.getTime() - new Date(blocker.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+                return sum + age;
+            }, 0) / allBlockers.length) : 0;
+        
+        const analytics = {
+            total: allBlockers.length,
+            urgent: urgentBlockers.length,
+            overdue: overdueBlockers.length,
+            longTerm: longTermBlockers.length,
+            priorityBreakdown,
+            departmentBreakdown,
+            ageDistribution,
+            averageResolutionTime,
+            mainTasks: allBlockers.filter(blocker => !blocker.isSubtask).length,
+            subtasks: allBlockers.filter(blocker => blocker.isSubtask).length
+        };
+        
+        res.json({
+            data: {
+                department: {
+                    id: department.id,
+                    name: department.name
+                },
+                blockers: allBlockers,
+                analytics
+            }
+        });
+        
+    } catch (e) {
+        console.error('Get department blockers error:', e);
+        res.status(500).json({ error: 'Failed to get department blockers data' });
+    }
+});
+
 // Get department task statistics
 router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {

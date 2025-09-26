@@ -21,6 +21,7 @@ export function ReportsPage() {
   const [departmentStats, setDepartmentStats] = useState<any>(null);
   const [managedDepartment, setManagedDepartment] = useState<any>(null);
   const [trendsData, setTrendsData] = useState<any>(null);
+  const [blockersData, setBlockersData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -158,6 +159,41 @@ export function ReportsPage() {
     }
   };
 
+  // Fetch blockers data
+  const fetchBlockersData = async (departmentId: number) => {
+    try {
+      setError(null);
+      console.log('Fetching blockers data...', { departmentId, API_URL, token: token ? 'present' : 'missing' });
+      
+      const res = await fetch(`${API_URL}/api/departments/${departmentId}/blockers`, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      console.log('Blockers response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Blockers API error:', errorText);
+        throw new Error(`Failed to load blockers data: ${res.status} ${errorText}`);
+      }
+      
+      const response = await res.json();
+      console.log('Blockers response received:', response);
+      
+      // Handle the response format
+      const data = response.data || response;
+      console.log('Blockers data:', data);
+      setBlockersData(data);
+      
+    } catch (error) {
+      console.error('Error fetching blockers data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load blockers data');
+    }
+  };
+
   // Load data when component mounts or user changes
   React.useEffect(() => {
     const loadData = async () => {
@@ -168,7 +204,8 @@ export function ReportsPage() {
           if (managedDept) {
             await Promise.all([
               fetchDepartmentStats(managedDept.id),
-              fetchTrendsData(managedDept.id)
+              fetchTrendsData(managedDept.id),
+              fetchBlockersData(managedDept.id)
             ]);
           }
         } catch (error) {
@@ -480,6 +517,12 @@ export function ReportsPage() {
 
   // Blocker Analytics
   const blockerAnalytics = useMemo(() => {
+    // Use real blockers data if available, otherwise fallback to context data
+    if (blockersData?.analytics) {
+      return blockersData.analytics;
+    }
+    
+    // Fallback to context data calculation
     const scopeDept = isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : 
                      isManager ? currentUser.department : undefined;
     
@@ -565,7 +608,7 @@ export function ReportsPage() {
       mainTasks: userBlockers.filter(task => !task.parentId).length,
       subtasks: userBlockers.filter(task => task.parentId).length
     };
-  }, [tasks, selectedDepartment, isAdmin, isManager, currentUser]);
+  }, [blockersData, tasks, selectedDepartment, isAdmin, isManager, currentUser]);
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
