@@ -5,9 +5,32 @@ import { useToast } from '../ui/Toast';
 type ExportOptionsProps = {
   tasks: any[];
   onExport: (data: any[], format: string, dateRange: string, statuses: string[]) => void;
+  reportType?: 'overview' | 'team' | 'trends' | 'blockers';
+  timeframe?: 'week' | 'month' | 'quarter';
+  dateFrom?: string;
+  dateTo?: string;
+  departmentStats?: any;
+  trendsData?: any;
+  blockersData?: any;
+  managedDepartment?: any;
+  isAdmin?: boolean;
+  selectedDepartment?: string;
 };
 
-export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
+export function ExportOptions({ 
+  tasks, 
+  onExport, 
+  reportType = 'overview',
+  timeframe = 'week',
+  dateFrom = '',
+  dateTo = '',
+  departmentStats,
+  trendsData,
+  blockersData,
+  managedDepartment,
+  isAdmin = false,
+  selectedDepartment = 'all'
+}: ExportOptionsProps) {
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -121,6 +144,52 @@ export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
     setQuickExportDropdown({ isOpen: false, dateType: null });
   };
 
+  // Get report-specific export data
+  const getReportSpecificData = (dateType: 'today' | 'week' | 'month' | 'custom') => {
+    const dateRange = getDateRange(dateType);
+    
+    // Use current report filters if no custom date is selected
+    const effectiveDateFrom = dateType === 'custom' ? customDateFrom : (dateFrom || dateRange.from);
+    const effectiveDateTo = dateType === 'custom' ? customDateTo : (dateTo || dateRange.to);
+    
+    switch (reportType) {
+      case 'overview':
+        return {
+          data: departmentStats ? [departmentStats] : tasks,
+          title: 'Department Overview Report',
+          description: `Comprehensive department statistics and task overview for ${managedDepartment?.name || selectedDepartment}`
+        };
+      
+      case 'team':
+        return {
+          data: tasks, // Team performance data would need to be fetched separately
+          title: 'Team Performance Report',
+          description: `Team performance metrics and individual contributions for ${managedDepartment?.name || selectedDepartment}`
+        };
+      
+      case 'trends':
+        return {
+          data: trendsData ? [trendsData] : tasks,
+          title: 'Trends Analysis Report',
+          description: `Task creation and completion trends analysis for ${timeframe} period`
+        };
+      
+      case 'blockers':
+        return {
+          data: blockersData ? [blockersData] : tasks.filter(task => task.status === 'blocker'),
+          title: 'Blocker Analysis Report',
+          description: `Comprehensive blocker analysis and resolution tracking for ${managedDepartment?.name || selectedDepartment}`
+        };
+      
+      default:
+        return {
+          data: tasks,
+          title: 'Tasks Report',
+          description: 'General task export'
+        };
+    }
+  };
+
   const handleQuickExport = (format: string, dateType: 'today' | 'week' | 'month' | 'custom') => {
     const dateRange = getDateRange(dateType);
     
@@ -129,17 +198,23 @@ export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
       return;
     }
 
-    // Filter tasks based on selected statuses and date range
-    const filteredTasks = tasks.filter(task => {
-      const statusMatch = selectedStatuses.includes(task.status);
-      const dateMatch = !dateRange.from || !dateRange.to || (
-        new Date(task.createdAt) >= new Date(dateRange.from) &&
-        new Date(task.createdAt) <= new Date(dateRange.to)
-      );
-      return statusMatch && dateMatch;
-    });
+    // Get report-specific data
+    const reportData = getReportSpecificData(dateType);
+    
+    // For task-based reports, filter by status and date
+    let filteredData = reportData.data;
+    if (reportType === 'overview' || reportType === 'team' || reportType === 'blockers') {
+      filteredData = tasks.filter(task => {
+        const statusMatch = selectedStatuses.includes(task.status);
+        const dateMatch = !dateRange.from || !dateRange.to || (
+          new Date(task.createdAt) >= new Date(dateRange.from) &&
+          new Date(task.createdAt) <= new Date(dateRange.to)
+        );
+        return statusMatch && dateMatch;
+      });
+    }
 
-    onExport(filteredTasks, format, `${dateRange.from} to ${dateRange.to}`, selectedStatuses);
+    onExport(filteredData, format, `${dateRange.from} to ${dateRange.to}`, selectedStatuses);
     setIsOpen(false);
     setQuickExportDropdown({ isOpen: false, dateType: null });
   };
@@ -161,6 +236,18 @@ export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
         {quickExportDropdown.isOpen && (
           <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-xl shadow-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
             <div className="p-4">
+              {/* Current Report Context */}
+              <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Current Report Context</h3>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <div><strong>Report Type:</strong> {reportType.charAt(0).toUpperCase() + reportType.slice(1)}</div>
+                  <div><strong>Timeframe:</strong> {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}</div>
+                  {dateFrom && <div><strong>From:</strong> {dateFrom}</div>}
+                  {dateTo && <div><strong>To:</strong> {dateTo}</div>}
+                  <div><strong>Department:</strong> {isAdmin ? (selectedDepartment === 'all' ? 'All Departments' : selectedDepartment) : (managedDepartment?.name || 'Current Department')}</div>
+                </div>
+              </div>
+
               {/* Time Period Selection */}
               <div className="mb-4">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Select Time Period</h3>
@@ -283,6 +370,18 @@ export function ExportOptions({ tasks, onExport }: ExportOptionsProps) {
         {isOpen && (
           <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-xl shadow-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
             <div className="p-4">
+              {/* Current Report Context */}
+              <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-purple-50 dark:from-green-900/20 dark:to-purple-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Advanced Export Options</h3>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <div><strong>Report Type:</strong> {reportType.charAt(0).toUpperCase() + reportType.slice(1)}</div>
+                  <div><strong>Timeframe:</strong> {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}</div>
+                  {dateFrom && <div><strong>From:</strong> {dateFrom}</div>}
+                  {dateTo && <div><strong>To:</strong> {dateTo}</div>}
+                  <div><strong>Department:</strong> {isAdmin ? (selectedDepartment === 'all' ? 'All Departments' : selectedDepartment) : (managedDepartment?.name || 'Current Department')}</div>
+                </div>
+              </div>
+
               {/* Status Filters */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">

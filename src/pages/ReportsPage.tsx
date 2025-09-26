@@ -265,18 +265,130 @@ export function ReportsPage() {
   };
 
   const handleExport = (filteredTasks: any[], format: string, dateRange: string, statuses: string[]) => {
-    // Create export data
-    const exportData = filteredTasks.map(task => ({
-      'Task ID': task.id,
-      'Title': task.title,
-      'Description': task.description,
-      'Status': task.status,
-      'Department': task.department,
-      'Created By': task.createdBy,
-      'Deadline': new Date(task.deadline).toLocaleDateString(),
-      'Blocker Reason': task.blockerReason || '',
-      'Subtasks Count': task.subtasks?.length || 0
-    }));
+    // Create export data based on report type
+    let exportData: any[] = [];
+    let reportTitle = '';
+    let reportDescription = '';
+
+    switch (reportType) {
+      case 'overview':
+        if (departmentStats) {
+          exportData = [{
+            'Department': departmentStats.department?.name || 'N/A',
+            'Total Tasks': departmentStats.stats?.totalTasks || 0,
+            'To Do': departmentStats.stats?.todo || 0,
+            'In Progress': departmentStats.stats?.inProgress || 0,
+            'Completed': departmentStats.stats?.completed || 0,
+            'Blocked': departmentStats.stats?.blocker || 0,
+            'High Priority': departmentStats.stats?.high || 0,
+            'Medium Priority': departmentStats.stats?.medium || 0,
+            'Low Priority': departmentStats.stats?.low || 0,
+            'Overdue': departmentStats.stats?.overdue || 0,
+            'Completion Rate': `${departmentStats.stats?.completionRate || 0}%`,
+            'Total Users': departmentStats.stats?.totalUsers || 0
+          }];
+        } else {
+          exportData = filteredTasks.map(task => ({
+            'Task ID': task.id,
+            'Title': task.title,
+            'Description': task.description,
+            'Status': task.status,
+            'Department': task.department,
+            'Created By': task.createdBy,
+            'Deadline': new Date(task.deadline).toLocaleDateString(),
+            'Blocker Reason': task.blockerReason || '',
+            'Priority': task.priority,
+            'Subtasks Count': task.subtasks?.length || 0
+          }));
+        }
+        reportTitle = 'Department Overview Report';
+        reportDescription = `Comprehensive department statistics and task overview for ${isAdmin ? (selectedDepartment === 'all' ? 'All Departments' : selectedDepartment) : managedDepartment?.name || currentUser.department}`;
+        break;
+
+      case 'team':
+        exportData = filteredTasks.map(task => ({
+          'Task ID': task.id,
+          'Title': task.title,
+          'Status': task.status,
+          'Assigned To': task.assignedTo || 'Unassigned',
+          'Department': task.department,
+          'Priority': task.priority,
+          'Created Date': new Date(task.createdAt).toLocaleDateString(),
+          'Deadline': new Date(task.deadline).toLocaleDateString(),
+          'Completion Date': task.completedAt ? new Date(task.completedAt).toLocaleDateString() : 'N/A'
+        }));
+        reportTitle = 'Team Performance Report';
+        reportDescription = `Team performance metrics and individual contributions for ${isAdmin ? (selectedDepartment === 'all' ? 'All Departments' : selectedDepartment) : managedDepartment?.name || currentUser.department}`;
+        break;
+
+      case 'trends':
+        if (trendsData?.trends) {
+          exportData = trendsData.trends.map((trend: any) => ({
+            'Date': trend.date,
+            'Tasks Created': trend.tasksCreated,
+            'Tasks Completed': trend.tasksCompleted,
+            'Completion Rate': `${trend.completionRate}%`,
+            'Active Tasks': trend.activeTasks
+          }));
+        } else {
+          exportData = filteredTasks.map(task => ({
+            'Task ID': task.id,
+            'Title': task.title,
+            'Status': task.status,
+            'Created Date': new Date(task.createdAt).toLocaleDateString(),
+            'Completed Date': task.completedAt ? new Date(task.completedAt).toLocaleDateString() : 'N/A',
+            'Department': task.department
+          }));
+        }
+        reportTitle = 'Trends Analysis Report';
+        reportDescription = `Task creation and completion trends analysis for ${timeframe} period`;
+        break;
+
+      case 'blockers':
+        if (blockersData?.blockers) {
+          exportData = blockersData.blockers.map((blocker: any) => ({
+            'Task ID': blocker.id,
+            'Title': blocker.title,
+            'Priority': blocker.priority,
+            'Blocker Reason': blocker.blockerReason,
+            'Days Blocked': blocker.daysBlocked,
+            'Assigned To': blocker.assignedTo,
+            'Department': blocker.department,
+            'Created Date': new Date(blocker.createdAt).toLocaleDateString(),
+            'Deadline': new Date(blocker.deadline).toLocaleDateString()
+          }));
+        } else {
+          exportData = filteredTasks.filter(task => task.status === 'blocker').map(task => ({
+            'Task ID': task.id,
+            'Title': task.title,
+            'Description': task.description,
+            'Blocker Reason': task.blockerReason || '',
+            'Priority': task.priority,
+            'Department': task.department,
+            'Created By': task.createdBy,
+            'Deadline': new Date(task.deadline).toLocaleDateString()
+          }));
+        }
+        reportTitle = 'Blocker Analysis Report';
+        reportDescription = `Comprehensive blocker analysis and resolution tracking for ${isAdmin ? (selectedDepartment === 'all' ? 'All Departments' : selectedDepartment) : managedDepartment?.name || currentUser.department}`;
+        break;
+
+      default:
+        exportData = filteredTasks.map(task => ({
+          'Task ID': task.id,
+          'Title': task.title,
+          'Description': task.description,
+          'Status': task.status,
+          'Department': task.department,
+          'Created By': task.createdBy,
+          'Deadline': new Date(task.deadline).toLocaleDateString(),
+          'Blocker Reason': task.blockerReason || '',
+          'Priority': task.priority,
+          'Subtasks Count': task.subtasks?.length || 0
+        }));
+        reportTitle = 'Tasks Report';
+        reportDescription = 'General task export';
+    }
 
     if (format === 'CSV') {
       // Convert to CSV
@@ -328,7 +440,7 @@ export function ReportsPage() {
       const tableHtml = `
         <html>
           <head>
-            <title>Tasks Export - ${dateRange}</title>
+            <title>${reportTitle} - ${dateRange}</title>
             <style>
               @page { size: A4 portrait; margin: 20mm; }
               body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
@@ -342,10 +454,11 @@ export function ReportsPage() {
           </head>
           <body>
             <div class="header">
-              <h1>Tasks Export Report</h1>
+              <h1>${reportTitle}</h1>
+              <p>${reportDescription}</p>
               <p>Date Range: ${dateRange}</p>
               <p>Statuses: ${statuses.join(', ')}</p>
-              <p>Total Tasks: ${exportData.length}</p>
+              <p>Total Records: ${exportData.length}</p>
             </div>
             <table>
               <thead>
@@ -373,64 +486,174 @@ export function ReportsPage() {
         }, 250);
       }
     } else if (format === 'Word') {
-      const wordHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Tasks Export - ${dateRange}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .title { font-size: 24px; font-weight: bold; color: #2e9d74; margin-bottom: 10px; }
-            .summary { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-            .summary-item { margin: 5px 0; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-            th { background-color: #2e9d74; color: white; font-weight: bold; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="title">Tasks Export Report</div>
-            <div>Generated on ${new Date().toLocaleDateString()}</div>
-          </div>
-          
-          <div class="summary">
-            <div class="summary-item"><strong>Date Range:</strong> ${dateRange}</div>
-            <div class="summary-item"><strong>Statuses:</strong> ${statuses.join(', ')}</div>
-            <div class="summary-item"><strong>Total Tasks:</strong> ${exportData.length}</div>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                ${Object.keys(exportData[0] || {}).map(header => `<th>${header}</th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>
-              ${exportData.map(row => 
-                `<tr>${Object.values(row).map(value => `<td>${value || ''}</td>`).join('')}</tr>`
-              ).join('')}
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `;
-      
-      const blob = new Blob([wordHtml], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `tasks-export-${dateRange.toLowerCase().replace(/\s+/g, '-')}.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Generate proper Word document using docx library
+      import('docx').then(({ Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel }) => {
+        // Create document
+        const doc = new Document({
+          sections: [{
+            properties: {},
+            children: [
+              // Title
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: reportTitle,
+                    bold: true,
+                    size: 32,
+                    color: "2e9d74"
+                  })
+                ],
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE
+              }),
+              
+              // Generation date
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Generated on ${new Date().toLocaleDateString()}`,
+                    size: 20
+                  })
+                ],
+                alignment: AlignmentType.CENTER
+              }),
+              
+              // Description
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: reportDescription,
+                    size: 20
+                  })
+                ],
+                alignment: AlignmentType.CENTER
+              }),
+              
+              // Summary section
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Report Summary",
+                    bold: true,
+                    size: 24
+                  })
+                ],
+                heading: HeadingLevel.HEADING_1
+              }),
+              
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Date Range: ${dateRange}`,
+                    size: 20
+                  })
+                ]
+              }),
+              
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Statuses: ${statuses.join(', ')}`,
+                    size: 20
+                  })
+                ]
+              }),
+              
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Total Records: ${exportData.length}`,
+                    size: 20
+                  })
+                ]
+              }),
+              
+              // Data table
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Data",
+                    bold: true,
+                    size: 24
+                  })
+                ],
+                heading: HeadingLevel.HEADING_1
+              }),
+              
+              // Create table
+              new Table({
+                width: {
+                  size: 100,
+                  type: WidthType.PERCENTAGE,
+                },
+                rows: [
+                  // Header row
+                  new TableRow({
+                    children: Object.keys(exportData[0] || {}).map(header => 
+                      new TableCell({
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: header,
+                                bold: true,
+                                color: "FFFFFF"
+                              })
+                            ],
+                            alignment: AlignmentType.CENTER
+                          })
+                        ],
+                        shading: {
+                          fill: "2e9d74"
+                        }
+                      })
+                    )
+                  }),
+                  
+                  // Data rows
+                  ...exportData.map(row => 
+                    new TableRow({
+                      children: Object.values(row).map(cell => 
+                        new TableCell({
+                          children: [
+                            new Paragraph({
+                              children: [
+                                new TextRun({
+                                  text: String(cell || ''),
+                                  size: 20
+                                })
+                              ]
+                            })
+                          ]
+                        })
+                      )
+                    })
+                  )
+                ]
+              })
+            ]
+          }]
+        });
+
+        // Generate and download the document
+        Packer.toBlob(doc).then(blob => {
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `${reportTitle.replace(/\s+/g, '-')}-${dateRange}.docx`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        });
+      }).catch(error => {
+        console.error('Error generating Word document:', error);
+        showToast('Error generating Word document. Please try again.', 'error');
+      });
     }
 
-    showToast(`Export completed! ${exportData.length} tasks exported as ${format} for ${dateRange}`, 'success');
+    showToast(`${reportTitle} exported successfully! ${exportData.length} records exported as ${format} for ${dateRange}`, 'success');
   };
 
   if (!currentUser) {
@@ -692,7 +915,17 @@ export function ReportsPage() {
         <div className="mt-4 flex md:mt-0 md:ml-4">
           <ExportOptions 
             tasks={tasks} 
-            onExport={handleExport} 
+            onExport={handleExport}
+            reportType={reportType}
+            timeframe={timeframe}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            departmentStats={departmentStats}
+            trendsData={trendsData}
+            blockersData={blockersData}
+            managedDepartment={managedDepartment}
+            isAdmin={isAdmin}
+            selectedDepartment={selectedDepartment}
           />
         </div>
       </div>
