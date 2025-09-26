@@ -362,12 +362,6 @@ function DepartmentsPageContent() {
       const selectedUser = users.find(u => u.id === selectedUserId);
       const previousDepartmentId = selectedUser?.departmentId;
       
-      console.log('Assigning user:', {
-        userId: selectedUserId,
-        departmentId: selectedDept.id,
-        previousDepartmentId,
-        API_URL
-      });
       
       // Assign user to the new department
       const res = await fetch(`${API_URL}/api/users/${selectedUserId}/department`, {
@@ -376,8 +370,6 @@ function DepartmentsPageContent() {
         body: JSON.stringify({ departmentId: selectedDept.id })
       });
       
-      console.log('Response status:', res.status);
-      console.log('Response ok:', res.ok);
       
       if (res.ok) {
         setSelectedUserId('');

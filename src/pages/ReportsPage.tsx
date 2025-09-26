@@ -31,7 +31,6 @@ export function ReportsPage() {
   const fetchDepartments = async () => {
     try {
       setError(null);
-      console.log('Fetching departments for reports page...', { API_URL, token: token ? 'present' : 'missing' });
       
       const res = await fetch(`${API_URL}/api/departments`, { 
         headers: { 
@@ -40,7 +39,6 @@ export function ReportsPage() {
         } 
       });
       
-      console.log('Departments response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -49,28 +47,19 @@ export function ReportsPage() {
       }
       
       const response = await res.json();
-      console.log('Departments response received:', response);
-      
       // Handle the response format: { data: departments } or just departments array
       const data = response.data || response;
-      console.log('Departments data:', data);
       
       // Ensure data is an array
       const departmentsArray = Array.isArray(data) ? data : [];
-      console.log('Departments array:', departmentsArray);
-      console.log('Current user ID:', currentUser?.id);
-      console.log('Current user:', currentUser);
       
       // Find the department managed by this manager
       const managedDept = departmentsArray.find((dept: any) => {
-        console.log('Checking department:', dept.name, 'managerId:', dept.managerId, 'user ID:', currentUser?.id);
-        console.log('Type comparison - managerId type:', typeof dept.managerId, 'user ID type:', typeof currentUser?.id);
         // Try both string and number comparison
         return dept.managerId === currentUser?.id || 
                dept.managerId === Number(currentUser?.id) || 
                Number(dept.managerId) === currentUser?.id;
       });
-      console.log('Managed department found:', managedDept);
       
       if (managedDept) {
         setManagedDepartment(managedDept);
@@ -89,7 +78,6 @@ export function ReportsPage() {
   const fetchDepartmentStats = React.useCallback(async (departmentId: number) => {
     try {
       setError(null);
-      console.log('Fetching department stats...', { departmentId, timeframe, dateFrom, dateTo, API_URL, token: token ? 'present' : 'missing' });
       
       // Build query parameters
       const params = new URLSearchParams();
@@ -104,7 +92,6 @@ export function ReportsPage() {
         } 
       });
       
-      console.log('Department stats response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -113,16 +100,8 @@ export function ReportsPage() {
       }
       
       const response = await res.json();
-      console.log('Department stats response received:', response);
-      
       // Handle the response format: { data: stats } or just stats object
       const data = response.data || response;
-      console.log('Department stats data:', data);
-      
-      // Use the full data object which includes stats, tasks, and department info
-      console.log('Processed stats data:', data);
-      console.log('Tasks data:', data.tasks);
-      console.log('Tasks count:', data.tasks?.length || 0);
       setDepartmentStats(data);
       
     } catch (error) {
@@ -135,7 +114,6 @@ export function ReportsPage() {
   const fetchTrendsData = React.useCallback(async (departmentId: number) => {
     try {
       setError(null);
-      console.log('Fetching trends data...', { departmentId, timeframe, dateFrom, dateTo, API_URL, token: token ? 'present' : 'missing' });
       
       // Build query parameters
       const params = new URLSearchParams();
@@ -150,7 +128,6 @@ export function ReportsPage() {
         } 
       });
       
-      console.log('Trends response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -159,11 +136,8 @@ export function ReportsPage() {
       }
       
       const response = await res.json();
-      console.log('Trends response received:', response);
-      
       // Handle the response format
       const data = response.data || response;
-      console.log('Trends data:', data);
       setTrendsData(data);
       
     } catch (error) {
@@ -176,7 +150,6 @@ export function ReportsPage() {
   const fetchBlockersData = React.useCallback(async (departmentId: number) => {
     try {
       setError(null);
-      console.log('Fetching blockers data...', { departmentId, dateFrom, dateTo, API_URL, token: token ? 'present' : 'missing' });
       
       // Build query parameters
       const params = new URLSearchParams();
@@ -190,7 +163,6 @@ export function ReportsPage() {
         } 
       });
       
-      console.log('Blockers response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -199,11 +171,8 @@ export function ReportsPage() {
       }
       
       const response = await res.json();
-      console.log('Blockers response received:', response);
-      
       // Handle the response format
       const data = response.data || response;
-      console.log('Blockers data:', data);
       setBlockersData(data);
       
     } catch (error) {
@@ -273,9 +242,6 @@ export function ReportsPage() {
 
     switch (reportType) {
       case 'overview':
-        console.log('Export - departmentStats:', departmentStats);
-        console.log('Export - departmentStats.tasks:', departmentStats?.tasks);
-        console.log('Export - tasks count:', departmentStats?.tasks?.length || 0);
         
         if (departmentStats) {
           // Include both stats and detailed tasks/subtasks
@@ -716,7 +682,6 @@ export function ReportsPage() {
             throw new Error(`Failed to fetch logo: ${logoResponse.status}`);
           }
           logoBuffer = await logoResponse.arrayBuffer();
-          console.log('Logo loaded successfully for Word export');
         } catch (error) {
           console.warn('Could not load logo for Word export:', error);
         }
@@ -1368,7 +1333,6 @@ export function ReportsPage() {
         <div className="px-4 py-5 sm:p-6">
           {reportType === 'overview' && (
             <>
-              {console.log('Passing to TaskStats - department:', isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : managedDepartment?.name || currentUser.department, 'departmentStats:', departmentStats)}
               <TaskStats 
                 department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : managedDepartment?.name || currentUser.department} 
                 timeframe={timeframe} 

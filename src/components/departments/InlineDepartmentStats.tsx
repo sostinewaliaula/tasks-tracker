@@ -42,8 +42,6 @@ export function InlineDepartmentStats({ departmentId, departmentName, managerNam
   const fetchDepartmentStats = async () => {
     try {
       setLoading(true);
-      console.log('Fetching department stats for ID:', departmentId);
-      console.log('Token available:', !!token);
       
       const response = await fetch(`${API_URL}/api/departments/${departmentId}/stats`, {
         headers: {
@@ -51,8 +49,6 @@ export function InlineDepartmentStats({ departmentId, departmentName, managerNam
         }
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -61,7 +57,6 @@ export function InlineDepartmentStats({ departmentId, departmentName, managerNam
       }
 
       const data = await response.json();
-      console.log('Stats data received:', data);
       setStats(data.data.stats);
     } catch (error) {
       console.error('Error fetching department stats:', error);

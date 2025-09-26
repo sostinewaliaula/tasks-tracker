@@ -10,25 +10,13 @@ interface RBACProps {
 export function RBAC({ children, allowedRoles }: RBACProps) {
   const { currentUser, isAuthenticated } = useAuth();
 
-  // Debug logging
-  console.log('RBAC check:', { 
-    isAuthenticated, 
-    currentUser: currentUser?.name, 
-    userRole: currentUser?.role, 
-    allowedRoles 
-  });
-
   if (!isAuthenticated) {
-    console.log('RBAC: Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   if (!currentUser || !allowedRoles.includes(currentUser.role)) {
-    console.log('RBAC: Access denied, redirecting to unauthorized');
     return <Navigate to="/unauthorized" replace />;
   }
-
-  console.log('RBAC: Access granted');
   return <>{children}</>;
 }
 

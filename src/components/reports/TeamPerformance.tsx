@@ -23,7 +23,6 @@ export function TeamPerformance({ department, timeframe, dateFrom, dateTo }: Tea
   const fetchTeamData = async () => {
     try {
       setError(null);
-      console.log('Fetching team performance data...', { department, API_URL, token: token ? 'present' : 'missing' });
       
       // First get the department ID if we have a department name
       let departmentId = null;
@@ -62,7 +61,6 @@ export function TeamPerformance({ department, timeframe, dateFrom, dateTo }: Tea
         } 
       });
       
-      console.log('Team performance response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -71,7 +69,6 @@ export function TeamPerformance({ department, timeframe, dateFrom, dateTo }: Tea
       }
       
       const response = await res.json();
-      console.log('Team performance data received:', response);
       
       // Handle the response format
       const data = response.data || response;

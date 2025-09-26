@@ -7,8 +7,6 @@ export function ProfilePage() {
   const { currentUser } = useAuth();
   const { darkMode } = useDarkMode();
 
-  // Debug logging
-  console.log('ProfilePage rendered, currentUser:', currentUser);
 
   // Show loading state if user data is not available
   if (!currentUser) {
@@ -69,7 +67,6 @@ export function ProfilePage() {
 
   const handleSave = () => {
     // TODO: Implement profile update API call
-    console.log('Saving profile:', formData);
     setIsEditing(false);
   };
 

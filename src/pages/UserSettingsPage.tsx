@@ -213,7 +213,6 @@ export function UserSettingsPage() {
 
   const handleSavePermissions = () => {
     // For now, just mock-save to console. Replace with API later.
-    console.log('Saving Role permissions', permissions);
     showToast('Role permissions saved (mock). Backend integration pending.', 'info');
   };
 

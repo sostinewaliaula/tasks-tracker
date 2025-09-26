@@ -34,10 +34,6 @@ export function EmployeeDashboard() {
   const userTasks = currentUser ? getTasksByUser(currentUser.id) : [];
   const weeklyTasks = getTasksForCurrentWeek();
   
-  // Debug logging
-  console.log('User tasks:', userTasks);
-  console.log('Weekly tasks:', weeklyTasks);
-  console.log('Current user:', currentUser);
 
   // Function to create sample tasks for testing
   const createSampleTasks = async () => {
@@ -142,7 +138,6 @@ export function EmployeeDashboard() {
       blocker: mainTaskBlockers + subtaskBlockers,
     };
     
-    console.log('myStats debug:', { mainTaskBlockers, subtaskBlockers, stats, userTasks: userTasks.length });
     return stats;
   }, [userTasks]);
   
@@ -483,7 +478,6 @@ export function EmployeeDashboard() {
                           ).length || 0);
                         }, 0);
                         const total = mainTaskBlockers + subtaskBlockers;
-                        console.log('Blocker count debug:', { mainTaskBlockers, subtaskBlockers, total, tasks: tasks.length });
                         return total;
                       })()}
                     </span>

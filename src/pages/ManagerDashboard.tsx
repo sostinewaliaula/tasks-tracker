@@ -22,8 +22,6 @@ export function ManagerDashboard() {
   const [managedDepartment, setManagedDepartment] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // Debug logging
-  console.log('ManagerDashboard render - viewMode:', viewMode, 'isLoading:', isLoading, 'managedDepartment:', managedDepartment?.name);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
@@ -31,7 +29,6 @@ export function ManagerDashboard() {
   const fetchDepartments = async () => {
     try {
       setError(null);
-      console.log('Fetching departments for manager dashboard...', { API_URL, token: token ? 'present' : 'missing' });
       
       const res = await fetch(`${API_URL}/api/departments`, { 
         headers: { 
@@ -40,7 +37,6 @@ export function ManagerDashboard() {
         } 
       });
       
-      console.log('Departments response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -49,7 +45,6 @@ export function ManagerDashboard() {
       }
       
       const json = await res.json();
-      console.log('Departments API response:', json);
       
       // Find the department managed by current user
       const departments = json.data || [];
@@ -67,7 +62,6 @@ export function ManagerDashboard() {
   // Fetch department statistics
   const fetchDepartmentStats = async (departmentId: number) => {
     try {
-      console.log('Fetching department stats for ID:', departmentId);
       const res = await fetch(`${API_URL}/api/departments/${departmentId}/stats`, { 
         headers: { 
           'Authorization': token ? `Bearer ${token}` : '',
@@ -75,11 +69,9 @@ export function ManagerDashboard() {
         } 
       });
       
-      console.log('Department stats response status:', res.status);
       
       if (res.ok) {
         const json = await res.json();
-        console.log('Department stats API response:', json);
         setDepartmentStats(json.data);
       } else {
         const errorText = await res.text();

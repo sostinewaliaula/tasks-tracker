@@ -43,7 +43,6 @@ function ManagerDepartmentsPageContent() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching departments...', { API_URL, token: token ? 'present' : 'missing' });
       
       const res = await fetch(`${API_URL}/api/departments`, { 
         headers: { 
@@ -52,7 +51,6 @@ function ManagerDepartmentsPageContent() {
         } 
       });
       
-      console.log('Departments response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
@@ -61,7 +59,6 @@ function ManagerDepartmentsPageContent() {
       }
       
       const json = await res.json();
-      console.log('Departments API response:', json);
       setDepartments(json.data || []);
     } catch (e: any) {
       console.error('Failed to load departments:', e);
@@ -96,7 +93,6 @@ function ManagerDepartmentsPageContent() {
 
   const fetchDepartmentStats = async (departmentId: number) => {
     try {
-      console.log('Fetching department stats for ID:', departmentId);
       const res = await fetch(`${API_URL}/api/departments/${departmentId}/stats`, { 
         headers: { 
           'Authorization': token ? `Bearer ${token}` : '',
@@ -104,11 +100,9 @@ function ManagerDepartmentsPageContent() {
         } 
       });
       
-      console.log('Department stats response status:', res.status);
       
       if (res.ok) {
         const json = await res.json();
-        console.log('Department stats API response:', json);
         setDepartmentStats(json.data);
       } else {
         const errorText = await res.text();
@@ -163,21 +157,13 @@ function ManagerDepartmentsPageContent() {
 
   // Get the single department managed by current user
   const managedDepartment = useMemo(() => {
-    console.log('Computing managedDepartment...', { 
-      currentUserId: currentUser?.id, 
-      departmentsCount: departments.length,
-      departments: departments.map(d => ({ id: d.id, name: d.name, managerId: d.managerId }))
-    });
-    
     if (!currentUser?.id) {
-      console.log('No current user ID, returning null');
       return null;
     }
     
     const all: DepartmentNode[] = [];
     const walk = (nodes: DepartmentNode[]) => {
       nodes.forEach(n => {
-        console.log('Checking department:', n.name, 'managerId:', n.managerId, 'currentUserId:', currentUser.id, 'match:', n.managerId === Number(currentUser.id));
         if (n.managerId === Number(currentUser.id)) {
           all.push(n);
         }
@@ -185,7 +171,6 @@ function ManagerDepartmentsPageContent() {
       });
     };
     walk(departments);
-    console.log('Found managed departments:', all.length, all.map(d => d.name));
     return all[0] || null; // Managers only manage one department
   }, [departments, currentUser?.id]);
 
