@@ -576,44 +576,59 @@ export function ReportsPage() {
         document.body.removeChild(link);
       }
     } else if (format === 'PDF') {
-      // For PDF, we'll create a simple HTML table and use browser print
-      const tableHtml = `
-        <html>
-          <head>
-            <title>${reportTitle} - ${dateRange}</title>
-            <style>
-              @page { size: A4 portrait; margin: 20mm; }
-              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-              table { border-collapse: collapse; width: 100%; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
-              th { background-color: #2e9d74; color: white; font-weight: bold; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .summary { margin-bottom: 20px; }
-              tr:nth-child(even) { background-color: #f9f9f9; }
-              .company-header { 
-                text-align: center; 
-                margin-bottom: 30px; 
-                border-bottom: 2px solid #2e9d74; 
-                padding-bottom: 20px; 
-              }
-              .company-name { 
-                font-size: 28px; 
-                font-weight: bold; 
-                color: #2e9d74; 
-                margin-bottom: 10px; 
-              }
-              .logo { 
-                max-width: 100px; 
-                max-height: 60px; 
-                margin-bottom: 10px; 
-              }
-            </style>
-          </head>
-          <body>
-            <div class="company-header">
-              <img src="/src/assets/logo.png" alt="Caava Group Logo" class="logo" />
-              <h1 style="margin: 0; font-size: 24px; color: #333;">${reportTitle}</h1>
-            </div>
+      // Fetch logo and convert to base64 for embedding
+      const generatePDF = async () => {
+        let logoDataUrl = '';
+        try {
+          const logoResponse = await fetch('/src/assets/logo.png');
+          const logoBlob = await logoResponse.blob();
+          logoDataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(logoBlob);
+          });
+        } catch (error) {
+          console.warn('Could not load logo:', error);
+        }
+
+        // For PDF, we'll create a simple HTML table and use browser print
+        const tableHtml = `
+          <html>
+            <head>
+              <title>${reportTitle} - ${dateRange}</title>
+              <style>
+                @page { size: A4 portrait; margin: 20mm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+                th { background-color: #2e9d74; color: white; font-weight: bold; }
+                .header { text-align: center; margin-bottom: 20px; }
+                .summary { margin-bottom: 20px; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                .company-header { 
+                  text-align: center; 
+                  margin-bottom: 30px; 
+                  border-bottom: 2px solid #2e9d74; 
+                  padding-bottom: 20px; 
+                }
+                .company-name { 
+                  font-size: 28px; 
+                  font-weight: bold; 
+                  color: #2e9d74; 
+                  margin-bottom: 10px; 
+                }
+                .logo { 
+                  max-width: 100px; 
+                  max-height: 60px; 
+                  margin-bottom: 10px; 
+                }
+              </style>
+            </head>
+            <body>
+              <div class="company-header">
+                ${logoDataUrl ? `<img src="${logoDataUrl}" alt="Caava Group Logo" class="logo" />` : ''}
+                <h1 style="margin: 0; font-size: 24px; color: #333;">${reportTitle}</h1>
+              </div>
             <div class="header">
               <p>${reportDescription}</p>
               <p>Date Range: ${dateRange}</p>
@@ -675,17 +690,21 @@ export function ReportsPage() {
         </html>
       `;
 
-      // Create a blob and download the PDF directly
-      const blob = new Blob([tableHtml], { type: 'text/html' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${reportTitle.replace(/\s+/g, '-')}-${dateRange}.html`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+        // Create a blob and download the PDF directly
+        const blob = new Blob([tableHtml], { type: 'text/html' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${reportTitle.replace(/\s+/g, '-')}-${dateRange}.html`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      };
+
+      // Execute the async function
+      generatePDF();
     } else if (format === 'Word') {
       // Generate proper Word document using docx library
       import('docx').then(async ({ Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun }) => {
