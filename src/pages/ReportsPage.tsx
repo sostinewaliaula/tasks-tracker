@@ -273,7 +273,8 @@ export function ReportsPage() {
     switch (reportType) {
       case 'overview':
         if (departmentStats) {
-          exportData = [{
+          // Include both stats and detailed tasks/subtasks
+          const statsData = {
             'Department': departmentStats.department?.name || 'N/A',
             'Total Tasks': departmentStats.stats?.totalTasks || 0,
             'To Do': departmentStats.stats?.todo || 0,
@@ -286,7 +287,28 @@ export function ReportsPage() {
             'Overdue': departmentStats.stats?.overdue || 0,
             'Completion Rate': `${departmentStats.stats?.completionRate || 0}%`,
             'Total Users': departmentStats.stats?.totalUsers || 0
-          }];
+          };
+          
+          // Add detailed tasks and subtasks
+          const tasksData = departmentStats.tasks?.map((task: any) => ({
+            'Task ID': task.id,
+            'Task Title': task.title,
+            'Task Description': task.description,
+            'Task Status': task.status,
+            'Task Priority': task.priority,
+            'Task Deadline': new Date(task.deadline).toLocaleDateString(),
+            'Task Created By': task.createdBy,
+            'Task Assigned To': task.assignedTo,
+            'Task Blocker Reason': task.blockerReason || '',
+            'Task Created At': new Date(task.createdAt).toLocaleDateString(),
+            'Task Updated At': new Date(task.updatedAt).toLocaleDateString(),
+            'Subtasks Count': task.subtasks?.length || 0,
+            'Subtasks Details': task.subtasks?.map((subtask: any) => 
+              `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Assigned: ${subtask.assignedTo}`
+            ).join('; ') || 'None'
+          })) || [];
+          
+          exportData = [statsData, ...tasksData];
         } else {
           exportData = filteredTasks.map(task => ({
             'Task ID': task.id,
@@ -309,13 +331,19 @@ export function ReportsPage() {
         exportData = filteredTasks.map(task => ({
           'Task ID': task.id,
           'Title': task.title,
+          'Description': task.description,
           'Status': task.status,
           'Assigned To': task.assignedTo || 'Unassigned',
           'Department': task.department,
           'Priority': task.priority,
           'Created Date': new Date(task.createdAt).toLocaleDateString(),
           'Deadline': new Date(task.deadline).toLocaleDateString(),
-          'Completion Date': task.completedAt ? new Date(task.completedAt).toLocaleDateString() : 'N/A'
+          'Completion Date': task.completedAt ? new Date(task.completedAt).toLocaleDateString() : 'N/A',
+          'Blocker Reason': task.blockerReason || '',
+          'Subtasks Count': task.subtasks?.length || 0,
+          'Subtasks Details': task.subtasks?.map((subtask: any) => 
+            `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Assigned: ${subtask.assignedTo || 'Unassigned'}`
+          ).join('; ') || 'None'
         }));
         reportTitle = 'Team Performance Report';
         reportDescription = `Team performance metrics and individual contributions for ${isAdmin ? (selectedDepartment === 'all' ? 'All Departments' : selectedDepartment) : managedDepartment?.name || currentUser.department}`;
@@ -334,10 +362,17 @@ export function ReportsPage() {
           exportData = filteredTasks.map(task => ({
             'Task ID': task.id,
             'Title': task.title,
+            'Description': task.description,
             'Status': task.status,
             'Created Date': new Date(task.createdAt).toLocaleDateString(),
             'Completed Date': task.completedAt ? new Date(task.completedAt).toLocaleDateString() : 'N/A',
-            'Department': task.department
+            'Department': task.department,
+            'Priority': task.priority,
+            'Deadline': new Date(task.deadline).toLocaleDateString(),
+            'Subtasks Count': task.subtasks?.length || 0,
+            'Subtasks Details': task.subtasks?.map((subtask: any) => 
+              `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}`
+            ).join('; ') || 'None'
           }));
         }
         reportTitle = 'Trends Analysis Report';
@@ -349,13 +384,19 @@ export function ReportsPage() {
           exportData = blockersData.blockers.map((blocker: any) => ({
             'Task ID': blocker.id,
             'Title': blocker.title,
+            'Description': blocker.description,
             'Priority': blocker.priority,
             'Blocker Reason': blocker.blockerReason,
             'Days Blocked': blocker.daysBlocked,
             'Assigned To': blocker.assignedTo,
             'Department': blocker.department,
             'Created Date': new Date(blocker.createdAt).toLocaleDateString(),
-            'Deadline': new Date(blocker.deadline).toLocaleDateString()
+            'Deadline': new Date(blocker.deadline).toLocaleDateString(),
+            'Updated Date': new Date(blocker.updatedAt).toLocaleDateString(),
+            'Subtasks Count': blocker.subtasks?.length || 0,
+            'Subtasks Details': blocker.subtasks?.map((subtask: any) => 
+              `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Blocker: ${subtask.blockerReason || 'None'}`
+            ).join('; ') || 'None'
           }));
         } else {
           exportData = filteredTasks.filter(task => task.status === 'blocker').map(task => ({
@@ -366,7 +407,12 @@ export function ReportsPage() {
             'Priority': task.priority,
             'Department': task.department,
             'Created By': task.createdBy,
-            'Deadline': new Date(task.deadline).toLocaleDateString()
+            'Deadline': new Date(task.deadline).toLocaleDateString(),
+            'Created Date': new Date(task.createdAt).toLocaleDateString(),
+            'Subtasks Count': task.subtasks?.length || 0,
+            'Subtasks Details': task.subtasks?.map((subtask: any) => 
+              `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Blocker: ${subtask.blockerReason || 'None'}`
+            ).join('; ') || 'None'
           }));
         }
         reportTitle = 'Blocker Analysis Report';
@@ -384,7 +430,10 @@ export function ReportsPage() {
           'Deadline': new Date(task.deadline).toLocaleDateString(),
           'Blocker Reason': task.blockerReason || '',
           'Priority': task.priority,
-          'Subtasks Count': task.subtasks?.length || 0
+          'Subtasks Count': task.subtasks?.length || 0,
+          'Subtasks Details': task.subtasks?.map((subtask: any) => 
+            `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Assigned: ${subtask.assignedTo || 'Unassigned'}`
+          ).join('; ') || 'None'
         }));
         reportTitle = 'Tasks Report';
         reportDescription = 'General task export';

@@ -388,10 +388,29 @@ router.get('/:id/team-performance', authMiddleware, roleCheck(['admin', 'manager
                 subtasks: {
                     select: {
                         id: true,
+                        title: true,
+                        description: true,
                         status: true,
                         priority: true,
                         deadline: true,
-                        createdAt: true
+                        createdAt: true,
+                        updatedAt: true,
+                        blockerReason: true,
+                        assignedTo: true
+                    }
+                },
+                createdBy: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                },
+                assignedTo: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
                     }
                 }
             }
@@ -980,10 +999,29 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
                 subtasks: {
                     select: {
                         id: true,
+                        title: true,
+                        description: true,
                         status: true,
                         priority: true,
                         deadline: true,
-                        createdAt: true
+                        createdAt: true,
+                        updatedAt: true,
+                        blockerReason: true,
+                        assignedTo: true
+                    }
+                },
+                createdBy: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                },
+                assignedTo: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
                     }
                 }
             }
@@ -1066,7 +1104,32 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
                     overdue,
                     completionRate,
                     totalUsers: userIds.length
-                }
+                },
+                tasks: tasks.map(task => ({
+                    id: task.id,
+                    title: task.title,
+                    description: task.description,
+                    status: task.status,
+                    priority: task.priority,
+                    deadline: task.deadline,
+                    createdAt: task.createdAt,
+                    updatedAt: task.updatedAt,
+                    blockerReason: task.blockerReason,
+                    createdBy: task.createdBy?.name || 'Unknown',
+                    assignedTo: task.assignedTo?.name || 'Unassigned',
+                    subtasks: task.subtasks.map(subtask => ({
+                        id: subtask.id,
+                        title: subtask.title,
+                        description: subtask.description,
+                        status: subtask.status,
+                        priority: subtask.priority,
+                        deadline: subtask.deadline,
+                        createdAt: subtask.createdAt,
+                        updatedAt: subtask.updatedAt,
+                        blockerReason: subtask.blockerReason,
+                        assignedTo: subtask.assignedTo || 'Unassigned'
+                    }))
+                }))
             }
         });
     } catch (e) {
