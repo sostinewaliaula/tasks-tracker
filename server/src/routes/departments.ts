@@ -472,6 +472,187 @@ router.get('/:id/team-performance', authMiddleware, roleCheck(['admin', 'manager
     }
 });
 
+// Get department trends data
+router.get('/:id/trends', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
+    try {
+        const departmentId = parseInt(req.params.id);
+        const timeframe = req.query.timeframe as string || 'week';
+        console.log('Fetching trends for department ID:', departmentId, 'timeframe:', timeframe);
+        
+        // Get department with all users
+        const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+                manager: {
+                    select: { id: true, name: true }
+                },
+                users: {
+                    select: { id: true, name: true }
+                }
+            }
+        });
+        
+        if (!department) {
+            return res.status(404).json({ error: 'Department not found' });
+        }
+        
+        // Get all user IDs in this department
+        const userIds = [];
+        if (department.manager) {
+            userIds.push(department.manager.id);
+        }
+        department.users.forEach(user => {
+            if (!userIds.includes(user.id)) {
+                userIds.push(user.id);
+            }
+        });
+        
+        if (userIds.length === 0) {
+            return res.json({
+                data: {
+                    department: {
+                        id: department.id,
+                        name: department.name
+                    },
+                    trends: [],
+                    timeframe
+                }
+            });
+        }
+        
+        // Get tasks for users in this department
+        const tasks = await prisma.task.findMany({
+            where: {
+                createdById: {
+                    in: userIds
+                }
+            },
+            include: {
+                subtasks: {
+                    select: {
+                        id: true,
+                        status: true,
+                        priority: true,
+                        deadline: true,
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                }
+            }
+        });
+        
+        console.log('Tasks found for trends:', tasks.length);
+        
+        const now = new Date();
+        let trends = [];
+        
+        if (timeframe === 'week') {
+            // Generate data for the last 7 days
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
+                const createdOnDay = tasks.filter(task => {
+                    const createdAt = new Date(task.createdAt);
+                    return createdAt >= date && createdAt < nextDay;
+                }).length;
+                
+                const completedOnDay = tasks.filter(task => {
+                    if (task.status !== 'completed') return false;
+                    const updatedAt = new Date(task.updatedAt || task.createdAt);
+                    return updatedAt >= date && updatedAt < nextDay;
+                }).length;
+                
+                trends.push({
+                    name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                    date: date.toISOString().split('T')[0],
+                    created: createdOnDay,
+                    completed: completedOnDay
+                });
+            }
+        } else if (timeframe === 'month') {
+            // Generate data for the last 4 weeks
+            for (let i = 3; i >= 0; i--) {
+                const weekStart = new Date(now);
+                weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * i));
+                weekStart.setHours(0, 0, 0, 0);
+                
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                weekEnd.setHours(23, 59, 59, 999);
+                
+                const createdInWeek = tasks.filter(task => {
+                    const createdAt = new Date(task.createdAt);
+                    return createdAt >= weekStart && createdAt <= weekEnd;
+                }).length;
+                
+                const completedInWeek = tasks.filter(task => {
+                    if (task.status !== 'completed') return false;
+                    const updatedAt = new Date(task.updatedAt || task.createdAt);
+                    return updatedAt >= weekStart && updatedAt <= weekEnd;
+                }).length;
+                
+                trends.push({
+                    name: `Week ${4 - i}`,
+                    date: weekStart.toISOString().split('T')[0],
+                    created: createdInWeek,
+                    completed: completedInWeek
+                });
+            }
+        } else if (timeframe === 'quarter') {
+            // Generate data for the last 3 months
+            for (let i = 2; i >= 0; i--) {
+                const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+                monthEnd.setHours(23, 59, 59, 999);
+                
+                const createdInMonth = tasks.filter(task => {
+                    const createdAt = new Date(task.createdAt);
+                    return createdAt >= monthStart && createdAt <= monthEnd;
+                }).length;
+                
+                const completedInMonth = tasks.filter(task => {
+                    if (task.status !== 'completed') return false;
+                    const updatedAt = new Date(task.updatedAt || task.createdAt);
+                    return updatedAt >= monthStart && updatedAt <= monthEnd;
+                }).length;
+                
+                trends.push({
+                    name: monthStart.toLocaleDateString('en-US', { month: 'short' }),
+                    date: monthStart.toISOString().split('T')[0],
+                    created: createdInMonth,
+                    completed: completedInMonth
+                });
+            }
+        }
+        
+        res.json({
+            data: {
+                department: {
+                    id: department.id,
+                    name: department.name
+                },
+                trends,
+                timeframe,
+                summary: {
+                    totalCreated: trends.reduce((sum, trend) => sum + trend.created, 0),
+                    totalCompleted: trends.reduce((sum, trend) => sum + trend.completed, 0),
+                    averageCreated: trends.length > 0 ? Math.round(trends.reduce((sum, trend) => sum + trend.created, 0) / trends.length) : 0,
+                    averageCompleted: trends.length > 0 ? Math.round(trends.reduce((sum, trend) => sum + trend.completed, 0) / trends.length) : 0
+                }
+            }
+        });
+        
+    } catch (e) {
+        console.error('Get department trends error:', e);
+        res.status(500).json({ error: 'Failed to get department trends data' });
+    }
+});
+
 // Get department task statistics
 router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {
