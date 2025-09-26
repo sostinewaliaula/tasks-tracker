@@ -709,16 +709,25 @@ export function ReportsPage() {
       // Generate proper Word document using docx library
       import('docx').then(async ({ Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun }) => {
         // Load logo image
-        const logoResponse = await fetch('/src/assets/logo.png');
-        const logoBuffer = await logoResponse.arrayBuffer();
+        let logoBuffer = null;
+        try {
+          const logoResponse = await fetch('/src/assets/logo.png');
+          if (!logoResponse.ok) {
+            throw new Error(`Failed to fetch logo: ${logoResponse.status}`);
+          }
+          logoBuffer = await logoResponse.arrayBuffer();
+          console.log('Logo loaded successfully for Word export');
+        } catch (error) {
+          console.warn('Could not load logo for Word export:', error);
+        }
         
         // Create document
         const doc = new Document({
           sections: [{
             properties: {},
             children: [
-              // Company Header with Logo
-              new Paragraph({
+              // Company Header with Logo (only if logo loaded successfully)
+              ...(logoBuffer ? [new Paragraph({
                 children: [
                   new ImageRun({
                     data: logoBuffer,
@@ -730,7 +739,7 @@ export function ReportsPage() {
                 ],
                 alignment: AlignmentType.CENTER,
                 spacing: { after: 100 }
-              }),
+              })] : []),
               
               new Paragraph({
                 children: [
