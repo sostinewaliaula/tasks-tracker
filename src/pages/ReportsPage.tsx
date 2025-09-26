@@ -675,15 +675,17 @@ export function ReportsPage() {
         </html>
       `;
 
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(tableHtml);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-          printWindow.print();
-        }, 250);
-      }
+      // Create a blob and download the PDF directly
+      const blob = new Blob([tableHtml], { type: 'text/html' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${reportTitle.replace(/\s+/g, '-')}-${dateRange}.html`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } else if (format === 'Word') {
       // Generate proper Word document using docx library
       import('docx').then(async ({ Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun }) => {
