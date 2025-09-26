@@ -6,9 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 type TeamPerformanceProps = {
   department?: string; // undefined => all departments
   timeframe: 'week' | 'month' | 'quarter';
+  dateFrom?: string;
+  dateTo?: string;
 };
 
-export function TeamPerformance({ department, timeframe }: TeamPerformanceProps) {
+export function TeamPerformance({ department, timeframe, dateFrom, dateTo }: TeamPerformanceProps) {
   const { tasks } = useTask();
   const { currentUser, token } = useAuth();
   const [teamData, setTeamData] = useState<any>(null);
@@ -45,7 +47,15 @@ export function TeamPerformance({ department, timeframe }: TeamPerformanceProps)
       
       // Fetch team performance data
       const url = departmentId ? `${API_URL}/api/departments/${departmentId}/team-performance` : `${API_URL}/api/team-performance`;
-      const res = await fetch(url, { 
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (dateFrom) params.append('dateFrom', dateFrom);
+      if (dateTo) params.append('dateTo', dateTo);
+      
+      const finalUrl = params.toString() ? `${url}?${params.toString()}` : url;
+      
+      const res = await fetch(finalUrl, { 
         headers: { 
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
@@ -91,7 +101,7 @@ export function TeamPerformance({ department, timeframe }: TeamPerformanceProps)
     };
 
     loadData();
-  }, [currentUser, token, department]);
+  }, [currentUser, token, department, dateFrom, dateTo]);
 
   // Use real team data if available, otherwise fallback to context data
   const performanceData = teamData?.teamMembers ? teamData.teamMembers.map((member: any) => ({

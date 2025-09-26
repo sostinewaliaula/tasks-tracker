@@ -317,7 +317,9 @@ router.get('/:id/members', roleCheck(['admin', 'manager']), async (req, res) => 
 router.get('/:id/team-performance', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {
         const departmentId = parseInt(req.params.id);
-        console.log('Fetching team performance for department ID:', departmentId);
+        const dateFrom = req.query.dateFrom as string;
+        const dateTo = req.query.dateTo as string;
+        console.log('Fetching team performance for department ID:', departmentId, 'dateFrom:', dateFrom, 'dateTo:', dateTo);
         
         // Get department with all users
         const department = await prisma.department.findUnique({
@@ -362,12 +364,26 @@ router.get('/:id/team-performance', authMiddleware, roleCheck(['admin', 'manager
         }
         
         // Get tasks for users in this department
+        const dateFilter: any = {
+            createdById: {
+                in: userIds
+            }
+        };
+        
+        if (dateFrom || dateTo) {
+            dateFilter.createdAt = {};
+            if (dateFrom) {
+                dateFilter.createdAt.gte = new Date(dateFrom);
+            }
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                dateFilter.createdAt.lte = endDate;
+            }
+        }
+        
         const tasks = await prisma.task.findMany({
-            where: {
-                createdById: {
-                    in: userIds
-                }
-            },
+            where: dateFilter,
             include: {
                 subtasks: {
                     select: {
@@ -657,7 +673,9 @@ router.get('/:id/trends', authMiddleware, roleCheck(['admin', 'manager']), async
 router.get('/:id/blockers', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {
         const departmentId = parseInt(req.params.id);
-        console.log('Fetching blockers for department ID:', departmentId);
+        const dateFrom = req.query.dateFrom as string;
+        const dateTo = req.query.dateTo as string;
+        console.log('Fetching blockers for department ID:', departmentId, 'dateFrom:', dateFrom, 'dateTo:', dateTo);
         
         // Get department with all users
         const department = await prisma.department.findUnique({
@@ -712,12 +730,26 @@ router.get('/:id/blockers', authMiddleware, roleCheck(['admin', 'manager']), asy
         }
         
         // Get all tasks for users in this department
+        const dateFilter: any = {
+            createdById: {
+                in: userIds
+            }
+        };
+        
+        if (dateFrom || dateTo) {
+            dateFilter.createdAt = {};
+            if (dateFrom) {
+                dateFilter.createdAt.gte = new Date(dateFrom);
+            }
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                dateFilter.createdAt.lte = endDate;
+            }
+        }
+        
         const tasks = await prisma.task.findMany({
-            where: {
-                createdById: {
-                    in: userIds
-                }
-            },
+            where: dateFilter,
             include: {
                 subtasks: {
                     select: {
@@ -861,7 +893,10 @@ router.get('/:id/blockers', authMiddleware, roleCheck(['admin', 'manager']), asy
 router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {
         const departmentId = parseInt(req.params.id);
-        console.log('Fetching stats for department ID:', departmentId);
+        const timeframe = req.query.timeframe as string || 'week';
+        const dateFrom = req.query.dateFrom as string;
+        const dateTo = req.query.dateTo as string;
+        console.log('Fetching stats for department ID:', departmentId, 'timeframe:', timeframe, 'dateFrom:', dateFrom, 'dateTo:', dateTo);
         
         // Get department with all users (including manager)
         const department = await prisma.department.findUnique({
@@ -919,12 +954,28 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
         
         // Get all tasks for users in this department
         console.log('User IDs for tasks query:', userIds);
+        
+        // Build date filter
+        const dateFilter: any = {
+            createdById: {
+                in: userIds
+            }
+        };
+        
+        if (dateFrom || dateTo) {
+            dateFilter.createdAt = {};
+            if (dateFrom) {
+                dateFilter.createdAt.gte = new Date(dateFrom);
+            }
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                dateFilter.createdAt.lte = endDate;
+            }
+        }
+        
         const tasks = await prisma.task.findMany({
-            where: {
-                createdById: {
-                    in: userIds
-                }
-            },
+            where: dateFilter,
             include: {
                 subtasks: {
                     select: {

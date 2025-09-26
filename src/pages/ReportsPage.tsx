@@ -86,12 +86,18 @@ export function ReportsPage() {
   };
 
   // Fetch department stats
-  const fetchDepartmentStats = async (departmentId: number) => {
+  const fetchDepartmentStats = React.useCallback(async (departmentId: number) => {
     try {
       setError(null);
-      console.log('Fetching department stats...', { departmentId, API_URL, token: token ? 'present' : 'missing' });
+      console.log('Fetching department stats...', { departmentId, timeframe, dateFrom, dateTo, API_URL, token: token ? 'present' : 'missing' });
       
-      const res = await fetch(`${API_URL}/api/departments/${departmentId}/stats`, { 
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (timeframe) params.append('timeframe', timeframe);
+      if (dateFrom) params.append('dateFrom', dateFrom);
+      if (dateTo) params.append('dateTo', dateTo);
+      
+      const res = await fetch(`${API_URL}/api/departments/${departmentId}/stats?${params.toString()}`, { 
         headers: { 
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
@@ -122,15 +128,21 @@ export function ReportsPage() {
       console.error('Error fetching department stats:', error);
       setError(error instanceof Error ? error.message : 'Failed to load department stats');
     }
-  };
+  }, [timeframe, dateFrom, dateTo, API_URL, token]);
 
   // Fetch trends data
-  const fetchTrendsData = async (departmentId: number) => {
+  const fetchTrendsData = React.useCallback(async (departmentId: number) => {
     try {
       setError(null);
-      console.log('Fetching trends data...', { departmentId, timeframe, API_URL, token: token ? 'present' : 'missing' });
+      console.log('Fetching trends data...', { departmentId, timeframe, dateFrom, dateTo, API_URL, token: token ? 'present' : 'missing' });
       
-      const res = await fetch(`${API_URL}/api/departments/${departmentId}/trends?timeframe=${timeframe}`, { 
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (timeframe) params.append('timeframe', timeframe);
+      if (dateFrom) params.append('dateFrom', dateFrom);
+      if (dateTo) params.append('dateTo', dateTo);
+      
+      const res = await fetch(`${API_URL}/api/departments/${departmentId}/trends?${params.toString()}`, { 
         headers: { 
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
@@ -157,15 +169,20 @@ export function ReportsPage() {
       console.error('Error fetching trends data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load trends data');
     }
-  };
+  }, [timeframe, dateFrom, dateTo, API_URL, token]);
 
   // Fetch blockers data
-  const fetchBlockersData = async (departmentId: number) => {
+  const fetchBlockersData = React.useCallback(async (departmentId: number) => {
     try {
       setError(null);
-      console.log('Fetching blockers data...', { departmentId, API_URL, token: token ? 'present' : 'missing' });
+      console.log('Fetching blockers data...', { departmentId, dateFrom, dateTo, API_URL, token: token ? 'present' : 'missing' });
       
-      const res = await fetch(`${API_URL}/api/departments/${departmentId}/blockers`, { 
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (dateFrom) params.append('dateFrom', dateFrom);
+      if (dateTo) params.append('dateTo', dateTo);
+      
+      const res = await fetch(`${API_URL}/api/departments/${departmentId}/blockers?${params.toString()}`, { 
         headers: { 
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
@@ -192,7 +209,7 @@ export function ReportsPage() {
       console.error('Error fetching blockers data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load blockers data');
     }
-  };
+  }, [dateFrom, dateTo, API_URL, token]);
 
   // Load data when component mounts or user changes
   React.useEffect(() => {
@@ -226,7 +243,26 @@ export function ReportsPage() {
     if (managedDepartment && currentUser?.role === 'manager' && token) {
       fetchTrendsData(managedDepartment.id);
     }
-  }, [timeframe]);
+  }, [timeframe, managedDepartment, currentUser?.role, token, fetchTrendsData]);
+
+  // Reload all data when date filters change
+  React.useEffect(() => {
+    if (managedDepartment && currentUser?.role === 'manager' && token) {
+      Promise.all([
+        fetchDepartmentStats(managedDepartment.id),
+        fetchTrendsData(managedDepartment.id),
+        fetchBlockersData(managedDepartment.id)
+      ]);
+    }
+  }, [dateFrom, dateTo, managedDepartment, currentUser?.role, token, fetchDepartmentStats, fetchTrendsData, fetchBlockersData]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setTimeframe('week');
+    setDateFrom('');
+    setDateTo('');
+    setSelectedDepartment('all');
+  };
 
   const handleExport = (filteredTasks: any[], format: string, dateRange: string, statuses: string[]) => {
     // Create export data
@@ -677,7 +713,25 @@ export function ReportsPage() {
                 <input type="date" className="block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
                 <input type="date" className="block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#2e9d74] focus:border-[#2e9d74] sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" value={dateTo} onChange={e => setDateTo(e.target.value)} />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Used for exports and future filters.</p>
+              <div className="mt-1 flex justify-between items-center">
+                <p className="text-xs text-gray-500 dark:text-gray-300">Used for exports and future filters.</p>
+                {(dateFrom || dateTo) && (
+                  <button
+                    onClick={() => { setDateFrom(''); setDateTo(''); }}
+                    className="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    Clear Dates
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={clearFilters}
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                Clear Filters
+              </button>
             </div>
             {isAdmin && (
               <div>
@@ -726,7 +780,7 @@ export function ReportsPage() {
               />
             </>
           )}
-          {reportType === 'team' && <TeamPerformance department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
+          {reportType === 'team' && <TeamPerformance department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} dateFrom={dateFrom} dateTo={dateTo} />}
           {reportType === 'blockers' && (
             <div className="space-y-6">
               {/* Blocker Summary Cards */}
