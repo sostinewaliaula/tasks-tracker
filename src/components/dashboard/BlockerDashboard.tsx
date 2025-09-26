@@ -65,18 +65,6 @@ export function BlockerDashboard({ department }: BlockerDashboardProps) {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'low':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
 
   const getFilterOptions = () => {
     const baseOptions = [
@@ -158,8 +146,8 @@ export function BlockerDashboard({ department }: BlockerDashboardProps) {
 
       {/* Summary Section */}
       <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center space-x-2">
               <AlertCircleIcon className="h-5 w-5 text-red-500" />
               <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -172,7 +160,7 @@ export function BlockerDashboard({ department }: BlockerDashboardProps) {
               )}
             </div>
             {blockerTasks.length > 0 && (
-              <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-gray-400">
                 <span>
                   {blockerTasks.filter(task => !task.parentId).length} main task{blockerTasks.filter(task => !task.parentId).length !== 1 ? 's' : ''}
                 </span>
@@ -187,7 +175,7 @@ export function BlockerDashboard({ department }: BlockerDashboardProps) {
             <select
               value={filter}
               onChange={e => setFilter(e.target.value as any)}
-              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 min-w-0 flex-shrink-0"
             >
               {getFilterOptions().map(option => (
                 <option key={option.value} value={option.value} title={option.description}>
@@ -209,28 +197,10 @@ export function BlockerDashboard({ department }: BlockerDashboardProps) {
             <div key={task.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 truncate">
+                  <div className="mb-2">
+                    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {task.title}
                     </h4>
-                    {task.parentId && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        SUBTASK
-                      </span>
-                    )}
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                      {task.priority.toUpperCase()}
-                    </span>
-                    {isOverdue && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                        OVERDUE
-                      </span>
-                    )}
-                    {isUrgent && !isOverdue && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                        URGENT
-                      </span>
-                    )}
                   </div>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
