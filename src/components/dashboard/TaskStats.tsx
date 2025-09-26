@@ -4,17 +4,30 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 type TaskStatsProps = {
   department?: string;
   timeframe?: 'week' | 'month' | 'quarter';
+  departmentStats?: any;
 };
 export function TaskStats({
   department,
-  timeframe = 'week'
+  timeframe = 'week',
+  departmentStats
 }: TaskStatsProps) {
   const {
     getTasksCountByStatus,
     getTasksCountByPriority
   } = useTask();
-  const statusCounts = getTasksCountByStatus(department);
-  const priorityCounts = getTasksCountByPriority(department);
+  // Use real department stats if available, otherwise fallback to context data
+  const statusCounts = departmentStats?.stats ? {
+    todo: departmentStats.stats.todo || 0,
+    'in-progress': departmentStats.stats.inProgress || 0,
+    completed: departmentStats.stats.completed || 0,
+    blocker: departmentStats.stats.blocker || 0
+  } : getTasksCountByStatus(department);
+  
+  const priorityCounts = departmentStats?.stats ? {
+    high: departmentStats.stats.high || 0,
+    medium: departmentStats.stats.medium || 0,
+    low: departmentStats.stats.low || 0
+  } : getTasksCountByPriority(department);
   const statusData = [{
     name: 'To Do',
     value: statusCounts.todo || 0,
@@ -45,8 +58,8 @@ export function TaskStats({
     value: priorityCounts.low,
     color: '#34D399'
   }];
-  const totalTasks = statusData.reduce((sum, item) => sum + item.value, 0);
-  const completionRate = totalTasks > 0 ? Math.round((statusCounts.completed || 0) / totalTasks * 100) : 0;
+  const totalTasks = departmentStats?.stats?.totalTasks || statusData.reduce((sum, item) => sum + item.value, 0);
+  const completionRate = departmentStats?.stats?.completionRate || (totalTasks > 0 ? Math.round((statusCounts.completed || 0) / totalTasks * 100) : 0);
   // Additional data for extended reports page
   const timeframeLabel = timeframe === 'week' ? 'This Week' : timeframe === 'month' ? 'This Month' : 'This Quarter';
   return <div className="space-y-6">
