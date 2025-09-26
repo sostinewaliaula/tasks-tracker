@@ -20,6 +20,7 @@ import { useAuth } from './context/AuthContext';
 import { DarkModeProvider } from './context/DarkModeContext';
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
 import { UserReportsPage } from './pages/UserReportsPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { ToastProvider } from './components/ui/Toast';
 
 function AppContent() {
@@ -92,6 +93,16 @@ function AppContent() {
             }
           />
           
+          {/* Profile - Available to all authenticated users */}
+          <Route
+            path="/profile"
+            element={
+              <RBAC allowedRoles={['employee', 'manager', 'admin']}>
+                <ProfilePage />
+              </RBAC>
+            }
+          />
+
           {/* User Settings - Available to all authenticated users */}
           <Route
             path="/user-settings"

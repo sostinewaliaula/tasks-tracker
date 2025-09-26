@@ -10,6 +10,7 @@ import { DepartmentsPage } from "./pages/DepartmentsPage";
 import { TasksPage } from "./pages/TasksPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { ProfilePage } from "./pages/ProfilePage";
 
 export function AppRouter() {
   return (
@@ -21,6 +22,16 @@ export function AppRouter() {
         
         {/* Protected Routes */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        
+        {/* Profile Route - available to all authenticated users */}
+        <Route
+          path="/profile"
+          element={
+            <RBAC allowedRoles={['employee', 'manager', 'admin']}>
+              <ProfilePage />
+            </RBAC>
+          }
+        />
         
         {/* Employee Routes */}
         <Route
