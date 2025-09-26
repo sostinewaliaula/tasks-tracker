@@ -3,7 +3,11 @@ import { AlertCircleIcon, ClockIcon, CheckCircleIcon, UserIcon, CalendarIcon } f
 import { Task, useTask } from '../../context/TaskContext';
 import { useAuth } from '../../context/AuthContext';
 
-export function BlockerDashboard() {
+type BlockerDashboardProps = {
+  department?: string;
+};
+
+export function BlockerDashboard({ department }: BlockerDashboardProps) {
   const { tasks } = useTask();
   const { currentUser } = useAuth();
   const [filter, setFilter] = useState<'all' | 'department' | 'my' | 'urgent' | 'overdue'>('all');
@@ -18,8 +22,8 @@ export function BlockerDashboard() {
     filteredTasks = [...filteredTasks, ...subtaskBlockers];
     
     // Apply role-based filtering
-    if (filter === 'department' && currentUser?.department) {
-      filteredTasks = filteredTasks.filter(task => task.department === currentUser.department);
+    if (filter === 'department' && department) {
+      filteredTasks = filteredTasks.filter(task => task.department === department);
     } else if (filter === 'my') {
       filteredTasks = filteredTasks.filter(task => task.createdBy === currentUser?.id);
     } else if (filter === 'urgent') {
@@ -47,7 +51,7 @@ export function BlockerDashboard() {
     }
     
     return filteredTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [tasks, filter, currentUser]);
+  }, [tasks, filter, currentUser, department]);
 
   const getBlockerAge = (createdAt: Date) => {
     const now = new Date();

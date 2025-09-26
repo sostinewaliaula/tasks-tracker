@@ -21,6 +21,9 @@ export function ManagerDashboard() {
   const [departmentStats, setDepartmentStats] = useState<any>(null);
   const [managedDepartment, setManagedDepartment] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Debug logging
+  console.log('ManagerDashboard render - viewMode:', viewMode, 'isLoading:', isLoading, 'managedDepartment:', managedDepartment?.name);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
@@ -104,7 +107,8 @@ export function ManagerDashboard() {
     || '';
   const displayName = formatDisplayName(rawName);
   
-  const departmentTasks = currentUser ? getTasksByDepartment(currentUser.department) : [];
+  // Get tasks for the managed department
+  const departmentTasks = managedDepartment ? getTasksByDepartment(managedDepartment.name) : [];
   const weeklyTasks = getTasksForCurrentWeek();
 
   // Load data when component mounts or user changes
@@ -257,7 +261,7 @@ export function ManagerDashboard() {
               {viewMode === 'list' && <TaskList tasks={departmentTasks} />}
               {viewMode === 'calendar' && <WeeklyCalendar tasks={weeklyTasks} />}
               {viewMode === 'stats' && <TaskStats department={managedDepartment?.name || currentUser?.department} departmentStats={departmentStats} />}
-              {viewMode === 'blockers' && <BlockerDashboard />}
+              {viewMode === 'blockers' && <BlockerDashboard department={managedDepartment?.name} />}
             </>
           )}
         </div>
