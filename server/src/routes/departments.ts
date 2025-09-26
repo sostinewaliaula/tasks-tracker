@@ -395,18 +395,10 @@ router.get('/:id/team-performance', authMiddleware, roleCheck(['admin', 'manager
                         deadline: true,
                         createdAt: true,
                         updatedAt: true,
-                        blockerReason: true,
-                        assignedTo: true
+                        blockerReason: true
                     }
                 },
                 createdBy: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                },
-                assignedTo: {
                     select: {
                         id: true,
                         name: true,
@@ -1006,18 +998,10 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
                         deadline: true,
                         createdAt: true,
                         updatedAt: true,
-                        blockerReason: true,
-                        assignedTo: true
+                        blockerReason: true
                     }
                 },
                 createdBy: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                },
-                assignedTo: {
                     select: {
                         id: true,
                         name: true,
@@ -1028,6 +1012,8 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
         });
         
         console.log('Tasks found:', tasks.length);
+        console.log('Sample task:', tasks[0]);
+        console.log('Tasks with subtasks:', tasks.filter(t => t.subtasks.length > 0).length);
         
         // Calculate statistics
         const now = new Date();
@@ -1086,7 +1072,7 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
         
         const completionRate = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
         
-        res.json({
+        const responseData = {
             data: {
                 department: {
                     id: department.id,
@@ -1116,7 +1102,6 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
                     updatedAt: task.updatedAt,
                     blockerReason: task.blockerReason,
                     createdBy: task.createdBy?.name || 'Unknown',
-                    assignedTo: task.assignedTo?.name || 'Unassigned',
                     subtasks: task.subtasks.map(subtask => ({
                         id: subtask.id,
                         title: subtask.title,
@@ -1126,12 +1111,20 @@ router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async 
                         deadline: subtask.deadline,
                         createdAt: subtask.createdAt,
                         updatedAt: subtask.updatedAt,
-                        blockerReason: subtask.blockerReason,
-                        assignedTo: subtask.assignedTo || 'Unassigned'
+                        blockerReason: subtask.blockerReason
                     }))
                 }))
             }
+        };
+        
+        console.log('Response data structure:', {
+            department: responseData.data.department,
+            statsKeys: Object.keys(responseData.data.stats),
+            tasksCount: responseData.data.tasks.length,
+            sampleTask: responseData.data.tasks[0]
         });
+        
+        res.json(responseData);
     } catch (e) {
         console.error('Get department stats error:', e);
         console.error('Error details:', JSON.stringify(e, null, 2));

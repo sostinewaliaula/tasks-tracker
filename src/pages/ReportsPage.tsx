@@ -119,10 +119,11 @@ export function ReportsPage() {
       const data = response.data || response;
       console.log('Department stats data:', data);
       
-      // Extract the stats object from the response
-      const statsData = data.stats ? data : { stats: data };
-      console.log('Processed stats data:', statsData);
-      setDepartmentStats(statsData);
+      // Use the full data object which includes stats, tasks, and department info
+      console.log('Processed stats data:', data);
+      console.log('Tasks data:', data.tasks);
+      console.log('Tasks count:', data.tasks?.length || 0);
+      setDepartmentStats(data);
       
     } catch (error) {
       console.error('Error fetching department stats:', error);
@@ -272,6 +273,10 @@ export function ReportsPage() {
 
     switch (reportType) {
       case 'overview':
+        console.log('Export - departmentStats:', departmentStats);
+        console.log('Export - departmentStats.tasks:', departmentStats?.tasks);
+        console.log('Export - tasks count:', departmentStats?.tasks?.length || 0);
+        
         if (departmentStats) {
           // Include both stats and detailed tasks/subtasks
           const statsData = {
@@ -298,13 +303,12 @@ export function ReportsPage() {
             'Task Priority': task.priority,
             'Task Deadline': new Date(task.deadline).toLocaleDateString(),
             'Task Created By': task.createdBy,
-            'Task Assigned To': task.assignedTo,
             'Task Blocker Reason': task.blockerReason || '',
             'Task Created At': new Date(task.createdAt).toLocaleDateString(),
             'Task Updated At': new Date(task.updatedAt).toLocaleDateString(),
             'Subtasks Count': task.subtasks?.length || 0,
             'Subtasks Details': task.subtasks?.map((subtask: any) => 
-              `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Assigned: ${subtask.assignedTo}`
+              `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}`
             ).join('; ') || 'None'
           })) || [];
           
@@ -333,7 +337,7 @@ export function ReportsPage() {
           'Title': task.title,
           'Description': task.description,
           'Status': task.status,
-          'Assigned To': task.assignedTo || 'Unassigned',
+          'Created By': task.createdBy || 'Unknown',
           'Department': task.department,
           'Priority': task.priority,
           'Created Date': new Date(task.createdAt).toLocaleDateString(),
@@ -342,7 +346,7 @@ export function ReportsPage() {
           'Blocker Reason': task.blockerReason || '',
           'Subtasks Count': task.subtasks?.length || 0,
           'Subtasks Details': task.subtasks?.map((subtask: any) => 
-            `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Assigned: ${subtask.assignedTo || 'Unassigned'}`
+            `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}`
           ).join('; ') || 'None'
         }));
         reportTitle = 'Team Performance Report';
@@ -388,7 +392,7 @@ export function ReportsPage() {
             'Priority': blocker.priority,
             'Blocker Reason': blocker.blockerReason,
             'Days Blocked': blocker.daysBlocked,
-            'Assigned To': blocker.assignedTo,
+            'Created By': blocker.createdBy || 'Unknown',
             'Department': blocker.department,
             'Created Date': new Date(blocker.createdAt).toLocaleDateString(),
             'Deadline': new Date(blocker.deadline).toLocaleDateString(),
@@ -432,7 +436,7 @@ export function ReportsPage() {
           'Priority': task.priority,
           'Subtasks Count': task.subtasks?.length || 0,
           'Subtasks Details': task.subtasks?.map((subtask: any) => 
-            `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}, Assigned: ${subtask.assignedTo || 'Unassigned'}`
+            `ID: ${subtask.id}, Title: ${subtask.title}, Status: ${subtask.status}, Priority: ${subtask.priority}`
           ).join('; ') || 'None'
         }));
         reportTitle = 'Tasks Report';
@@ -442,7 +446,7 @@ export function ReportsPage() {
     if (format === 'CSV') {
       // Convert to CSV
       const headers = Object.keys(exportData[0] || {});
-      const csvContent = [
+      let csvContent = [
         headers.join(','),
         ...exportData.map(row => 
           headers.map(header => {
@@ -454,6 +458,35 @@ export function ReportsPage() {
           }).join(',')
         )
       ].join('\n');
+
+      // Add task listings for overview reports
+      if (reportType === 'overview' && departmentStats?.tasks) {
+        csvContent += '\n\n';
+        csvContent += 'TASK LISTINGS\n';
+        csvContent += 'Status,Task ID,Task Title,Priority,Created By,Deadline,Description,Blocker Reason,Subtasks Count,Subtasks Details\n';
+        
+        ['todo', 'in-progress', 'completed', 'blocker'].forEach(status => {
+          const statusTasks = departmentStats.tasks.filter((task: any) => task.status === status);
+          statusTasks.forEach((task: any) => {
+            const subtasksDetails = task.subtasks?.map((subtask: any) => 
+              `${subtask.title} (${subtask.status}, ${subtask.priority})`
+            ).join('; ') || 'None';
+            
+            csvContent += [
+              status,
+              task.id,
+              `"${task.title}"`,
+              task.priority,
+              task.createdBy,
+              new Date(task.deadline).toLocaleDateString(),
+              `"${task.description || ''}"`,
+              `"${task.blockerReason || ''}"`,
+              task.subtasks?.length || 0,
+              `"${subtasksDetails}"`
+            ].join(',') + '\n';
+          });
+        });
+      }
 
       // Download CSV
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -521,6 +554,45 @@ export function ReportsPage() {
                 ).join('')}
               </tbody>
             </table>
+            
+            ${reportType === 'overview' && departmentStats?.tasks ? `
+              <h2 style="color: #2e9d74; margin-top: 40px;">Task Listings</h2>
+              ${['todo', 'in-progress', 'completed', 'blocker'].map(status => {
+                const statusTasks = departmentStats.tasks.filter((task: any) => task.status === status);
+                if (statusTasks.length === 0) return '';
+                
+                const statusColor = status === 'completed' ? '#008000' : 
+                                  status === 'blocker' ? '#FF0000' : 
+                                  status === 'in-progress' ? '#FFA500' : '#000000';
+                
+                return `
+                  <h3 style="color: ${statusColor}; margin-top: 30px;">
+                    ${status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')} Tasks (${statusTasks.length})
+                  </h3>
+                  ${statusTasks.map((task: any) => `
+                    <div style="margin: 20px 0; padding: 15px; border-left: 4px solid ${statusColor}; background-color: #f9f9f9;">
+                      <h4 style="margin: 0 0 10px 0; color: #333;">• ${task.title}</h4>
+                      <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                        <strong>ID:</strong> ${task.id} | 
+                        <strong>Priority:</strong> ${task.priority} | 
+                        <strong>Created By:</strong> ${task.createdBy} | 
+                        <strong>Deadline:</strong> ${new Date(task.deadline).toLocaleDateString()}
+                      </p>
+                      ${task.description ? `<p style="margin: 5px 0; font-style: italic; color: #555;">${task.description}</p>` : ''}
+                      ${task.blockerReason ? `<p style="margin: 5px 0; color: #FF0000;"><strong>Blocker Reason:</strong> ${task.blockerReason}</p>` : ''}
+                      ${task.subtasks && task.subtasks.length > 0 ? `
+                        <p style="margin: 10px 0 5px 0;"><strong>Subtasks (${task.subtasks.length}):</strong></p>
+                        <ul style="margin: 0; padding-left: 20px;">
+                          ${task.subtasks.map((subtask: any) => 
+                            `<li style="margin: 5px 0;">${subtask.title} (${subtask.status}, ${subtask.priority})</li>`
+                          ).join('')}
+                        </ul>
+                      ` : ''}
+                    </div>
+                  `).join('')}
+                `;
+              }).join('')}
+            ` : ''}
           </body>
         </html>
       `;
@@ -663,7 +735,124 @@ export function ReportsPage() {
                     })
                   )
                 ];
-              }).flat()
+              }).flat(),
+              
+              // Add categorized task listings for overview reports
+              ...(reportType === 'overview' && departmentStats?.tasks ? [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "Task Listings",
+                      bold: true,
+                      size: 24
+                    })
+                  ],
+                  heading: HeadingLevel.HEADING_1,
+                  spacing: { before: 300, after: 100 }
+                }),
+                
+                // Group tasks by status
+                ...['todo', 'in-progress', 'completed', 'blocker'].map(status => {
+                  const statusTasks = departmentStats.tasks.filter((task: any) => task.status === status);
+                  if (statusTasks.length === 0) return null;
+                  
+                  return [
+                    // Status header
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `${status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')} Tasks (${statusTasks.length})`,
+                          bold: true,
+                          size: 22,
+                          color: status === 'completed' ? '008000' : 
+                                 status === 'blocker' ? 'FF0000' : 
+                                 status === 'in-progress' ? 'FFA500' : '000000'
+                        })
+                      ],
+                      spacing: { before: 200, after: 100 }
+                    }),
+                    
+                    // Task details
+                    ...statusTasks.map((task: any) => [
+                      // Task title
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: `• ${task.title}`,
+                            bold: true,
+                            size: 20
+                          })
+                        ],
+                        spacing: { before: 100, after: 50 }
+                      }),
+                      
+                      // Task details
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: `  ID: ${task.id} | Priority: ${task.priority} | Created By: ${task.createdBy} | Deadline: ${new Date(task.deadline).toLocaleDateString()}`,
+                            size: 18
+                          })
+                        ],
+                        spacing: { after: 30 }
+                      }),
+                      
+                      // Task description
+                      ...(task.description ? [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `  Description: ${task.description}`,
+                              size: 18,
+                              italics: true
+                            })
+                          ],
+                          spacing: { after: 30 }
+                        })
+                      ] : []),
+                      
+                      // Blocker reason if applicable
+                      ...(task.blockerReason ? [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `  Blocker Reason: ${task.blockerReason}`,
+                              size: 18,
+                              color: 'FF0000'
+                            })
+                          ],
+                          spacing: { after: 30 }
+                        })
+                      ] : []),
+                      
+                      // Subtasks
+                      ...(task.subtasks && task.subtasks.length > 0 ? [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `  Subtasks (${task.subtasks.length}):`,
+                              bold: true,
+                              size: 18
+                            })
+                          ],
+                          spacing: { after: 20 }
+                        }),
+                        ...task.subtasks.map((subtask: any) => 
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: `    - ${subtask.title} (${subtask.status}, ${subtask.priority})`,
+                                size: 16
+                              })
+                            ],
+                            spacing: { after: 10 }
+                          })
+                        )
+                      ] : [])
+                    ]).flat()
+                  ];
+                }).filter(Boolean).flat()
+              ] : [])
             ]
           }]
         });
