@@ -1,7 +1,7 @@
 import '../loadEnv';
 import cron from 'node-cron';
 import { sendUserDailyReport, sendManagerDailySummary, sendWeeklyReport, sendThursdayReport } from './reporting';
-import { sendDailyProgressEmails, sendManagerSummaryEmails, sendWeeklyReports, sendOverdueTasksReports, sendDeadlineReminders } from './scheduledNotifications';
+import { sendDailyProgressEmails, sendManagerSummaryEmails, sendWeeklyReports, sendOverdueTasksReports, sendDeadlineReminders, sendFridayMorningReport, sendFridayAfternoonReport } from './scheduledNotifications';
 import { DateTime } from 'luxon';
 
 // Nairobi time zone
@@ -34,4 +34,14 @@ cron.schedule('30 16 * * 4', async () => {
 // Daily deadline reminders (9am Nairobi)
 cron.schedule('0 9 * * *', async () => {
   await sendDeadlineReminders();
+}, { timezone: NAIROBI_TZ });
+
+// Friday morning weekly status report (9am Nairobi)
+cron.schedule('0 9 * * 5', async () => {
+  await sendFridayMorningReport();
+}, { timezone: NAIROBI_TZ });
+
+// Friday afternoon weekly wrap-up report (5:20pm Nairobi)
+cron.schedule('20 17 * * 5', async () => {
+  await sendFridayAfternoonReport();
 }, { timezone: NAIROBI_TZ });

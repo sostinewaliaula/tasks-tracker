@@ -430,3 +430,303 @@ export async function sendDeadlineReminders() {
     console.error('Error in deadline reminders job:', error);
   }
 }
+
+// Friday Morning Weekly Status Report (9am Nairobi)
+export async function sendFridayMorningReport() {
+  try {
+    console.log('Starting Friday morning weekly status report...');
+    
+    // Get all users with email notifications enabled
+    const users = await prisma.user.findMany({
+      where: {
+        emailNotifications: true,
+        weeklyReport: true,
+        email: { not: null }
+      },
+      include: {
+        department: {
+          select: { name: true }
+        }
+      }
+    });
+
+    console.log(`Found ${users.length} users for Friday morning report`);
+
+    for (const user of users) {
+      try {
+        // Get this week's tasks (Monday to Friday)
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 4); // Friday
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        const weeklyTasks = await prisma.task.findMany({
+          where: {
+            createdById: user.id,
+            createdAt: {
+              gte: startOfWeek,
+              lte: endOfWeek
+            }
+          },
+          include: {
+            subtasks: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                priority: true,
+                deadline: true,
+                blockerReason: true
+              }
+            }
+          }
+        });
+
+        // Calculate weekly statistics
+        const completedTasks = weeklyTasks.filter(task => task.status === 'completed').length;
+        const pendingTasks = weeklyTasks.filter(task => ['todo', 'in-progress'].includes(task.status)).length;
+        const blockedTasks = weeklyTasks.filter(task => task.status === 'blocker').length;
+        const overdueTasks = weeklyTasks.filter(task => 
+          task.status !== 'completed' && new Date(task.deadline) < now
+        ).length;
+
+        // Send weekly status email
+        await sendEmailNotification({
+          userId: user.id,
+          type: 'weekly_report',
+          progressData: {
+            completed: completedTasks,
+            pending: pendingTasks,
+            blockers: blockedTasks,
+            tasks: weeklyTasks.map(task => ({
+              title: task.title,
+              deadline: task.deadline,
+              status: task.status,
+              subtasks: task.subtasks.map(subtask => ({
+                title: subtask.title,
+                status: subtask.status,
+                priority: subtask.priority,
+                deadline: subtask.deadline,
+                blockerReason: subtask.blockerReason
+              }))
+            }))
+          }
+        });
+
+        console.log(`Friday morning report sent to ${user.name} - Completed: ${completedTasks}, Pending: ${pendingTasks}, Blocked: ${blockedTasks}, Overdue: ${overdueTasks}`);
+      } catch (error) {
+        console.error(`Error sending Friday morning report to ${user.name}:`, error);
+      }
+    }
+
+    console.log('Friday morning weekly status report completed');
+  } catch (error) {
+    console.error('Error in Friday morning report job:', error);
+  }
+}
+
+// Friday Afternoon Weekly Wrap-up Report (5:02pm Nairobi)
+export async function sendFridayAfternoonReport() {
+  try {
+    console.log('Starting Friday afternoon weekly wrap-up report...');
+    
+    // Get all users with email notifications enabled
+    const users = await prisma.user.findMany({
+      where: {
+        emailNotifications: true,
+        weeklyReport: true,
+        email: { not: null }
+      },
+      include: {
+        department: {
+          select: { name: true }
+        }
+      }
+    });
+
+    console.log(`Found ${users.length} users for Friday afternoon report`);
+
+    for (const user of users) {
+      try {
+        // Get this week's tasks (Monday to Friday)
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 4); // Friday
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        const weeklyTasks = await prisma.task.findMany({
+          where: {
+            createdById: user.id,
+            createdAt: {
+              gte: startOfWeek,
+              lte: endOfWeek
+            }
+          },
+          include: {
+            subtasks: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                priority: true,
+                deadline: true,
+                blockerReason: true
+              }
+            }
+          }
+        });
+
+        // Calculate final weekly statistics
+        const completedTasks = weeklyTasks.filter(task => task.status === 'completed').length;
+        const pendingTasks = weeklyTasks.filter(task => ['todo', 'in-progress'].includes(task.status)).length;
+        const blockedTasks = weeklyTasks.filter(task => task.status === 'blocker').length;
+        const overdueTasks = weeklyTasks.filter(task => 
+          task.status !== 'completed' && new Date(task.deadline) < now
+        ).length;
+        const completionRate = weeklyTasks.length > 0 ? Math.round((completedTasks / weeklyTasks.length) * 100) : 0;
+
+        // Get tasks that need attention for next week
+        const nextWeekTasks = weeklyTasks.filter(task => 
+          ['todo', 'in-progress', 'blocker'].includes(task.status)
+        );
+
+        // Send weekly wrap-up email
+        await sendEmailNotification({
+          userId: user.id,
+          type: 'weekly_report',
+          progressData: {
+            completed: completedTasks,
+            pending: pendingTasks,
+            blockers: blockedTasks,
+            tasks: weeklyTasks.map(task => ({
+              title: task.title,
+              deadline: task.deadline,
+              status: task.status,
+              subtasks: task.subtasks.map(subtask => ({
+                title: subtask.title,
+                status: subtask.status,
+                priority: subtask.priority,
+                deadline: subtask.deadline,
+                blockerReason: subtask.blockerReason
+              }))
+            }))
+          }
+        });
+
+        console.log(`Friday afternoon wrap-up sent to ${user.name} - Completion Rate: ${completionRate}%, Next Week Tasks: ${nextWeekTasks.length}`);
+      } catch (error) {
+        console.error(`Error sending Friday afternoon wrap-up to ${user.name}:`, error);
+      }
+    }
+
+    // Send department progress reports to managers
+    const managers = await prisma.user.findMany({
+      where: {
+        role: 'manager',
+        emailNotifications: true,
+        weeklyReport: true,
+        email: { not: null }
+      },
+      include: {
+        department: {
+          select: { name: true }
+        }
+      }
+    });
+
+    console.log(`Found ${managers.length} managers for department progress reports`);
+
+    for (const manager of managers) {
+      try {
+        // Get team members for this manager
+        const teamMembers = await prisma.user.findMany({
+          where: { 
+            department: { managerId: manager.id }
+          },
+          include: {
+            department: {
+              select: { name: true }
+            }
+          }
+        });
+
+        // Get this week's department statistics
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Monday
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 4); // Friday
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        const departmentTasks = await prisma.task.findMany({
+          where: {
+            createdById: { in: teamMembers.map(member => member.id) },
+            createdAt: {
+              gte: startOfWeek,
+              lte: endOfWeek
+            }
+          },
+          include: {
+            subtasks: true,
+            createdBy: {
+              select: { name: true }
+            }
+          }
+        });
+
+        // Calculate department statistics
+        const deptCompleted = departmentTasks.filter(task => task.status === 'completed').length;
+        const deptPending = departmentTasks.filter(task => ['todo', 'in-progress'].includes(task.status)).length;
+        const deptBlocked = departmentTasks.filter(task => task.status === 'blocker').length;
+        const deptOverdue = departmentTasks.filter(task => 
+          task.status !== 'completed' && new Date(task.deadline) < new Date()
+        ).length;
+
+        // Create team data for manager summary
+        const teamData = teamMembers.map(member => {
+          const memberTasks = departmentTasks.filter(task => task.createdById === member.id);
+          const memberCompleted = memberTasks.filter(task => task.status === 'completed').length;
+          
+          return {
+            name: member.name,
+            completedTasks: memberCompleted,
+            tasks: memberTasks.slice(0, 3).map(task => ({ // Show top 3 tasks
+              title: task.title,
+              deadline: task.deadline,
+              subtasks: task.subtasks.map(subtask => ({
+                title: subtask.title,
+                status: subtask.status,
+                priority: subtask.priority,
+                deadline: subtask.deadline
+              }))
+            }))
+          };
+        });
+
+        // Send manager department progress report
+        await sendEmailNotification({
+          userId: manager.id,
+          type: 'manager_summary',
+          teamData
+        });
+
+        console.log(`Department progress report sent to manager ${manager.name} - Dept Stats: ${deptCompleted} completed, ${deptPending} pending, ${deptBlocked} blocked, ${deptOverdue} overdue`);
+      } catch (error) {
+        console.error(`Error sending department progress report to manager ${manager.name}:`, error);
+      }
+    }
+
+    console.log('Friday afternoon weekly wrap-up report completed');
+  } catch (error) {
+    console.error('Error in Friday afternoon report job:', error);
+  }
+}
