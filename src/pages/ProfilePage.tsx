@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { UserIcon, MailIcon, PhoneIcon, CalendarIcon, BuildingIcon, ShieldIcon, GlobeIcon, ClockIcon } from 'lucide-react';
+import { UserIcon, MailIcon, PhoneIcon, CalendarIcon, BuildingIcon, ShieldIcon, GlobeIcon, ClockIcon, Loader2, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
 import { useDarkMode } from '../context/DarkModeContext';
 
 export function ProfilePage() {
-  const { currentUser } = useAuth();
+  const { currentUser, token, updateUser } = useAuth();
   const { darkMode } = useDarkMode();
 
 
@@ -20,6 +20,9 @@ export function ProfilePage() {
     );
   }
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: currentUser?.name || '',
     email: currentUser?.email || '',
@@ -28,6 +31,20 @@ export function ProfilePage() {
     language: currentUser?.language || 'en',
     timezone: currentUser?.timezone || 'UTC',
   });
+
+  // Update form data when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        bio: currentUser.bio || '',
+        language: currentUser.language || 'en',
+        timezone: currentUser.timezone || 'UTC',
+      });
+    }
+  }, [currentUser]);
 
   const formatDisplayName = (name?: string) => {
     if (!name) return '';
@@ -65,9 +82,45 @@ export function ProfilePage() {
     }));
   };
 
-  const handleSave = () => {
-    // TODO: Implement profile update API call
-    setIsEditing(false);
+  const handleSave = async () => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update profile');
+      }
+
+      const updatedUser = await response.json();
+      
+      // Update the current user context with the new data
+      updateUser(updatedUser);
+      setSuccess('Profile updated successfully!');
+      setIsEditing(false);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
+      
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -79,6 +132,8 @@ export function ProfilePage() {
       language: currentUser?.language || 'en',
       timezone: currentUser?.timezone || 'UTC',
     });
+    setError(null);
+    setSuccess(null);
     setIsEditing(false);
   };
 
@@ -92,6 +147,26 @@ export function ProfilePage() {
             Manage your personal information and account settings
           </p>
         </div>
+
+        {/* Success Message */}
+        {success && (
+          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3" />
+              <p className="text-green-700 dark:text-green-300 font-medium">{success}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <AlertCircleIcon className="h-5 w-5 text-red-500 mr-3" />
+              <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Card */}
@@ -294,13 +369,22 @@ export function ProfilePage() {
                   <div className="flex space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={handleSave}
-                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-purple-600 text-white rounded-lg hover:from-green-600 hover:to-purple-700 transition-all duration-200 font-medium"
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-purple-600 text-white rounded-lg hover:from-green-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                     >
-                      Save Changes
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Saving...
+                        </>
+                      ) : (
+                        'Save Changes'
+                      )}
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 font-medium"
+                      disabled={isLoading}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </button>

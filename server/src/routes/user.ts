@@ -33,7 +33,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
       bio: user.bio,
       role: user.role,
       department: user.department?.name || '',
-      departmentId: user.departmentId?.toString() || '',
+      department_id: user.departmentId?.toString() || '',
+      ldap_uid: user.ldapUid || '',
       language: user.language,
       timezone: user.timezone,
       darkMode: user.darkMode,
@@ -57,12 +58,18 @@ router.get('/profile', authMiddleware, async (req, res) => {
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).user.id;
-    const { name, phone, bio, language, timezone } = req.body;
+    const { name, email, phone, bio, language, timezone } = req.body;
+
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         name: name || undefined,
+        email: email || undefined,
         phone: phone || null,
         bio: bio || null,
         language: language || 'en',
@@ -86,7 +93,8 @@ router.put('/profile', authMiddleware, async (req, res) => {
       bio: updatedUser.bio,
       role: updatedUser.role,
       department: updatedUser.department?.name || '',
-      departmentId: updatedUser.departmentId?.toString() || '',
+      department_id: updatedUser.departmentId?.toString() || '',
+      ldap_uid: updatedUser.ldapUid || '',
       language: updatedUser.language,
       timezone: updatedUser.timezone,
       darkMode: updatedUser.darkMode,
@@ -100,8 +108,14 @@ router.put('/profile', authMiddleware, async (req, res) => {
       showPhone: updatedUser.showPhone,
       showBio: updatedUser.showBio
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating user profile:', error);
+    
+    // Handle duplicate email error
+    if (error?.code === 'P2002' && error?.meta?.target?.includes('email')) {
+      return res.status(409).json({ error: 'Email address is already in use by another user' });
+    }
+    
     res.status(500).json({ error: 'Internal server error' });
   }
 });
