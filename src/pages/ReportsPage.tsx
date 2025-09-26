@@ -487,7 +487,7 @@ export function ReportsPage() {
       }
     } else if (format === 'Word') {
       // Generate proper Word document using docx library
-      import('docx').then(({ Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel }) => {
+      import('docx').then(({ Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel }) => {
         // Create document
         const doc = new Document({
           sections: [{
@@ -568,7 +568,7 @@ export function ReportsPage() {
                 ]
               }),
               
-              // Data table
+              // Data section
               new Paragraph({
                 children: [
                   new TextRun({
@@ -580,57 +580,41 @@ export function ReportsPage() {
                 heading: HeadingLevel.HEADING_1
               }),
               
-              // Create table
-              new Table({
-                width: {
-                  size: 100,
-                  type: WidthType.PERCENTAGE,
-                },
-                rows: [
-                  // Header row
-                  new TableRow({
-                    children: Object.keys(exportData[0] || {}).map(header => 
-                      new TableCell({
-                        children: [
-                          new Paragraph({
-                            children: [
-                              new TextRun({
-                                text: header,
-                                bold: true,
-                                color: "FFFFFF"
-                              })
-                            ],
-                            alignment: AlignmentType.CENTER
-                          })
-                        ],
-                        shading: {
-                          fill: "2e9d74"
-                        }
+              // Convert data to paragraph format
+              ...exportData.map((row, index) => {
+                const entries = Object.entries(row);
+                return [
+                  // Record header
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `Record ${index + 1}`,
+                        bold: true,
+                        size: 22
                       })
-                    )
+                    ],
+                    spacing: { before: 200, after: 100 }
                   }),
                   
-                  // Data rows
-                  ...exportData.map(row => 
-                    new TableRow({
-                      children: Object.values(row).map(cell => 
-                        new TableCell({
-                          children: [
-                            new Paragraph({
-                              children: [
-                                new TextRun({
-                                  text: String(cell || ''),
-                                  size: 20
-                                })
-                              ]
-                            })
-                          ]
+                  // Data entries as paragraphs
+                  ...entries.map(([key, value]) => 
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `${key}: `,
+                          bold: true,
+                          size: 20
+                        }),
+                        new TextRun({
+                          text: String(value || 'N/A'),
+                          size: 20
                         })
-                      )
+                      ],
+                      spacing: { after: 50 }
                     })
                   )
-                ]
-              })
+                ];
+              }).flat()
             ]
           }]
         });
