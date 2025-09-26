@@ -52,7 +52,17 @@ router.get('/', authMiddleware, async (req, res) => {
           select: {
             id: true,
             title: true,
-            status: true
+            status: true,
+            subtasks: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                priority: true,
+                deadline: true,
+                blockerReason: true
+              }
+            }
           }
         }
       },

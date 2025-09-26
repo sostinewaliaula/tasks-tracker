@@ -30,6 +30,19 @@ type Notification = {
   relatedTaskId?: string;
   userId: string;
   type?: 'task_completed' | 'task_assigned' | 'task_overdue' | 'task_deadline' | 'general';
+  relatedTask?: {
+    id: string;
+    title: string;
+    status: string;
+    subtasks?: {
+      id: string;
+      title: string;
+      status: string;
+      priority: string;
+      deadline: string;
+      blockerReason?: string;
+    }[];
+  };
 };
 type TaskContextType = {
   tasks: Task[];
@@ -331,7 +344,20 @@ export function TaskProvider({
         createdAt: new Date(n.createdAt),
         relatedTaskId: n.relatedTaskId?.toString(),
         userId: n.userId.toString(),
-        type: n.type
+        type: n.type,
+        relatedTask: n.relatedTask ? {
+          id: n.relatedTask.id.toString(),
+          title: n.relatedTask.title,
+          status: n.relatedTask.status,
+          subtasks: n.relatedTask.subtasks?.map((subtask: any) => ({
+            id: subtask.id.toString(),
+            title: subtask.title,
+            status: subtask.status,
+            priority: subtask.priority,
+            deadline: subtask.deadline,
+            blockerReason: subtask.blockerReason
+          }))
+        } : undefined
       })));
     } catch (error) {
       console.error('Error reloading notifications:', error);

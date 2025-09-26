@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTask } from '../context/TaskContext';
 import { useAuth } from '../context/AuthContext';
-import { BellIcon, CheckIcon, TrashIcon, FilterIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon, EyeIcon, MoreVerticalIcon, SearchIcon, ArchiveIcon } from 'lucide-react';
+import { BellIcon, CheckIcon, TrashIcon, FilterIcon, XIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon, InfoIcon, EyeIcon, MoreVerticalIcon, SearchIcon, ArchiveIcon, ChevronDownIcon, ChevronRightIcon, CalendarIcon, FlagIcon } from 'lucide-react';
 export function NotificationsPage() {
   const {
     getUserNotifications,
@@ -15,6 +15,7 @@ export function NotificationsPage() {
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showActions, setShowActions] = useState<string | null>(null);
+  const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
   
   // Get user-specific notifications
   const notifications = getUserNotifications();
@@ -81,6 +82,46 @@ export function NotificationsPage() {
 
   const toggleActions = (notificationId: string) => {
     setShowActions(showActions === notificationId ? null : notificationId);
+  };
+
+  const toggleExpanded = (notificationId: string) => {
+    setExpandedNotifications(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(notificationId)) {
+        newSet.delete(notificationId);
+      } else {
+        newSet.add(notificationId);
+      }
+      return newSet;
+    });
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'blocker':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'todo':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
   };
 
   const getNotificationIcon = (type?: string) => {
@@ -346,7 +387,7 @@ export function NotificationsPage() {
                             </p>
                           </div>
                           
-                          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
                             <div className="flex items-center space-x-1">
                               <ClockIcon className="h-3 w-3" />
                               <span>{getRelativeTime(notification.createdAt)}</span>
@@ -357,6 +398,76 @@ export function NotificationsPage() {
                               </span>
                             )}
                           </div>
+
+                          {/* Task and Subtasks Section */}
+                          {notification.relatedTask && (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    {notification.relatedTask.title}
+                                  </h4>
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(notification.relatedTask.status)}`}>
+                                    {notification.relatedTask.status}
+                                  </span>
+                                </div>
+                                
+                                {notification.relatedTask.subtasks && notification.relatedTask.subtasks.length > 0 && (
+                                  <button
+                                    onClick={() => toggleExpanded(notification.id)}
+                                    className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                  >
+                                    <span>{notification.relatedTask.subtasks.length} subtasks</span>
+                                    {expandedNotifications.has(notification.id) ? (
+                                      <ChevronDownIcon className="h-3 w-3" />
+                                    ) : (
+                                      <ChevronRightIcon className="h-3 w-3" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Subtasks List */}
+                              {expandedNotifications.has(notification.id) && notification.relatedTask.subtasks && (
+                                <div className="mt-3 ml-4 space-y-2">
+                                  {notification.relatedTask.subtasks.map((subtask) => (
+                                    <div key={subtask.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                      <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                          <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                                            {subtask.title}
+                                          </h5>
+                                          <div className="flex items-center space-x-2 text-xs">
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-full font-medium ${getStatusColor(subtask.status)}`}>
+                                              {subtask.status}
+                                            </span>
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-full font-medium ${getPriorityColor(subtask.priority)}`}>
+                                              <FlagIcon className="h-3 w-3 mr-1" />
+                                              {subtask.priority}
+                                            </span>
+                                            <div className="flex items-center text-gray-500 dark:text-gray-400">
+                                              <CalendarIcon className="h-3 w-3 mr-1" />
+                                              <span>{new Date(subtask.deadline).toLocaleDateString()}</span>
+                                            </div>
+                                          </div>
+                                          {subtask.blockerReason && (
+                                            <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs">
+                                              <div className="flex items-start space-x-1">
+                                                <AlertCircleIcon className="h-3 w-3 text-red-500 mt-0.5 flex-shrink-0" />
+                                                <span className="text-red-700 dark:text-red-300">
+                                                  <strong>Blocked:</strong> {subtask.blockerReason}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                         
                         {/* Actions */}
