@@ -10,7 +10,7 @@ import { ExportOptions } from '../components/reports/ExportOptions';
 import { BarChart2Icon, CalendarIcon, UsersIcon, TrendingUpIcon, AlertCircleIcon, ClockIcon } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, BarChart, Bar } from 'recharts';
 export function ReportsPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, token } = useAuth();
   const { tasks } = useTask();
   const { showToast } = useToast();
   const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('week');
@@ -18,6 +18,132 @@ export function ReportsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+  const [departmentStats, setDepartmentStats] = useState<any>(null);
+  const [managedDepartment, setManagedDepartment] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
+
+  // Fetch departments data
+  const fetchDepartments = async () => {
+    try {
+      setError(null);
+      console.log('Fetching departments for reports page...', { API_URL, token: token ? 'present' : 'missing' });
+      
+      const res = await fetch(`${API_URL}/api/departments`, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      console.log('Departments response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Departments API error:', errorText);
+        throw new Error(`Failed to load departments: ${res.status} ${errorText}`);
+      }
+      
+      const response = await res.json();
+      console.log('Departments response received:', response);
+      
+      // Handle the response format: { data: departments } or just departments array
+      const data = response.data || response;
+      console.log('Departments data:', data);
+      
+      // Ensure data is an array
+      const departmentsArray = Array.isArray(data) ? data : [];
+      console.log('Departments array:', departmentsArray);
+      console.log('Current user ID:', currentUser?.id);
+      console.log('Current user:', currentUser);
+      
+      // Find the department managed by this manager
+      const managedDept = departmentsArray.find((dept: any) => {
+        console.log('Checking department:', dept.name, 'managerId:', dept.managerId, 'user ID:', currentUser?.id);
+        console.log('Type comparison - managerId type:', typeof dept.managerId, 'user ID type:', typeof currentUser?.id);
+        // Try both string and number comparison
+        return dept.managerId === currentUser?.id || 
+               dept.managerId === Number(currentUser?.id) || 
+               Number(dept.managerId) === currentUser?.id;
+      });
+      console.log('Managed department found:', managedDept);
+      
+      if (managedDept) {
+        setManagedDepartment(managedDept);
+        return managedDept;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load departments');
+      return null;
+    }
+  };
+
+  // Fetch department stats
+  const fetchDepartmentStats = async (departmentId: number) => {
+    try {
+      setError(null);
+      console.log('Fetching department stats...', { departmentId, API_URL, token: token ? 'present' : 'missing' });
+      
+      const res = await fetch(`${API_URL}/api/departments/${departmentId}/stats`, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      console.log('Department stats response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Department stats API error:', errorText);
+        throw new Error(`Failed to load department stats: ${res.status} ${errorText}`);
+      }
+      
+      const response = await res.json();
+      console.log('Department stats response received:', response);
+      
+      // Handle the response format: { data: stats } or just stats object
+      const data = response.data || response;
+      console.log('Department stats data:', data);
+      
+      // Extract the stats object from the response
+      const statsData = data.stats ? data : { stats: data };
+      console.log('Processed stats data:', statsData);
+      setDepartmentStats(statsData);
+      
+    } catch (error) {
+      console.error('Error fetching department stats:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load department stats');
+    }
+  };
+
+  // Load data when component mounts or user changes
+  React.useEffect(() => {
+    const loadData = async () => {
+      if (currentUser?.role === 'manager' && token) {
+        setIsLoading(true);
+        try {
+          const managedDept = await fetchDepartments();
+          if (managedDept) {
+            await fetchDepartmentStats(managedDept.id);
+          }
+        } catch (error) {
+          console.error('Error loading reports data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [currentUser?.role, token, currentUser?.id]);
 
   const handleExport = (filteredTasks: any[], format: string, dateRange: string, statuses: string[]) => {
     // Create export data
@@ -387,14 +513,48 @@ export function ReportsPage() {
       subtasks: userBlockers.filter(task => task.parentId).length
     };
   }, [tasks, selectedDepartment, isAdmin, isManager, currentUser]);
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="card">
+          <div className="px-4 py-5 sm:p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e9d74] mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-300">Loading reports data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Error loading reports data
+              </h3>
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                <p>{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:truncate">
             {isAdmin ? 'Company Reports' : 'Department Reports'}
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-            {isAdmin ? 'Organization-wide analytics and insights' : <>Comprehensive analytics and insights for {currentUser.department} department</>}
+            {isAdmin ? 'Organization-wide analytics and insights' : <>Comprehensive analytics and insights for {managedDepartment?.name || currentUser.department} department</>}
           </p>
         </div>
         <div className="mt-4 flex md:mt-0 md:ml-4">
@@ -460,7 +620,16 @@ export function ReportsPage() {
           </div>
         </div>
         <div className="px-4 py-5 sm:p-6">
-          {reportType === 'overview' && <TaskStats department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
+          {reportType === 'overview' && (
+            <>
+              {console.log('Passing to TaskStats - department:', isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : managedDepartment?.name || currentUser.department, 'departmentStats:', departmentStats)}
+              <TaskStats 
+                department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : managedDepartment?.name || currentUser.department} 
+                timeframe={timeframe} 
+                departmentStats={departmentStats} 
+              />
+            </>
+          )}
           {reportType === 'team' && <TeamPerformance department={isAdmin ? (selectedDepartment === 'all' ? undefined : selectedDepartment) : currentUser.department} timeframe={timeframe} />}
           {reportType === 'blockers' && (
             <div className="space-y-6">
