@@ -313,6 +313,165 @@ router.get('/:id/members', roleCheck(['admin', 'manager']), async (req, res) => 
     }
 });
 
+// Get team performance data for a department
+router.get('/:id/team-performance', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
+    try {
+        const departmentId = parseInt(req.params.id);
+        console.log('Fetching team performance for department ID:', departmentId);
+        
+        // Get department with all users
+        const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+                manager: {
+                    select: { id: true, name: true }
+                },
+                users: {
+                    select: { id: true, name: true }
+                }
+            }
+        });
+        
+        if (!department) {
+            return res.status(404).json({ error: 'Department not found' });
+        }
+        
+        // Get all user IDs in this department
+        const userIds = [];
+        if (department.manager) {
+            userIds.push(department.manager.id);
+        }
+        department.users.forEach(user => {
+            if (!userIds.includes(user.id)) {
+                userIds.push(user.id);
+            }
+        });
+        
+        if (userIds.length === 0) {
+            return res.json({
+                data: {
+                    department: {
+                        id: department.id,
+                        name: department.name
+                    },
+                    teamMembers: [],
+                    dailyActivity: [],
+                    performanceMetrics: []
+                }
+            });
+        }
+        
+        // Get tasks for users in this department
+        const tasks = await prisma.task.findMany({
+            where: {
+                createdById: {
+                    in: userIds
+                }
+            },
+            include: {
+                subtasks: {
+                    select: {
+                        id: true,
+                        status: true,
+                        priority: true,
+                        deadline: true,
+                        createdAt: true
+                    }
+                }
+            }
+        });
+        
+        console.log('Tasks found for team performance:', tasks.length);
+        
+        // Calculate team member performance
+        const teamMembers = userIds.map(userId => {
+            const userTasks = tasks.filter(task => task.createdById === userId);
+            const completedTasks = userTasks.filter(task => task.status === 'completed');
+            const overdueTasks = userTasks.filter(task => {
+                const deadline = new Date(task.deadline);
+                const now = new Date();
+                return deadline < now && task.status !== 'completed';
+            });
+            
+            // Calculate on-time completion rate
+            const onTimeTasks = completedTasks.filter(task => {
+                const deadline = new Date(task.deadline);
+                const completedAt = new Date(task.updatedAt || task.createdAt);
+                return completedAt <= deadline;
+            });
+            
+            const onTimeRate = completedTasks.length > 0 ? 
+                Math.round((onTimeTasks.length / completedTasks.length) * 100) : 0;
+            
+            // Calculate efficiency score (combination of completion rate and on-time rate)
+            const efficiencyScore = Math.round((onTimeRate + (completedTasks.length * 10)) / 2);
+            
+            return {
+                id: userId,
+                name: department.users.find(u => u.id === userId)?.name || 
+                      (department.manager?.id === userId ? department.manager.name : `User ${userId}`),
+                tasksCompleted: completedTasks.length,
+                totalTasks: userTasks.length,
+                onTimeRate: Math.min(100, onTimeRate),
+                efficiencyScore: Math.min(100, efficiencyScore),
+                overdueTasks: overdueTasks.length
+            };
+        });
+        
+        // Calculate daily activity for the last 7 days
+        const now = new Date();
+        const dailyActivity = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(date.getDate() - i);
+            date.setHours(0, 0, 0, 0);
+            
+            const nextDay = new Date(date);
+            nextDay.setDate(nextDay.getDate() + 1);
+            
+            const createdOnDay = tasks.filter(task => {
+                const createdAt = new Date(task.createdAt);
+                return createdAt >= date && createdAt < nextDay;
+            }).length;
+            
+            const completedOnDay = tasks.filter(task => {
+                if (task.status !== 'completed') return false;
+                const updatedAt = new Date(task.updatedAt || task.createdAt);
+                return updatedAt >= date && updatedAt < nextDay;
+            }).length;
+            
+            dailyActivity.push({
+                date: date.toISOString().split('T')[0],
+                day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                created: createdOnDay,
+                completed: completedOnDay
+            });
+        }
+        
+        res.json({
+            data: {
+                department: {
+                    id: department.id,
+                    name: department.name
+                },
+                teamMembers,
+                dailyActivity,
+                performanceMetrics: {
+                    totalTeamMembers: teamMembers.length,
+                    averageCompletionRate: teamMembers.length > 0 ? 
+                        Math.round(teamMembers.reduce((sum, member) => sum + member.efficiencyScore, 0) / teamMembers.length) : 0,
+                    totalTasksCompleted: teamMembers.reduce((sum, member) => sum + member.tasksCompleted, 0),
+                    totalOverdueTasks: teamMembers.reduce((sum, member) => sum + member.overdueTasks, 0)
+                }
+            }
+        });
+        
+    } catch (e) {
+        console.error('Get team performance error:', e);
+        res.status(500).json({ error: 'Failed to get team performance data' });
+    }
+});
+
 // Get department task statistics
 router.get('/:id/stats', authMiddleware, roleCheck(['admin', 'manager']), async (req, res) => {
     try {

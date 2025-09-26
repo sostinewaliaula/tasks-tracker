@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { useTask } from '../../context/TaskContext';
+import { useAuth } from '../../context/AuthContext';
 
 type TeamPerformanceProps = {
   department?: string; // undefined => all departments
@@ -9,42 +10,219 @@ type TeamPerformanceProps = {
 
 export function TeamPerformance({ department, timeframe }: TeamPerformanceProps) {
   const { tasks } = useTask();
+  const { currentUser, token } = useAuth();
+  const [teamData, setTeamData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    return tasks.filter(t => (department ? t.department === department : true));
-  }, [tasks, department]);
+  const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
-  // Group by user (createdBy)
-  const perUser = useMemo(() => {
-    const map = new Map<string, { name: string; completed: number }>();
-    filtered.forEach(t => {
-      const key = t.createdBy;
-      if (!map.has(key)) map.set(key, { name: `User ${key}`, completed: 0 });
-      if (t.status === 'completed') {
-        map.get(key)!.completed += 1;
+  // Fetch team performance data
+  const fetchTeamData = async () => {
+    try {
+      setError(null);
+      console.log('Fetching team performance data...', { department, API_URL, token: token ? 'present' : 'missing' });
+      
+      // First get the department ID if we have a department name
+      let departmentId = null;
+      if (department && currentUser?.role === 'manager') {
+        const deptRes = await fetch(`${API_URL}/api/departments`, { 
+          headers: { 
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json'
+          } 
+        });
+        
+        if (deptRes.ok) {
+          const deptData = await deptRes.json();
+          const deptArray = Array.isArray(deptData.data) ? deptData.data : [deptData.data];
+          const foundDept = deptArray.find((d: any) => d.name === department);
+          if (foundDept) {
+            departmentId = foundDept.id;
+          }
+        }
       }
-    });
-    return Array.from(map.values());
-  }, [filtered]);
+      
+      // Fetch team performance data
+      const url = departmentId ? `${API_URL}/api/departments/${departmentId}/team-performance` : `${API_URL}/api/team-performance`;
+      const res = await fetch(url, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      console.log('Team performance response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Team performance API error:', errorText);
+        throw new Error(`Failed to load team performance: ${res.status} ${errorText}`);
+      }
+      
+      const response = await res.json();
+      console.log('Team performance data received:', response);
+      
+      // Handle the response format
+      const data = response.data || response;
+      setTeamData(data);
+      
+    } catch (error) {
+      console.error('Error fetching team performance:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load team performance');
+    }
+  };
 
-  // Build chart rows: completed is real; onTime/efficiency are placeholders until backend tracks completion dates/SLAs
-  const performanceData = perUser.map(u => ({
-    name: u.name,
-    completed: u.completed,
-    onTime: Math.min(100, 60 + Math.round(Math.random() * 40)),
-    efficiency: Math.min(100, 60 + Math.round(Math.random() * 40))
-  }));
+  // Load data when component mounts
+  useEffect(() => {
+    const loadData = async () => {
+      if (currentUser && token) {
+        setIsLoading(true);
+        try {
+          await fetchTeamData();
+        } catch (error) {
+          console.error('Error loading team data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
 
-  // Simple trend mock per day; later replace with real creation/completion counts per day
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-  const trendData = days.map(day => ({
-    name: day,
-    completed: Math.floor(Math.random() * 8) + 2,
-    created: Math.floor(Math.random() * 10) + 1
-  }));
+    loadData();
+  }, [currentUser, token, department]);
+
+  // Use real team data if available, otherwise fallback to context data
+  const performanceData = teamData?.teamMembers ? teamData.teamMembers.map((member: any) => ({
+    name: member.name,
+    completed: member.tasksCompleted,
+    onTime: member.onTimeRate,
+    efficiency: member.efficiencyScore
+  })) : [];
+
+  const trendData = teamData?.dailyActivity ? teamData.dailyActivity.map((day: any) => ({
+    name: day.day,
+    completed: day.completed,
+    created: day.created
+  })) : [];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e9d74] mx-auto"></div>
+          <p className="mt-4 text-sm text-gray-500 dark:text-gray-300">Loading team performance data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Error loading team performance data
+              </h3>
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                <p>{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!teamData || !teamData.teamMembers || teamData.teamMembers.length === 0) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-300">No team members found for this department.</p>
+        </div>
+      </div>
+    );
+  }
   return <div className="space-y-8">
+      {/* Team Performance Summary */}
+      {teamData?.performanceMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                  <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Team Members</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{teamData.performanceMetrics.totalTeamMembers}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                  <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Tasks Completed</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{teamData.performanceMetrics.totalTasksCompleted}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                  <svg className="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Efficiency</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{teamData.performanceMetrics.averageCompletionRate}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                  <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Overdue Tasks</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{teamData.performanceMetrics.totalOverdueTasks}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div>
-        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4">
           Team Member Performance
         </h3>
         <div className="bg-white overflow-hidden shadow-sm rounded-lg">
