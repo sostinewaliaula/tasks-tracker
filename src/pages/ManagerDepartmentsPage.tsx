@@ -22,7 +22,6 @@ type DepartmentNode = {
   users?: { id: number; name: string; role: string }[];
 };
 
-
 export function ManagerDepartmentsPage() {
   return <ManagerDepartmentsPageContent />;
 }
@@ -34,52 +33,114 @@ function ManagerDepartmentsPageContent() {
   const [departments, setDepartments] = useState<DepartmentNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<{ id: number; name: string; email: string | null; ldapUid: string; role: string; departmentId?: number | null; department?: string; primaryDepartment?: string | null; subDepartment?: string | null; }[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [departmentStats, setDepartmentStats] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 
   const fetchDepartments = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/api/departments`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+      setError(null);
+      console.log('Fetching departments...', { API_URL, token: token ? 'present' : 'missing' });
+      
+      const res = await fetch(`${API_URL}/api/departments`, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      console.log('Departments response status:', res.status);
+      
       if (!res.ok) {
         const errorText = await res.text();
         console.error('Departments API error:', errorText);
-        throw new Error('Failed to load departments');
+        throw new Error(`Failed to load departments: ${res.status}`);
       }
+      
       const json = await res.json();
+      console.log('Departments API response:', json);
       setDepartments(json.data || []);
     } catch (e: any) {
       console.error('Failed to load departments:', e);
+      setError(e.message || 'Failed to load departments');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users`, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      if (res.ok) {
+        const json = await res.json();
+        setUsers(json.data || []);
+      } else {
+        const errorText = await res.text();
+        console.error('Users API error:', errorText);
+        setError('Failed to load users');
+      }
+    } catch (e) {
+      console.error('Failed to load users:', e);
+      setError('Failed to load users');
+    }
+  };
+
+  const fetchDepartmentStats = async (departmentId: number) => {
+    try {
+      console.log('Fetching department stats for ID:', departmentId);
+      const res = await fetch(`${API_URL}/api/departments/${departmentId}/stats`, { 
+        headers: { 
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        } 
+      });
+      
+      console.log('Department stats response status:', res.status);
+      
+      if (res.ok) {
+        const json = await res.json();
+        console.log('Department stats API response:', json);
+        setDepartmentStats(json.data);
+      } else {
+        const errorText = await res.text();
+        console.error('Department stats API error:', errorText);
+      }
+    } catch (e) {
+      console.error('Failed to load department stats:', e);
+    }
+  };
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      await Promise.all([
+        fetchDepartments(),
+        fetchUsers()
+      ]);
+    } catch (e) {
+      console.error('Failed to refresh data:', e);
+      setError('Failed to refresh data');
+    } finally {
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     if (currentUser?.role === 'manager' || currentUser?.role === 'admin') {
       fetchDepartments();
+      fetchUsers();
     }
-  }, [currentUser?.role]);
-
-  const fetchUsers = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/users`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
-        if (res.ok) {
-          const json = await res.json();
-          setUsers(json.data || []);
-        } else {
-          const errorText = await res.text();
-          console.error('Users API error:', errorText);
-        }
-      } catch (e) {
-        console.error('Failed to load users:', e);
-      }
-    };
-
-  useEffect(() => {
-    fetchUsers();
-  }, [token, API_URL]);
-
+  }, [currentUser?.role, token]);
 
   // Utility function to format names
   const formatName = (name: string) => {
@@ -102,11 +163,21 @@ function ManagerDepartmentsPageContent() {
 
   // Get the single department managed by current user
   const managedDepartment = useMemo(() => {
-    if (!currentUser?.id) return null;
+    console.log('Computing managedDepartment...', { 
+      currentUserId: currentUser?.id, 
+      departmentsCount: departments.length,
+      departments: departments.map(d => ({ id: d.id, name: d.name, managerId: d.managerId }))
+    });
+    
+    if (!currentUser?.id) {
+      console.log('No current user ID, returning null');
+      return null;
+    }
     
     const all: DepartmentNode[] = [];
     const walk = (nodes: DepartmentNode[]) => {
       nodes.forEach(n => {
+        console.log('Checking department:', n.name, 'managerId:', n.managerId, 'currentUserId:', currentUser.id, 'match:', n.managerId === Number(currentUser.id));
         if (n.managerId === Number(currentUser.id)) {
           all.push(n);
         }
@@ -114,8 +185,16 @@ function ManagerDepartmentsPageContent() {
       });
     };
     walk(departments);
+    console.log('Found managed departments:', all.length, all.map(d => d.name));
     return all[0] || null; // Managers only manage one department
   }, [departments, currentUser?.id]);
+
+  // Fetch department stats when managed department changes
+  useEffect(() => {
+    if (managedDepartment) {
+      fetchDepartmentStats(managedDepartment.id);
+    }
+  }, [managedDepartment]);
 
   // Get team members from the single managed department
   const teamMembers = useMemo(() => {
@@ -157,19 +236,26 @@ function ManagerDepartmentsPageContent() {
     const managers = teamMembers.filter(m => m.isManager).length;
     const employees = teamMembers.filter(m => !m.isManager).length;
     
-    // Get task statistics for the single managed department
+    // Use backend department stats if available, otherwise fallback to frontend calculation
     let totalTasks = 0;
     let completedTasks = 0;
     let inProgressTasks = 0;
     let overdueTasks = 0;
     
-    if (managedDepartment) {
+    if (departmentStats?.stats) {
+      // Use backend stats
+      totalTasks = departmentStats.stats.totalTasks || 0;
+      completedTasks = departmentStats.stats.completed || 0;
+      inProgressTasks = departmentStats.stats.inProgress || 0;
+      overdueTasks = departmentStats.stats.overdue || 0;
+    } else if (managedDepartment) {
+      // Fallback to frontend calculation
       const deptStats = getTasksCountByStatus(managedDepartment.name);
       if (deptStats) {
         totalTasks = Object.values(deptStats).reduce((sum, count) => sum + count, 0);
         completedTasks = deptStats.completed || 0;
         inProgressTasks = deptStats['in-progress'] || 0;
-        overdueTasks = 0; // Overdue tasks not available in current stats
+        overdueTasks = 0;
       }
     }
     
@@ -185,14 +271,34 @@ function ManagerDepartmentsPageContent() {
       overdueTasks,
       completionRate
     };
-  }, [teamMembers, managedDepartment, getTasksCountByStatus]);
-
-
+  }, [teamMembers, managedDepartment, departmentStats, getTasksCountByStatus]);
 
   // Department card component
   const DepartmentCard = ({ department }: { department: DepartmentNode }) => {
-    const deptStats = getTasksCountByStatus(department.name);
     const memberCount = department.users?.length || 0;
+    
+    // Use backend stats if available, otherwise fallback to frontend calculation
+    let completedTasks = 0;
+    let inProgressTasks = 0;
+    let totalTasks = 0;
+    let completionRate = 0;
+    
+    if (departmentStats?.stats && departmentStats.department?.id === department.id) {
+      // Use backend stats
+      completedTasks = departmentStats.stats.completed || 0;
+      inProgressTasks = departmentStats.stats.inProgress || 0;
+      totalTasks = departmentStats.stats.totalTasks || 0;
+      completionRate = departmentStats.stats.completionRate || 0;
+    } else {
+      // Fallback to frontend calculation
+      const deptStats = getTasksCountByStatus(department.name);
+      if (deptStats) {
+        completedTasks = deptStats.completed || 0;
+        inProgressTasks = deptStats['in-progress'] || 0;
+        totalTasks = Object.values(deptStats).reduce((sum, count) => sum + count, 0);
+        completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      }
+    }
     
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50">
@@ -217,14 +323,14 @@ function ManagerDepartmentsPageContent() {
             <div className="text-center">
               <div className="flex items-center justify-center text-green-600 dark:text-green-400 mb-1">
                 <CheckCircleIcon className="h-4 w-4 mr-1" />
-                <span className="text-lg font-semibold">{deptStats?.completed || 0}</span>
+                <span className="text-lg font-semibold">{completedTasks}</span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center text-blue-600 dark:text-blue-400 mb-1">
                 <ClockIcon className="h-4 w-4 mr-1" />
-                <span className="text-lg font-semibold">{deptStats?.['in-progress'] || 0}</span>
+                <span className="text-lg font-semibold">{inProgressTasks}</span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
             </div>
@@ -232,7 +338,7 @@ function ManagerDepartmentsPageContent() {
           
           <div className="flex items-center justify-center text-sm">
             <span className="text-gray-500 dark:text-gray-400">
-              {deptStats ? Math.round(((deptStats.completed || 0) / Object.values(deptStats).reduce((sum, count) => sum + count, 0)) * 100) || 0 : 0}% completion rate
+              {completionRate}% completion rate
             </span>
           </div>
         </div>
@@ -305,8 +411,64 @@ function ManagerDepartmentsPageContent() {
                 View your department details and team information
               </p>
             </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={refreshData}
+                disabled={refreshing}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2e9d74] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {refreshing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#2e9d74] mr-2"></div>
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Error loading data
+                </h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                  {error}
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      if (currentUser?.role === 'manager' || currentUser?.role === 'admin') {
+                        fetchDepartments();
+                        fetchUsers();
+                      }
+                    }}
+                    className="bg-red-100 dark:bg-red-900/30 px-3 py-2 rounded-md text-sm font-medium text-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-900/50"
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -393,6 +555,46 @@ function ManagerDepartmentsPageContent() {
                       managerName={managedDepartment.managerId ? (users.find(u => u.id === managedDepartment.managerId) ? formatName(users.find(u => u.id === managedDepartment.managerId)!.name) : '—') : '—'}
                     />
                   </div>
+
+                  {/* Backend Statistics */}
+                  {departmentStats?.stats && (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Detailed Analytics</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{departmentStats.stats.todo || 0}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">To Do</div>
+                        </div>
+                        <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{departmentStats.stats.inProgress || 0}</div>
+                          <div className="text-sm text-blue-600 dark:text-blue-400">In Progress</div>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{departmentStats.stats.completed || 0}</div>
+                          <div className="text-sm text-green-600 dark:text-green-400">Completed</div>
+                        </div>
+                        <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{departmentStats.stats.blocker || 0}</div>
+                          <div className="text-sm text-red-600 dark:text-red-400">Blocked</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{departmentStats.stats.high || 0}</div>
+                          <div className="text-sm text-purple-600 dark:text-purple-400">High Priority</div>
+                        </div>
+                        <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{departmentStats.stats.medium || 0}</div>
+                          <div className="text-sm text-yellow-600 dark:text-yellow-400">Medium Priority</div>
+                        </div>
+                        <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">{departmentStats.stats.low || 0}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Low Priority</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Team Members Details */}
                   {managedDepartment.users && managedDepartment.users.length > 0 && (
@@ -456,9 +658,7 @@ function ManagerDepartmentsPageContent() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
-
