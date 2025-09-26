@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTask, TaskStatus, TaskPriority } from '../../context/TaskContext';
 import { XIcon, ClockIcon, CalendarIcon, UserIcon, CheckIcon, PlusIcon } from 'lucide-react';
+import { BlockerReasonModal } from '../ui/BlockerReasonModal';
 type TaskDetailModalProps = {
   taskId: string;
   onClose: () => void;
@@ -20,6 +21,8 @@ export function TaskDetailModal({
   const [subtaskDescription, setSubtaskDescription] = React.useState('');
   const [subtaskPriority, setSubtaskPriority] = React.useState<TaskPriority>('medium');
   const [warning, setWarning] = React.useState<string | null>(null);
+  const [showBlockerModal, setShowBlockerModal] = React.useState(false);
+  const [blockingSubtaskId, setBlockingSubtaskId] = React.useState<string | null>(null);
   const completedSubtasks = task.subtasks ? task.subtasks.filter(st => st.status === 'completed').length : 0;
   const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
   const progress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
@@ -202,10 +205,19 @@ export function TaskDetailModal({
                                 <p className="text-xs text-gray-500 dark:text-gray-300">Due {formatDate(st.deadline)}</p>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <select value={st.status} onChange={e => updateTaskStatus(st.id, e.target.value as TaskStatus)} className="text-xs rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                                <select value={st.status} onChange={e => {
+                                  const newStatus = e.target.value as TaskStatus;
+                                  if (newStatus === 'blocker') {
+                                    setBlockingSubtaskId(st.id);
+                                    setShowBlockerModal(true);
+                                  } else {
+                                    updateTaskStatus(st.id, newStatus);
+                                  }
+                                }} className="text-xs rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                   <option value="todo">To Do</option>
                                   <option value="in-progress">In Progress</option>
                                   <option value="completed">Completed</option>
+                                  <option value="blocker">Blocked</option>
                                 </select>
                                 {getStatusBadge(st.status)}
                               </div>
@@ -260,5 +272,21 @@ export function TaskDetailModal({
           </div>
         </div>
       )}
+
+      {/* Blocker Reason Modal */}
+      <BlockerReasonModal
+        isOpen={showBlockerModal}
+        onClose={() => {
+          setShowBlockerModal(false);
+          setBlockingSubtaskId(null);
+        }}
+        onConfirm={(reason) => {
+          if (blockingSubtaskId) {
+            updateTaskStatus(blockingSubtaskId, 'blocker', reason);
+          }
+        }}
+        title="Block Subtask"
+        taskTitle={blockingSubtaskId ? task.subtasks?.find(st => st.id === blockingSubtaskId)?.title : undefined}
+      />
     </div>;
 }

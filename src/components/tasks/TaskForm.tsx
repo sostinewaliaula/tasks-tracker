@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTask, TaskPriority } from '../../context/TaskContext';
+import { BlockerReasonModal } from '../ui/BlockerReasonModal';
 
 type TaskStatus = 'todo' | 'in-progress' | 'completed' | 'blocker';
 import { 
@@ -36,6 +37,7 @@ export function TaskForm({
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [status, setStatus] = useState<TaskStatus>('todo');
   const [blockerReason, setBlockerReason] = useState('');
+  const [showBlockerModal, setShowBlockerModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,7 +185,14 @@ export function TaskForm({
                   id="status" 
                   className="w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none text-sm"
                   value={status} 
-                  onChange={e => setStatus(e.target.value as TaskStatus)}
+                  onChange={e => {
+                    const newStatus = e.target.value as TaskStatus;
+                    if (newStatus === 'blocker') {
+                      setShowBlockerModal(true);
+                    } else {
+                      setStatus(newStatus);
+                    }
+                  }}
                 >
                   <option value="todo">To Do</option>
                   <option value="in-progress">In Progress</option>
@@ -362,6 +371,22 @@ export function TaskForm({
           </div>
         </div>
       </div>
+
+      {/* Blocker Reason Modal */}
+      <BlockerReasonModal
+        isOpen={showBlockerModal}
+        onClose={() => {
+          setShowBlockerModal(false);
+          setStatus('todo'); // Reset to todo if user cancels
+        }}
+        onConfirm={(reason) => {
+          setBlockerReason(reason);
+          setStatus('blocker');
+          setShowBlockerModal(false);
+        }}
+        title="Block Task"
+        taskTitle={title || 'New Task'}
+      />
     </div>
   );
 }

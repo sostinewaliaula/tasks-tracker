@@ -4,6 +4,7 @@ import { useTask, TaskStatus, TaskPriority } from '../context/TaskContext';
 import { useToast } from '../components/ui/Toast';
 import { BlockerManagement } from '../components/tasks/BlockerManagement';
 import { SubtaskBlockerManagement } from '../components/tasks/SubtaskBlockerManagement';
+import { BlockerReasonModal } from '../components/ui/BlockerReasonModal';
 import { 
   XIcon, 
   ClockIcon, 
@@ -37,6 +38,8 @@ export function TaskDetailsPage() {
   const [showCarryOver, setShowCarryOver] = React.useState(false);
   const [carryReason, setCarryReason] = React.useState('');
   const [carryDate, setCarryDate] = React.useState<string>('');
+  const [showBlockerModal, setShowBlockerModal] = React.useState(false);
+  const [blockingSubtaskId, setBlockingSubtaskId] = React.useState<string | null>(null);
 
   if (!task) {
     return (
@@ -373,7 +376,15 @@ export function TaskDetailsPage() {
                     <div className="flex items-center space-x-2">
                       <select 
                         value={subtask.status} 
-                        onChange={e => updateTaskStatus(subtask.id, e.target.value as TaskStatus)} 
+                        onChange={e => {
+                          const newStatus = e.target.value as TaskStatus;
+                          if (newStatus === 'blocker') {
+                            setBlockingSubtaskId(subtask.id);
+                            setShowBlockerModal(true);
+                          } else {
+                            updateTaskStatus(subtask.id, newStatus);
+                          }
+                        }}
                         className="text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="todo">To Do</option>
@@ -579,6 +590,22 @@ export function TaskDetailsPage() {
           </div>
         </div>
       )}
+
+      {/* Blocker Reason Modal */}
+      <BlockerReasonModal
+        isOpen={showBlockerModal}
+        onClose={() => {
+          setShowBlockerModal(false);
+          setBlockingSubtaskId(null);
+        }}
+        onConfirm={(reason) => {
+          if (blockingSubtaskId) {
+            updateTaskStatus(blockingSubtaskId, 'blocker', reason);
+          }
+        }}
+        title="Block Subtask"
+        taskTitle={blockingSubtaskId ? task.subtasks?.find(st => st.id === blockingSubtaskId)?.title : undefined}
+      />
     </div>
   );
 }
