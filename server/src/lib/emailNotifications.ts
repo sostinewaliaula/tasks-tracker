@@ -1,5 +1,6 @@
 import { sendMail } from './mailer';
 import { prisma } from './prisma';
+import { generateWordAttachment, EmailAttachmentData } from './wordDocumentGenerator';
 
 export interface EmailNotificationData {
   userId: number;
@@ -129,11 +130,39 @@ export async function sendEmailNotification(data: EmailNotificationData): Promis
 
     const emailContent = generateEmailContent(data, user);
     
+    // Generate Word document attachment
+    let attachments = [];
+    try {
+      const attachmentData: EmailAttachmentData = {
+        type: data.type,
+        userData: {
+          name: user.name,
+          email: user.email,
+          department: user.department?.name
+        },
+        taskData: data.taskData,
+        progressData: data.progressData,
+        teamData: data.teamData,
+        overdueData: data.overdueData
+      };
+      
+      const wordBuffer = await generateWordAttachment(attachmentData);
+      attachments = [{
+        filename: `${getAttachmentFilename(data.type)}-${new Date().toISOString().slice(0, 10)}.docx`,
+        content: wordBuffer,
+        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      }];
+    } catch (error) {
+      console.warn('Failed to generate Word attachment:', error);
+      // Continue without attachment if generation fails
+    }
+    
     await sendMail({
       to: user.email,
       subject: emailContent.subject,
       html: emailContent.html,
-      text: emailContent.text
+      text: emailContent.text,
+      attachments
     });
 
     return true;
@@ -221,6 +250,7 @@ function generateTaskAssignedEmail(data: EmailNotificationData, user: any, baseU
           <a href="${baseUrl}/tasks" class="btn">View Task Details</a>
           
           <div class="footer">
+            <p>📎 A detailed Word document is attached to this email for your records.</p>
             <p>This email was sent from ${companyName} Task Management System</p>
             <p>You can manage your notification preferences in your profile settings.</p>
           </div>
@@ -255,6 +285,8 @@ ${task.subtasks.map(subtask => `
 ` : ''}
 
 View task details: ${baseUrl}/tasks
+
+📎 A detailed Word document is attached to this email for your records.
 
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
@@ -323,6 +355,8 @@ Priority: ${task.priority}
 Deadline: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'Not set'}
 
 View all tasks: ${baseUrl}/tasks
+
+📎 A detailed Word document is attached to this email for your records.
 
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
@@ -440,6 +474,8 @@ ${progress.tasks.map(task => `
 
 View dashboard: ${baseUrl}/dashboard
 
+📎 A detailed Word document is attached to this email for your records.
+
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
   `;
@@ -521,6 +557,8 @@ ${overdue.map(task => `
 
 Update task status: ${baseUrl}/tasks
 
+📎 A detailed Word document is attached to this email for your records.
+
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
   `;
@@ -587,6 +625,8 @@ Deadline: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'Not 
 Status: ${task.status}
 
 View task details: ${baseUrl}/tasks
+
+📎 A detailed Word document is attached to this email for your records.
 
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
@@ -704,6 +744,8 @@ ${progress.tasks.map(task => `
 
 View dashboard: ${baseUrl}/dashboard
 
+📎 A detailed Word document is attached to this email for your records.
+
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
   `;
@@ -800,6 +842,8 @@ ${member.tasks.map(task => `
 
 View team dashboard: ${baseUrl}/dashboard
 
+📎 A detailed Word document is attached to this email for your records.
+
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
   `;
@@ -855,9 +899,32 @@ You have received a notification from ${companyName} Task Management System.
 
 View notifications: ${baseUrl}/notifications
 
+📎 A detailed Word document is attached to this email for your records.
+
 This email was sent from ${companyName} Task Management System.
 You can manage your notification preferences in your profile settings.
   `;
   
   return { subject, html, text };
+}
+
+function getAttachmentFilename(type: string): string {
+  switch (type) {
+    case 'task_assigned':
+      return 'Task-Assignment';
+    case 'task_completed':
+      return 'Task-Completion';
+    case 'task_overdue':
+      return 'Overdue-Tasks-Alert';
+    case 'task_deadline':
+      return 'Deadline-Reminder';
+    case 'daily_progress':
+      return 'Daily-Progress-Report';
+    case 'weekly_report':
+      return 'Weekly-Progress-Report';
+    case 'manager_summary':
+      return 'Team-Summary-Report';
+    default:
+      return 'Task-Notification';
+  }
 }

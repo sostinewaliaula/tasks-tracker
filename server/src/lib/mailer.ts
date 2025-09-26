@@ -19,12 +19,18 @@ export async function sendMail({
   html,
   text,
   from,
+  attachments,
 }: {
   to: string;
   subject: string;
   html?: string;
   text?: string;
   from?: string;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType: string;
+  }>;
 }) {
   return transporter.sendMail({
     from: from || process.env.SMTP_FROM,
@@ -32,5 +38,6 @@ export async function sendMail({
     subject,
     text,
     html,
+    attachments,
   });
 }
